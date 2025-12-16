@@ -115,12 +115,31 @@ export class LiveAudioService {
 
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
+      // Handle user transcript (server turn)
       if (message.serverContent?.userTurn?.parts) {
+        // The live API might send full transcripts or partial updates. 
+        // Typically userTurn contains what the server heard so far or the final result.
+        // We'll append/update based on observation.
         const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
         if (transcript) {
+          // For now, we set it directly as it usually reflects "what has been heard so far" for the current turn.
+          // If we want to be safe, we can check if it's a correction or append.
           this.userTranscript.set(transcript);
-          this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: transcript }] }]);
         }
+      }
+
+      // Also check for toolInput/toolResponse if applicable, but for audio modality:
+      // Real-time user audio transcription often comes in `serverContent.turnComplete` or partials.
+      // However, seeing the logs, sometimes transcript is in `modelTurn` if the model echoes? 
+      // Actually strictly speaking, user audio transcript is sent back in `serverContent.modelTurn` only if we asked for it?
+      // No, usually `serverContent.turnComplete` has the final user query.
+
+      // Let's also look for `interrupted` status which might clear transcript.
+
+      // Handle interruption
+      if (message.serverContent?.interrupted) {
+        // If model was interrupted, we might want to clear its last unfinished thought or just proceed.
+        // For user transcript, since they just spoke to interrupt, we keep it.
       }
 
       if (message.serverContent?.modelTurn?.parts) {
@@ -136,13 +155,34 @@ export class LiveAudioService {
         }
 
         if (modelText) {
-          this.currentQuestionText.set(modelText);
-          this.userTranscript.set(''); // Clear user transcript for next turn
-          this.chatHistory.update(h => [...h, { role: 'model', parts: [{ text: modelText }] }]);
+          // Check if this is a new turn to clear the user transcript from the PREVIOUS response?
+          // Actually, we want the user transcript to stay until the USER speaks again.
+          // But we have logic that appends to history.
+
+          this.chatHistory.update(h => {
+            const last = h[h.length - 1];
+            if (last && last.role === 'model') {
+              last.parts[0].text += modelText;
+              this.currentQuestionText.set(last.parts[0].text || '');
+              return [...h];
+            } else {
+              // New model turn started
+              this.currentQuestionText.set(modelText);
+              return [...h, { role: 'model', parts: [{ text: modelText }] }];
+            }
+          });
+
+          // If it's a new turn, we generally don't clear the user's last speech immediately
+          // so they can read what they just said.
         }
         if (audioChunks.length > 0) {
           this.playAudio(audioChunks);
         }
+      }
+
+      if (message.serverContent?.turnComplete) {
+        this.isSpeaking.set(false);
+        // If turn complete was user, we might want to finalize their transcript display if needed.
       }
     });
   }
