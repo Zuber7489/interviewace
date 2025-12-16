@@ -12,10 +12,8 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": {
-              "base": "./dist",
-              "browser": "."
-            },
+            "outputPath": "dist/interviewace",
+            "index": "index.html",
             "browser": "index.tsx",
             "tsConfig": "tsconfig.json",
             "assets": [

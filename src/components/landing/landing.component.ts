@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
            <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">InterviewAce</span>
         </div>
         <div class="flex gap-4">
-          <a routerLink="/login" class="text-slate-300 hover:text-white transition-colors font-medium">Login</a>
+          <a routerLink="/login"  class="bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2 rounded-full font-medium transition-all shadow-lg shadow-yellow-500/30">Login</a>
           <a routerLink="/signup" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-medium transition-all shadow-lg shadow-blue-500/30">Get Started</a>
         </div>
       </nav>

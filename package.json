@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "ng serve",
     "build": "ng build",
-    "preview": "ng serve --configuration=production"
+    "preview": "ng serve --configuration=production",
+    "deploy-gh": "ng build --base-href /interviewace/ && npx angular-cli-ghpages --dir=dist/interviewace/browser"
   },
   "dependencies": {
     "@angular/build": "^21.0.0",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "angular-cli-ghpages": "^2.0.3",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

@@ -1768,7 +1768,7 @@ function equalParamsAndUrlSegments(a, b) {
 function hasStaticTitle(config) {
   return typeof config.title === "string" || config.title === null;
 }
-var ROUTER_OUTLET_DATA = new InjectionToken(typeof ngDevMode !== void 0 && ngDevMode ? "RouterOutlet data" : "");
+var ROUTER_OUTLET_DATA = new InjectionToken(typeof ngDevMode !== "undefined" && ngDevMode ? "RouterOutlet data" : "");
 var RouterOutlet = class _RouterOutlet {
   activated = null;
   get activatedComponentRef() {
@@ -3678,7 +3678,7 @@ var DefaultTitleStrategy = class _DefaultTitleStrategy extends TitleStrategy {
 var ROUTER_CONFIGURATION = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "router config" : "", {
   factory: () => ({})
 });
-var ROUTES = new InjectionToken(typeof ngDevMode !== void 0 && ngDevMode ? "ROUTES" : "");
+var ROUTES = new InjectionToken(typeof ngDevMode !== "undefined" && ngDevMode ? "ROUTES" : "");
 var RouterConfigLoader = class _RouterConfigLoader {
   componentLoaders = /* @__PURE__ */ new WeakMap();
   childrenLoaders = /* @__PURE__ */ new WeakMap();
@@ -3847,8 +3847,8 @@ var DefaultUrlHandlingStrategy = class _DefaultUrlHandlingStrategy {
     }]
   }], null, null);
 })();
-var CREATE_VIEW_TRANSITION = new InjectionToken(typeof ngDevMode !== void 0 && ngDevMode ? "view transition helper" : "");
-var VIEW_TRANSITION_OPTIONS = new InjectionToken(typeof ngDevMode !== void 0 && ngDevMode ? "view transition options" : "");
+var CREATE_VIEW_TRANSITION = new InjectionToken(typeof ngDevMode !== "undefined" && ngDevMode ? "view transition helper" : "");
+var VIEW_TRANSITION_OPTIONS = new InjectionToken(typeof ngDevMode !== "undefined" && ngDevMode ? "view transition options" : "");
 function createViewTransition(injector, from2, to) {
   const transitionOptions = injector.get(VIEW_TRANSITION_OPTIONS);
   const document = injector.get(DOCUMENT);
@@ -3865,6 +3865,11 @@ function createViewTransition(injector, from2, to) {
     return createRenderPromise(injector);
   });
   transition.ready.catch((error) => {
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      console.error(error);
+    }
+  });
+  transition.finished.catch((error) => {
     if (typeof ngDevMode === "undefined" || ngDevMode) {
       console.error(error);
     }
@@ -3894,12 +3899,11 @@ var noop = () => {
 };
 var NAVIGATION_ERROR_HANDLER = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "navigation error handler" : "");
 var NavigationTransitions = class _NavigationTransitions {
-  currentNavigation = signal(null, ...ngDevMode ? [{
-    debugName: "currentNavigation",
+  currentNavigation = signal(null, __spreadProps(__spreadValues({}, ngDevMode ? {
+    debugName: "currentNavigation"
+  } : {}), {
     equal: () => false
-  }] : [{
-    equal: () => false
-  }]);
+  }));
   currentTransition = null;
   lastSuccessfulNavigation = signal(null, ...ngDevMode ? [{
     debugName: "lastSuccessfulNavigation"
@@ -5863,7 +5867,7 @@ function mapToCanDeactivate(providers) {
 function mapToResolve(provider) {
   return (...params) => inject(provider).resolve(...params);
 }
-var VERSION = new Version("21.0.0");
+var VERSION = new Version("21.0.5");
 export {
   ActivatedRoute,
   ActivatedRouteSnapshot,
