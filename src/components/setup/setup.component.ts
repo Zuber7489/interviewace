@@ -1,7 +1,9 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
+import { AuthService } from '../../services/auth.service';
 import { InterviewConfig, InterviewSession } from '../../models';
 
 @Component({
@@ -13,42 +15,114 @@ import { InterviewConfig, InterviewSession } from '../../models';
 })
 export class SetupComponent {
   stateService = inject(StateService);
+  authService = inject(AuthService);
+  router = inject(Router);
 
   setupMethod = signal<'form' | 'resume'>('form');
-  
+
   // Form signals
-  primaryTechnology = signal('Angular');
-  secondarySkills = signal('RxJS, NgRx, TypeScript');
+  primaryTechnology = signal('');
+  secondarySkills = signal('e.g. JavaScript, Python, React, System Design');
   yearsOfExperience = signal(2);
   interviewDuration = signal(10);
-  
+  language = signal<'English' | 'Hindi' | 'Hinglish'>('English');
+
   // Resume signal
   resumeText = signal('');
+  resumeFileName = signal<string | null>(null);
 
   isLoading = signal(false);
   error = signal<string | null>(null);
 
+  // Dashboard Data
+  currentUser = this.authService.currentUser;
+  history = this.stateService.history;
+
+  async onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.resumeFileName.set(file.name);
+
+      // Basic text extraction based on file type
+      if (file.type === 'text/plain') {
+        const text = await file.text();
+        this.resumeText.set(text);
+      } else if (file.type === 'application/pdf') {
+        try {
+          this.isLoading.set(true);
+          const text = await this.extractTextFromPDF(file);
+          this.resumeText.set(text);
+        } catch (e: any) {
+          this.error.set("Failed to parse PDF: " + e.message);
+          this.resumeFileName.set(null);
+        } finally {
+          this.isLoading.set(false);
+        }
+      } else {
+        // For now, simpler fallback for other types or DOCX (needs mammoth.js or similar)
+        // We will just try reading as text for now if not PDF, or show error
+        this.error.set("Only .txt and .pdf are currently supported for parsing. Please convert your resume to PDF.");
+        this.resumeFileName.set(null);
+      }
+    }
+  }
+
+  async extractTextFromPDF(file: File): Promise<string> {
+    const arrayBuffer = await file.arrayBuffer();
+
+    // Dynamically import pdfjs-dist
+    const pdfjsLib = await import('pdfjs-dist');
+    // Set worker source (necessary for pdf.js to work in some build environments)
+    // We use a CDN or local worker path. For simplicity in many bundlers:
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(' ');
+      fullText += pageText + '\n';
+    }
+    return fullText;
+  }
+
   startInterview() {
     this.isLoading.set(true);
     this.error.set(null);
+
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
     const config: InterviewConfig = {
       primaryTechnology: this.primaryTechnology(),
       secondarySkills: this.secondarySkills(),
       yearsOfExperience: this.yearsOfExperience(),
       interviewDuration: this.interviewDuration(),
+      language: this.language(),
       resumeText: this.setupMethod() === 'resume' ? this.resumeText() : undefined,
     };
-    
+
     const session: InterviewSession = {
+      id: crypto.randomUUID(),
+      userId: user.id,
+      date: new Date().toISOString(),
       config,
       chatHistory: [],
       evaluatedQuestions: [],
       startTime: Date.now(),
     };
-    
+
     this.stateService.startInterview(session);
-    // The view will switch, and this component will be destroyed.
-    // The loading state is now handled by the InterviewComponent.
+    this.router.navigate(['/interview']);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 }

@@ -43,7 +43,6 @@ export class LiveAudioService {
       console.error('API_KEY not set');
       return;
     }
-    // FIX: The 'transport' property should be set at the AI client level for live connections.
     this.ai = new GoogleGenAI({ apiKey: environment.API_KEY });
   }
 
@@ -228,7 +227,7 @@ export class LiveAudioService {
       ? `based on the following resume: \n\n${config.resumeText}`
       : `for a candidate with ${config.yearsOfExperience} years of experience in ${config.primaryTechnology} and skills in ${config.secondarySkills}.`;
 
-    return `You are an expert AI interviewer conducting a technical interview for an Angular developer role.
+    return `You are an expert AI interviewer conducting a technical interview for a ${config.primaryTechnology} role.
 Your goal is to conduct a ${config.interviewDuration}-minute interview.
 The candidate profile is ${context}.
 
@@ -239,6 +238,8 @@ Follow these rules strictly:
 4. After they finish, provide brief, audible feedback. Then, immediately ask the next audible question.
 5. Vary question types: Conceptual, Scenario-based, Behavioral, Architecture.
 6. Adapt the difficulty based on the candidate's answers and experience level.
-7. Keep the conversation flowing naturally. Do not end the interview yourself.`;
+7. Keep the conversation flowing naturally. Do not end the interview yourself.
+8. The interview MUST be conducted in ${config.language}. If the language is 'Hinglish', use a mix of Hindi and English.
+9. Do NOT output internal thought processes, headers like **Assessing Input**, or meta-commentary. Speak directly to the candidate as a human would.`;
   }
 }

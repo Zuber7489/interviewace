@@ -1,89 +1,169 @@
-
-<div class="w-full max-w-3xl mx-auto bg-slate-800 rounded-2xl shadow-2xl p-8 transition-all duration-500">
-  <div class="text-center mb-8">
-    <h1 class="text-4xl font-bold text-white">InterviewAce</h1>
-    <p class="text-slate-400 mt-2">Your AI-Powered Angular Interview Co-pilot</p>
-  </div>
-
-  <div class="mb-6">
-    <div class="flex bg-slate-700 rounded-lg p-1">
-      <button 
-        (click)="setupMethod.set('form')"
-        [class.bg-blue-600]="setupMethod() === 'form'"
-        [class.text-white]="setupMethod() === 'form'"
-        class="w-1/2 py-2.5 rounded-md text-sm font-medium text-slate-300 transition-colors">
-        <i class="fas fa-list-alt mr-2"></i> Configure Manually
-      </button>
-      <button 
-        (click)="setupMethod.set('resume')"
-        [class.bg-blue-600]="setupMethod() === 'resume'"
-        [class.text-white]="setupMethod() === 'resume'"
-        class="w-1/2 py-2.5 rounded-md text-sm font-medium text-slate-300 transition-colors">
-        <i class="fas fa-file-alt mr-2"></i> Use Resume
+<div class="max-w-7xl mx-auto p-6 md:p-8">
+  <header class="flex flex-col md:flex-row justify-between items-center mb-12 animate-fade-in">
+    <div>
+      <h1 class="text-4xl font-bold text-white mb-2">Hello, {{ currentUser()?.name }}</h1>
+      <p class="text-slate-400">Ready for your next interview?</p>
+    </div>
+    <div class="mt-4 md:mt-0">
+      <button (click)="logout()" class="text-slate-400 hover:text-white transition-colors">
+        <i class="fas fa-sign-out-alt mr-2"></i> Logout
       </button>
     </div>
-  </div>
+  </header>
 
-  @if (setupMethod() === 'form') {
-  <div class="space-y-6 animate-fade-in">
-    <div>
-      <label for="experience" class="block text-sm font-medium text-slate-300 mb-2">Years of Experience: {{ yearsOfExperience() }}</label>
-      <input id="experience" type="range" min="0" max="15" [ngModel]="yearsOfExperience()" (ngModelChange)="yearsOfExperience.set($event)" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column: Setup New Interview -->
+    <div class="lg:col-span-1 space-y-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+        <i class="fas fa-plus-circle text-blue-500 mr-3"></i> New Interview
+      </h2>
+
+      <div class="glass p-6 rounded-2xl border border-white/10 relative overflow-hidden group">
+        <!-- Mode toggle -->
+        <div class="flex bg-slate-900/50 rounded-lg p-1 mb-6">
+          <button (click)="setupMethod.set('form')" [class.bg-blue-600]="setupMethod() === 'form'"
+            [class.text-white]="setupMethod() === 'form'"
+            class="flex-1 py-2 rounded-md text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors">
+            Config
+          </button>
+          <button (click)="setupMethod.set('resume')" [class.bg-blue-600]="setupMethod() === 'resume'"
+            [class.text-white]="setupMethod() === 'resume'"
+            class="flex-1 py-2 rounded-md text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors">
+            Resume
+          </button>
+        </div>
+
+        <!-- Form Content -->
+        @if (setupMethod() === 'form') {
+        <div class="space-y-5 animate-fade-in">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">User Experience</label>
+            <div class="flex items-center justify-between text-white font-mono text-sm mb-2">
+              <span>{{ yearsOfExperience() }} Years</span>
+            </div>
+            <input type="range" min="0" max="15" [ngModel]="yearsOfExperience()"
+              (ngModelChange)="yearsOfExperience.set($event)"
+              class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Role / Primary Tech</label>
+            <input type="text" [ngModel]="primaryTechnology()" (ngModelChange)="primaryTechnology.set($event)"
+              placeholder="e.g. Frontend Developer, Java, Python"
+              class="w-full bg-slate-900/50 border border-white/5 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50 mb-4">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Skills / Topics</label>
+            <input type="text" [ngModel]="secondarySkills()" (ngModelChange)="secondarySkills.set($event)"
+              class="w-full bg-slate-900/50 border border-white/5 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50">
+          </div>
+        </div>
+        } @else {
+        <div class="space-y-4 animate-fade-in">
+          <label
+            class="block w-full h-32 border-2 border-dashed border-slate-600 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/50 transition-colors">
+            <i class="fas fa-cloud-upload-alt text-2xl text-slate-400 mb-2"></i>
+            <span class="text-xs text-slate-500">Upload PDF Resume</span>
+            <input type="file" class="hidden" accept=".pdf" (change)="onFileSelected($event)">
+          </label>
+
+          @if(resumeFileName()) {
+          <div class="flex items-center text-xs text-blue-400 bg-blue-500/10 p-2 rounded">
+            <i class="fas fa-check mr-2"></i> {{ resumeFileName() }}
+          </div>
+          }
+        </div>
+        }
+
+        <!-- Common settings -->
+        <div class="mt-6 space-y-4 border-t border-white/5 pt-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duration</label>
+            <div class="grid grid-cols-3 gap-2">
+              @for (d of [10, 20, 30]; track d) {
+              <button (click)="interviewDuration.set(d)" [class.bg-blue-600]="interviewDuration() === d"
+                class="bg-slate-900/50 text-slate-300 text-xs py-2 rounded hover:bg-white/5 transition-colors">
+                {{ d }}m
+              </button>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Language</label>
+            <select [ngModel]="language()" (ngModelChange)="language.set($event)"
+              class="w-full bg-slate-900/50 text-white text-sm rounded-lg px-3 py-2 border border-white/5 focus:outline-none">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Hinglish">Hinglish</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-8">
+          @if(error()) {
+          <p class="text-xs text-red-400 mb-2 text-center">{{ error() }}</p>
+          }
+          <button (click)="startInterview()" [disabled]="isLoading()"
+            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-900/20 transition-all transform hover:scale-[1.02]">
+            {{ isLoading() ? 'Preparing...' : 'Start Interview' }}
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div>
-      <label for="skills" class="block text-sm font-medium text-slate-300 mb-2">Secondary Skills</label>
-      <input id="skills" type="text" [ngModel]="secondarySkills()" (ngModelChange)="secondarySkills.set($event)" placeholder="e.g., RxJS, NgRx, TypeScript" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-    </div>
-    
-    <div>
-      <label class="block text-sm font-medium text-slate-300 mb-2">Interview Duration</label>
-      <div class="grid grid-cols-3 gap-3">
-        @for (duration of [10, 20, 30]; track duration) {
-        <button (click)="interviewDuration.set(duration)"
-          [class.bg-blue-600]="interviewDuration() === duration"
-          [class.ring-blue-500]="interviewDuration() === duration"
-          class="bg-slate-700 text-slate-200 py-2.5 rounded-lg text-sm font-medium ring-2 ring-transparent hover:bg-slate-600 transition-colors">
-          {{ duration }} mins
-        </button>
+    <!-- Right Column: History & Stats -->
+    <div class="lg:col-span-2 space-y-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+        <i class="fas fa-history text-purple-500 mr-3"></i> Past Interviews
+      </h2>
+
+      @if(history().length > 0) {
+      <div class="grid gap-4">
+        @for(session of history(); track session.id) {
+        <div
+          class="glass-card p-5 rounded-xl border border-white/5 hover:border-white/10 transition-all flex flex-col md:flex-row items-center gap-6">
+          <!-- Score Circle -->
+          <div class="relative w-16 h-16 flex-shrink-0">
+            <svg class="w-full h-full transform -rotate-90">
+              <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent"
+                class="text-slate-700" />
+              <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent"
+                [class.text-green-500]="(session.overallScore || 0) >= 80"
+                [class.text-yellow-500]="(session.overallScore || 0) >= 50 && (session.overallScore || 0) < 80"
+                [class.text-red-500]="(session.overallScore || 0) < 50" [attr.stroke-dasharray]="2 * 3.14 * 28"
+                [attr.stroke-dashoffset]="2 * 3.14 * 28 * (1 - ((session.overallScore || 0) / 100))" />
+            </svg>
+            <span class="absolute inset-0 flex items-center justify-center font-bold text-sm text-white">
+              {{ session.overallScore || 0 }}
+            </span>
+          </div>
+
+          <div class="flex-grow text-center md:text-left">
+            <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
+              <h3 class="font-bold text-white text-lg">{{ session.config.primaryTechnology || 'Technical Interview' }}
+              </h3>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 border border-white/10">{{
+                session.config.interviewDuration }}m</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 border border-white/10">{{
+                session.config.language }}</span>
+            </div>
+            <p class="text-sm text-slate-400 line-clamp-2">{{ session.overallFeedback || 'No feedback available.' }}</p>
+            <p class="text-xs text-slate-500 mt-2">{{ session.date | date:'medium' }}</p>
+          </div>
+        </div>
         }
       </div>
-    </div>
-  </div>
-  } @else {
-  <div class="space-y-4 animate-fade-in">
-    <div>
-      <label for="resume" class="block text-sm font-medium text-slate-300 mb-2">Paste your Resume</label>
-      <textarea id="resume" rows="10" [ngModel]="resumeText()" (ngModelChange)="resumeText.set($event)" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Paste your resume content here..."></textarea>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-slate-300 mb-2">Interview Duration</label>
-      <div class="grid grid-cols-3 gap-3">
-        @for (duration of [10, 20, 30]; track duration) {
-        <button (click)="interviewDuration.set(duration)"
-          [class.bg-blue-600]="interviewDuration() === duration"
-          [class.ring-blue-500]="interviewDuration() === duration"
-          class="bg-slate-700 text-slate-200 py-2.5 rounded-lg text-sm font-medium ring-2 ring-transparent hover:bg-slate-600 transition-colors">
-          {{ duration }} mins
-        </button>
-        }
-      </div>
-    </div>
-  </div>
-  }
-
-  <div class="mt-8">
-    @if (error()) {
-      <div class="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-4 text-sm">
-        <strong>Error:</strong> {{ error() }}
-      </div>
-    }
-    <button (click)="startInterview()" [disabled]="isLoading()" class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
-      @if (isLoading()) {
-        <i class="fas fa-spinner fa-spin mr-2"></i> Generating Your Interview...
       } @else {
-        <i class="fas fa-rocket mr-2"></i> Start Interview
+      <div
+        class="glass p-12 rounded-2xl border border-white/5 text-center flex flex-col items-center justify-center h-64">
+        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-history text-2xl text-slate-600"></i>
+        </div>
+        <h3 class="text-lg font-medium text-white mb-2">No Interviews Yet</h3>
+        <p class="text-slate-400 max-w-sm">Complete your first interview to see your detailed performance history and
+          analytics here.</p>
+      </div>
       }
-    </button>
+    </div>
   </div>
 </div>

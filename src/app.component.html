@@ -1,14 +1,1 @@
-
-<main class="min-h-screen w-full flex items-center justify-center p-4 bg-slate-900">
-  @switch (currentView()) {
-    @case ('setup') {
-      <app-setup />
-    }
-    @case ('interview') {
-      <app-interview />
-    }
-    @case ('report') {
-      <app-report />
-    }
-  }
-</main>
+<router-outlet></router-outlet>

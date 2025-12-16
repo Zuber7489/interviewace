@@ -1,7 +1,7 @@
-
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { GeminiService } from '../../services/gemini.service';
 import { LiveAudioService } from '../../services/live-audio.service';
@@ -16,13 +16,14 @@ export class InterviewComponent implements OnInit, OnDestroy {
   stateService = inject(StateService);
   geminiService = inject(GeminiService);
   liveAudioService = inject(LiveAudioService);
+  router = inject(Router);
 
-  session = this.stateService.interviewSession;
-  
+  session = this.stateService.activeSession;
+
   // Signals for real-time state
   isLoading = signal(true);
   isFinishing = signal(false);
-  
+
   timeLeft = signal(0);
   timerId: any;
 
@@ -34,10 +35,10 @@ export class InterviewComponent implements OnInit, OnDestroy {
 
   constructor() {
     effect(() => {
-        const session = this.session();
-        if(session) {
-            this.timeLeft.set(session.config.interviewDuration * 60);
-        }
+      const session = this.session();
+      if (session) {
+        this.timeLeft.set(session.config.interviewDuration * 60);
+      }
     });
   }
 
@@ -50,6 +51,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
     } else {
       // Handle error case where session is null
       console.error("Interview session not found!");
+      this.router.navigate(['/dashboard']);
     }
   }
 
@@ -76,9 +78,9 @@ export class InterviewComponent implements OnInit, OnDestroy {
   async finishInterview() {
     if (this.isFinishing()) return;
     this.isFinishing.set(true);
-    
+
     clearInterval(this.timerId);
-    
+
     // Stop the live session and get the history
     const history = this.liveAudioService.chatHistory();
     await this.liveAudioService.stopSession();
@@ -93,12 +95,13 @@ export class InterviewComponent implements OnInit, OnDestroy {
         s.endTime = Date.now();
         s.overallFeedback = overallFeedback;
         s.overallScore = overallScore;
-        s.evaluatedQuestions = evaluatedQuestions.map(q => ({...q, type: 'Live'}));
+        s.evaluatedQuestions = evaluatedQuestions.map(q => ({ ...q, type: 'Live' }));
         return s;
       });
     }
 
     this.stateService.finishInterview();
     this.isFinishing.set(false);
+    this.router.navigate(['/report']);
   }
 }

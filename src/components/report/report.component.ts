@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
 
 @Component({
@@ -11,17 +12,18 @@ import { StateService } from '../../services/state.service';
 })
 export class ReportComponent {
   stateService = inject(StateService);
-  session = this.stateService.interviewSession;
+  router = inject(Router);
+  session = this.stateService.activeSession;
 
   overallScore = computed(() => this.session()?.overallScore || 0);
-  
+
   scoreColorClass = computed(() => {
     const score = this.overallScore();
     if (score >= 80) return 'text-green-400';
     if (score >= 50) return 'text-yellow-400';
     return 'text-red-400';
   });
-  
+
   scoreRingClass = computed(() => {
     const score = this.overallScore();
     if (score >= 80) return 'stroke-green-400';
@@ -30,6 +32,6 @@ export class ReportComponent {
   });
 
   startNew() {
-    this.stateService.startNewInterview();
+    this.router.navigate(['/dashboard']);
   }
 }

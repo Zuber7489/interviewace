@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +10,43 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      min-height: 100vh;
     }
+
+    @keyframes gradientBG {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .glass {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
     "rxjs": "https://esm.sh/rxjs@^7.8.2?conditions=es2015",
@@ -28,12 +61,15 @@
     "@angular/compiler": "https://next.esm.sh/@angular/compiler@^21.0.5?external=rxjs",
     "@angular/platform-browser": "https://next.esm.sh/@angular/platform-browser@^21.0.5?external=rxjs",
     "@angular/forms": "https://next.esm.sh/@angular/forms@^21.0.5?external=rxjs",
+    "@angular/router": "https://next.esm.sh/@angular/router@^21.0.5?external=rxjs",
     "@angular/core": "https://next.esm.sh/@angular/core@^21.0.5?external=rxjs"
   }
 }
 </script>
 </head>
+
 <body class="bg-slate-900 text-slate-100">
   <app-root></app-root>
 </body>
+
 </html>

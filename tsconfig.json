@@ -11,7 +11,8 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "node"
+      "node",
+      "pdfjs-dist"
     ],
     "moduleResolution": "bundler",
     "isolatedModules": true,
