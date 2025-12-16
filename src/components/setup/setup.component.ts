@@ -72,9 +72,8 @@ export class SetupComponent {
 
     // Dynamically import pdfjs-dist
     const pdfjsLib = await import('pdfjs-dist');
-    // Set worker source (necessary for pdf.js to work in some build environments)
-    // We use a CDN or local worker path. For simplicity in many bundlers:
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+    // Set worker source to jsDelivr CDN for reliability
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     let fullText = '';
