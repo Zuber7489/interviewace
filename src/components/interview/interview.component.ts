@@ -1,0 +1,104 @@
+
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, effect } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { StateService } from '../../services/state.service';
+import { GeminiService } from '../../services/gemini.service';
+import { LiveAudioService } from '../../services/live-audio.service';
+
+@Component({
+  selector: 'app-interview',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './interview.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class InterviewComponent implements OnInit, OnDestroy {
+  stateService = inject(StateService);
+  geminiService = inject(GeminiService);
+  liveAudioService = inject(LiveAudioService);
+
+  session = this.stateService.interviewSession;
+  
+  // Signals for real-time state
+  isLoading = signal(true);
+  isFinishing = signal(false);
+  
+  timeLeft = signal(0);
+  timerId: any;
+
+  // Aliases for template binding
+  currentQuestionText = this.liveAudioService.currentQuestionText;
+  userTranscript = this.liveAudioService.userTranscript;
+  isAISpeaking = this.liveAudioService.isSpeaking;
+  isMicOn = this.liveAudioService.isMicOn;
+
+  constructor() {
+    effect(() => {
+        const session = this.session();
+        if(session) {
+            this.timeLeft.set(session.config.interviewDuration * 60);
+        }
+    });
+  }
+
+  async ngOnInit() {
+    this.startTimer();
+    const currentSession = this.session();
+    if (currentSession) {
+      await this.liveAudioService.startSession(currentSession.config);
+      this.isLoading.set(false);
+    } else {
+      // Handle error case where session is null
+      console.error("Interview session not found!");
+    }
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.timerId);
+    this.liveAudioService.stopSession();
+  }
+
+  startTimer() {
+    this.timerId = setInterval(() => {
+      this.timeLeft.update(t => t > 0 ? t - 1 : 0);
+      if (this.timeLeft() <= 0) {
+        this.finishInterview();
+      }
+    }, 1000);
+  }
+
+  formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  async finishInterview() {
+    if (this.isFinishing()) return;
+    this.isFinishing.set(true);
+    
+    clearInterval(this.timerId);
+    
+    // Stop the live session and get the history
+    const history = this.liveAudioService.chatHistory();
+    await this.liveAudioService.stopSession();
+
+    // Generate final report
+    if (this.session() && history.length > 0) {
+      // Use the regular Gemini service for final evaluation
+      const { overallFeedback, overallScore, evaluatedQuestions } = await this.geminiService.generateFinalFeedback(history);
+
+      this.session.update(s => {
+        if (!s) return null;
+        s.endTime = Date.now();
+        s.overallFeedback = overallFeedback;
+        s.overallScore = overallScore;
+        s.evaluatedQuestions = evaluatedQuestions.map(q => ({...q, type: 'Live'}));
+        return s;
+      });
+    }
+
+    this.stateService.finishInterview();
+    this.isFinishing.set(false);
+  }
+}
