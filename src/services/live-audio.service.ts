@@ -14,6 +14,8 @@ function toBase64(buffer: ArrayBuffer): string {
   return window.btoa(binary);
 }
 
+import { environment } from '../environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -23,7 +25,7 @@ export class LiveAudioService {
   private audioContext!: AudioContext;
   private microphoneStream!: MediaStream;
   private processorNode!: AudioWorkletNode;
-  
+
   // Audio playback queue
   private audioQueue: AudioBuffer[] = [];
   private isPlaying = false;
@@ -37,19 +39,19 @@ export class LiveAudioService {
   chatHistory: WritableSignal<Content[]> = signal([]);
 
   constructor(private zone: NgZone) {
-    if (!process.env.API_KEY) {
+    if (!environment.API_KEY) {
       console.error('API_KEY not set');
       return;
     }
     // FIX: The 'transport' property should be set at the AI client level for live connections.
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY, transport: 'proxy' });
+    this.ai = new GoogleGenAI({ apiKey: environment.API_KEY });
   }
 
   async startSession(config: InterviewConfig) {
     if (this.isConnected()) return;
 
     this.audioContext = new AudioContext({ sampleRate: 16000 });
-    
+
     await this.setupMicrophone();
     await this.connectToGemini(config);
 
@@ -58,14 +60,14 @@ export class LiveAudioService {
 
   async stopSession() {
     if (!this.isConnected()) return;
-    
+
     this.session?.close();
     this.microphoneStream?.getTracks().forEach(track => track.stop());
     this.processorNode?.disconnect();
     if (this.audioContext.state !== 'closed') {
       await this.audioContext.close();
     }
-    
+
     this.isConnected.set(false);
     this.isMicOn.set(false);
     this.isSpeaking.set(false);
@@ -98,7 +100,7 @@ export class LiveAudioService {
       responseModalities: [Modality.AUDIO],
       systemInstruction: this.createSystemInstruction(interviewConfig),
     };
-    
+
     // FIX: Removed invalid 'transport' property. It must be configured in the GoogleGenAI constructor for live connections.
     this.session = await this.ai.live.connect({
       model: 'gemini-2.5-flash-native-audio-preview-12-2025',
@@ -114,75 +116,75 @@ export class LiveAudioService {
 
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
-        if (message.serverContent?.userTurn?.parts) {
-            const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
-            if(transcript) {
-                this.userTranscript.set(transcript);
-                this.chatHistory.update(h => [...h, { role: 'user', parts: [{text: transcript}] }]);
-            }
+      if (message.serverContent?.userTurn?.parts) {
+        const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
+        if (transcript) {
+          this.userTranscript.set(transcript);
+          this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: transcript }] }]);
+        }
+      }
+
+      if (message.serverContent?.modelTurn?.parts) {
+        let modelText = '';
+        const audioChunks: string[] = [];
+        for (const part of message.serverContent.modelTurn.parts) {
+          if (part.text) {
+            modelText += part.text;
+          }
+          if (part.inlineData?.data) {
+            audioChunks.push(part.inlineData.data);
+          }
         }
 
-        if (message.serverContent?.modelTurn?.parts) {
-            let modelText = '';
-            const audioChunks: string[] = [];
-            for (const part of message.serverContent.modelTurn.parts) {
-                if (part.text) {
-                    modelText += part.text;
-                }
-                if (part.inlineData?.data) {
-                    audioChunks.push(part.inlineData.data);
-                }
-            }
-
-            if (modelText) {
-                this.currentQuestionText.set(modelText);
-                this.userTranscript.set(''); // Clear user transcript for next turn
-                this.chatHistory.update(h => [...h, { role: 'model', parts: [{text: modelText}] }]);
-            }
-            if (audioChunks.length > 0) {
-                this.playAudio(audioChunks);
-            }
+        if (modelText) {
+          this.currentQuestionText.set(modelText);
+          this.userTranscript.set(''); // Clear user transcript for next turn
+          this.chatHistory.update(h => [...h, { role: 'model', parts: [{ text: modelText }] }]);
         }
+        if (audioChunks.length > 0) {
+          this.playAudio(audioChunks);
+        }
+      }
     });
   }
 
   private async playAudio(base64Chunks: string[]) {
     for (const chunk of base64Chunks) {
-        const audioData = Uint8Array.from(atob(chunk), c => c.charCodeAt(0)).buffer;
-        // The API returns raw 16-bit PCM at 24kHz. Browser needs it in Float32.
-        const pcmData = new Int16Array(audioData);
-        const float32Data = new Float32Array(pcmData.length);
-        for (let i = 0; i < pcmData.length; i++) {
-            float32Data[i] = pcmData[i] / 32768.0; // Convert to [-1, 1] range
-        }
-        
-        if (this.audioContext.state === 'closed') return;
-        const audioBuffer = this.audioContext.createBuffer(1, float32Data.length, 24000);
-        audioBuffer.copyToChannel(float32Data, 0);
-        this.audioQueue.push(audioBuffer);
+      const audioData = Uint8Array.from(atob(chunk), c => c.charCodeAt(0)).buffer;
+      // The API returns raw 16-bit PCM at 24kHz. Browser needs it in Float32.
+      const pcmData = new Int16Array(audioData);
+      const float32Data = new Float32Array(pcmData.length);
+      for (let i = 0; i < pcmData.length; i++) {
+        float32Data[i] = pcmData[i] / 32768.0; // Convert to [-1, 1] range
+      }
+
+      if (this.audioContext.state === 'closed') return;
+      const audioBuffer = this.audioContext.createBuffer(1, float32Data.length, 24000);
+      audioBuffer.copyToChannel(float32Data, 0);
+      this.audioQueue.push(audioBuffer);
     }
     if (!this.isPlaying) {
-        this.playQueue();
+      this.playQueue();
     }
   }
 
   private playQueue() {
-      if (this.audioQueue.length === 0) {
-          this.isPlaying = false;
-          this.isSpeaking.set(false);
-          return;
-      }
-      this.isPlaying = true;
-      this.isSpeaking.set(true);
+    if (this.audioQueue.length === 0) {
+      this.isPlaying = false;
+      this.isSpeaking.set(false);
+      return;
+    }
+    this.isPlaying = true;
+    this.isSpeaking.set(true);
 
-      const buffer = this.audioQueue.shift()!;
-      if (this.audioContext.state === 'closed') return;
-      
-      const source = this.audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(this.audioContext.destination);
-      source.onended = () => this.playQueue();
-      source.start();
+    const buffer = this.audioQueue.shift()!;
+    if (this.audioContext.state === 'closed') return;
+
+    const source = this.audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(this.audioContext.destination);
+    source.onended = () => this.playQueue();
+    source.start();
   }
 
   private createWorklet(): string {
