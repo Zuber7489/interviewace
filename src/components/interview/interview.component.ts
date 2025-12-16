@@ -79,29 +79,36 @@ export class InterviewComponent implements OnInit, OnDestroy {
     if (this.isFinishing()) return;
     this.isFinishing.set(true);
 
-    clearInterval(this.timerId);
+    try {
+      clearInterval(this.timerId);
 
-    // Stop the live session and get the history
-    const history = this.liveAudioService.chatHistory();
-    await this.liveAudioService.stopSession();
+      // Stop the live session and get the history
+      const history = this.liveAudioService.chatHistory();
+      await this.liveAudioService.stopSession();
 
-    // Generate final report
-    if (this.session() && history.length > 0) {
-      // Use the regular Gemini service for final evaluation
-      const { overallFeedback, overallScore, evaluatedQuestions } = await this.geminiService.generateFinalFeedback(history);
+      // Generate final report
+      if (this.session() && history.length > 0) {
+        // Use the regular Gemini service for final evaluation
+        const { overallFeedback, overallScore, evaluatedQuestions } = await this.geminiService.generateFinalFeedback(history);
 
-      this.session.update(s => {
-        if (!s) return null;
-        s.endTime = Date.now();
-        s.overallFeedback = overallFeedback;
-        s.overallScore = overallScore;
-        s.evaluatedQuestions = evaluatedQuestions.map(q => ({ ...q, type: 'Live' }));
-        return s;
-      });
+        this.session.update(s => {
+          if (!s) return null;
+          s.endTime = Date.now();
+          s.overallFeedback = overallFeedback;
+          s.overallScore = overallScore;
+          s.evaluatedQuestions = evaluatedQuestions.map(q => ({ ...q, type: 'Live' }));
+          return s;
+        });
+      }
+
+      this.stateService.finishInterview();
+    } catch (e) {
+      console.error("Error during interview finishing:", e);
+      // Even if reporting fails, we should move to report state
+      this.stateService.finishInterview();
+    } finally {
+      this.isFinishing.set(false);
+      this.router.navigate(['/report']);
     }
-
-    this.stateService.finishInterview();
-    this.isFinishing.set(false);
-    this.router.navigate(['/report']);
   }
 }
