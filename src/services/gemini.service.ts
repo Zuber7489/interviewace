@@ -26,93 +26,56 @@ export class GeminiService {
       parts: [{ text: 'The interview is now over. Please analyze our entire conversation and provide the final summary, overall score, and per-question breakdown.' }]
     };
 
-    const maxRetries = 3;
-    let attempt = 0;
-    while (attempt < maxRetries) {
-      try {
-        const response = await this.ai.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents: [...history, finalPrompt],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                overallFeedback: {
-                  type: Type.STRING,
-                  description: "A comprehensive summary of the candidate's performance, highlighting strengths and areas for improvement."
-                },
-                overallScore: {
-                  type: Type.NUMBER,
-                  description: 'A final score for the interview, out of 100.'
-                },
-                evaluatedQuestions: {
-                  type: Type.ARRAY,
-                  description: "A detailed breakdown of each question in the interview.",
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      question: { type: Type.STRING, description: "The question asked by the interviewer." },
-                      answer: { type: Type.STRING, description: "The candidate's transcribed answer." },
-                      feedback: { type: Type.STRING, description: "Specific feedback on the candidate's answer." },
-                      score: { type: Type.NUMBER, description: "A score for the answer from 0 to 10." }
-                    },
-                    required: ["question", "answer", "feedback", "score"]
-                  }
-                }
+    try {
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: [...history, finalPrompt],
+        config: {
+          systemInstruction,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              overallFeedback: {
+                type: Type.STRING,
+                description: "A comprehensive summary of the candidate's performance, highlighting strengths and areas for improvement."
               },
-              required: ['overallFeedback', 'overallScore', 'evaluatedQuestions'],
+              overallScore: {
+                type: Type.NUMBER,
+                description: 'A final score for the interview, out of 100.'
+              },
+              evaluatedQuestions: {
+                type: Type.ARRAY,
+                description: "A detailed breakdown of each question in the interview.",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    question: { type: Type.STRING, description: "The question asked by the interviewer." },
+                    answer: { type: Type.STRING, description: "The candidate's transcribed answer." },
+                    feedback: { type: Type.STRING, description: "Specific feedback on the candidate's answer." },
+                    score: { type: Type.NUMBER, description: "A score for the answer from 0 to 10." }
+                  },
+                  required: ["question", "answer", "feedback", "score"]
+                }
+              }
             },
+            required: ['overallFeedback', 'overallScore', 'evaluatedQuestions'],
           },
-        });
+        },
+      });
 
-        try {
-          return JSON.parse(response.text || '{}');
-        } catch (e) {
-          console.error('Failed to parse JSON for final feedback:', response.text, e);
-          throw new Error('JSON Parse Error');
-        }
-
-      } catch (error: any) {
-        attempt++;
-        console.warn(`Gemini API attempt ${attempt} failed:`, error);
-
-        // Check for 503 (Service Unavailable) or 429 (Too Many Requests)
-        const isOverloaded = error.status === 503 || error.code === 503 || error.message?.includes('overloaded');
-        const isRateLimited = error.status === 429 || error.code === 429 || error.message?.includes('quota');
-
-        if (attempt < maxRetries && (isOverloaded || isRateLimited)) {
-          // Longer backoff: 2s, 4s, 8s
-          const baseDelay = 2000;
-          const delay = baseDelay * Math.pow(2, attempt - 1);
-          console.log(`Waiting ${delay}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-
-        if (attempt === maxRetries) {
-          // Return fallback structure instead of throwing to prevent app crash if we want internal handling, 
-          // BUT the user asked for graceful failure in component.
-          // Let's throw here so component can catch and decide, OR return a default error object.
-          // Returning default error object is safer for "Graceful Failure" inside service.
-          return {
-            overallFeedback: 'Review generation failed due to high server traffic. Please review the chat history manually.',
-            overallScore: 0,
-            evaluatedQuestions: []
-          };
-        }
-      }
+      return JSON.parse(response.text || '{}');
+    } catch (error: any) {
+      console.error('Gemini API failed:', error);
+      return {
+        overallFeedback: 'Review generation failed. Please try again later.',
+        overallScore: 0,
+        evaluatedQuestions: []
+      };
     }
-
-    // Should be unreachable due to return in loop, but TS needs it
-    return {
-      overallFeedback: 'Review generation failed.',
-      overallScore: 0,
-      evaluatedQuestions: []
-    };
-
-
-
   }
+
+
+
+}
 }
