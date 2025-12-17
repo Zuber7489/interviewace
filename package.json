@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "ng serve",
+    "server": "node server.js",
+    "start": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "ng build",
     "preview": "ng serve --configuration=production",
     "deploy-gh": "ng build --base-href /interviewace/ && npx angular-cli-ghpages --dir=dist/interviewace/browser"
@@ -27,6 +29,9 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "angular-cli-ghpages": "^2.0.3",
+    "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files with secrets
+src/environments/environment.ts
+src/environments/environment.prod.ts

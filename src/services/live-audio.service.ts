@@ -2,6 +2,7 @@
 import { Injectable, NgZone, signal, WritableSignal } from '@angular/core';
 import { GoogleGenAI, Modality, Content } from '@google/genai';
 import { InterviewConfig } from '../models';
+import { environment } from '../environments/environment';
 
 // Base64 encoding utility
 function toBase64(buffer: ArrayBuffer): string {
@@ -14,7 +15,8 @@ function toBase64(buffer: ArrayBuffer): string {
   return window.btoa(binary);
 }
 
-import { environment } from '../environments/environment';
+// Backend URL for token generation
+const TOKEN_SERVER_URL = 'http://localhost:3001/api/token';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +24,8 @@ import { environment } from '../environments/environment';
 export class LiveAudioService {
   private ai!: GoogleGenAI;
   private session: any; // Gemini Live Session
-  private audioContext!: AudioContext;
+  private inputAudioContext!: AudioContext;  // 16kHz for microphone input
+  private outputAudioContext!: AudioContext; // 24kHz for playback
   private microphoneStream!: MediaStream;
   private processorNode!: AudioWorkletNode;
 
@@ -39,32 +42,64 @@ export class LiveAudioService {
   chatHistory: WritableSignal<Content[]> = signal([]);
 
   constructor(private zone: NgZone) {
-    if (!environment.API_KEY) {
-      console.error('API_KEY not set');
-      return;
+    console.log('✅ LiveAudioService initialized');
+  }
+
+  private async getEphemeralToken(): Promise<string> {
+    console.log('🔑 Fetching ephemeral token from backend...');
+
+    try {
+      const response = await fetch(TOKEN_SERVER_URL);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('✅ Ephemeral token received');
+      return data.token;
+    } catch (error) {
+      console.error('❌ Failed to get ephemeral token:', error);
+      // Fallback to direct API key (for development/testing)
+      console.warn('⚠️ Falling back to direct API key (not recommended for production)');
+      return environment.API_KEY;
     }
-    this.ai = new GoogleGenAI({ apiKey: environment.API_KEY });
   }
 
   async startSession(config: InterviewConfig) {
-    if (this.isConnected()) return;
+    console.log('🎤 Starting session...');
+    if (this.isConnected()) {
+      console.log('⚠️ Already connected, returning');
+      return;
+    }
 
-    this.audioContext = new AudioContext({ sampleRate: 16000 });
+    // Get ephemeral token or fall back to API key
+    const token = await this.getEphemeralToken();
+    this.ai = new GoogleGenAI({ apiKey: token });
+
+    // Create separate audio contexts for input and output
+    this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
+    this.outputAudioContext = new AudioContext({ sampleRate: 24000 });
+    console.log('✅ Audio contexts created - Input: 16kHz, Output: 24kHz');
 
     await this.setupMicrophone();
     await this.connectToGemini(config);
 
     this.isMicOn.set(true);
+    console.log('✅ Session started, mic is on');
   }
 
   async stopSession() {
+    console.log('🛑 Stopping session...');
     if (!this.isConnected()) return;
 
     this.session?.close();
     this.microphoneStream?.getTracks().forEach(track => track.stop());
     this.processorNode?.disconnect();
-    if (this.audioContext.state !== 'closed') {
-      await this.audioContext.close();
+
+    if (this.inputAudioContext?.state !== 'closed') {
+      await this.inputAudioContext.close();
+    }
+    if (this.outputAudioContext?.state !== 'closed') {
+      await this.outputAudioContext.close();
     }
 
     this.isConnected.set(false);
@@ -72,74 +107,106 @@ export class LiveAudioService {
     this.isSpeaking.set(false);
     this.audioQueue = [];
     this.isPlaying = false;
+    console.log('✅ Session stopped');
   }
 
   private async setupMicrophone() {
+    console.log('🎙️ Setting up microphone...');
     this.microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    console.log('✅ Microphone access granted');
 
     const workletUrl = this.createWorklet();
-    await this.audioContext.audioWorklet.addModule(workletUrl);
+    await this.inputAudioContext.audioWorklet.addModule(workletUrl);
     URL.revokeObjectURL(workletUrl);
 
-    const microphoneSource = this.audioContext.createMediaStreamSource(this.microphoneStream);
-    this.processorNode = new AudioWorkletNode(this.audioContext, 'pcm-processor');
+    const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
+    this.processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
     microphoneSource.connect(this.processorNode);
 
     this.processorNode.port.onmessage = (event) => {
+      if (!this.isConnected() || !this.session) return;
       const pcmData = event.data;
       const base64Data = toBase64(pcmData.buffer);
-      this.session?.sendRealtimeInput({
-        audio: { data: base64Data, mimeType: "audio/pcm;rate=16000" }
-      });
+      try {
+        // Send audio using the correct Live API format
+        this.session.sendRealtimeInput({
+          audio: {
+            mimeType: "audio/pcm;rate=16000",
+            data: base64Data,
+          }
+        });
+      } catch (e) {
+        // Silently ignore if connection is closing
+        if (!String(e).includes('CLOSING')) {
+          console.error('❌ Error sending audio:', e);
+        }
+      }
     };
+    console.log('✅ Microphone setup complete');
   }
 
   private async connectToGemini(interviewConfig: InterviewConfig) {
+    console.log('🔌 Connecting to Gemini...');
     const config = {
       responseModalities: [Modality.AUDIO],
       systemInstruction: this.createSystemInstruction(interviewConfig),
     };
 
-    // FIX: Removed invalid 'transport' property. It must be configured in the GoogleGenAI constructor for live connections.
     this.session = await this.ai.live.connect({
       model: 'gemini-2.5-flash-native-audio-preview-12-2025',
       config: config,
       callbacks: {
-        onopen: () => this.zone.run(() => this.isConnected.set(true)),
+        onopen: () => {
+          console.log('✅ WebSocket connection opened');
+          this.zone.run(() => this.isConnected.set(true));
+        },
         onmessage: (message: any) => this.handleGeminiMessage(message),
-        onerror: (e: any) => console.error('Error:', e.message),
-        onclose: (e: any) => this.zone.run(() => this.stopSession()),
+        onerror: (e: any) => {
+          console.error('❌ WebSocket error:', e);
+          console.error('❌ Error details:', JSON.stringify(e));
+        },
+        onclose: (e: any) => {
+          console.log('🔌 WebSocket closed:', e);
+          console.log('🔌 Close reason:', e?.reason || 'No reason provided');
+          console.log('🔌 Close code:', e?.code || 'No code');
+          this.zone.run(() => this.stopSession());
+        },
       },
     });
+
+    console.log('✅ Connected to Gemini, triggering AI to start...');
+
+    // Trigger the model to start the interview by sending initial context
+    // Using simple string format as per SDK examples
+    try {
+      // Send a simple text turn to trigger the AI to respond
+      this.session.sendClientContent({
+        turns: "Hello, I'm ready for my interview. Please start by introducing yourself and asking me your first question.",
+        turnComplete: true
+      });
+      console.log('✅ Initial context sent');
+    } catch (e) {
+      console.error('❌ Error sending initial context:', e);
+      // Continue anyway - the mic is active and AI will respond to voice
+    }
   }
 
   private handleGeminiMessage(message: any) {
+    console.log('📨 Received message:', JSON.stringify(message).substring(0, 500));
+
     this.zone.run(() => {
       // Handle user transcript (server turn)
       if (message.serverContent?.userTurn?.parts) {
-        // The live API might send full transcripts or partial updates. 
-        // Typically userTurn contains what the server heard so far or the final result.
-        // We'll append/update based on observation.
         const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
         if (transcript) {
-          // For now, we set it directly as it usually reflects "what has been heard so far" for the current turn.
-          // If we want to be safe, we can check if it's a correction or append.
+          console.log('🗣️ User transcript:', transcript);
           this.userTranscript.set(transcript);
         }
       }
 
-      // Also check for toolInput/toolResponse if applicable, but for audio modality:
-      // Real-time user audio transcription often comes in `serverContent.turnComplete` or partials.
-      // However, seeing the logs, sometimes transcript is in `modelTurn` if the model echoes? 
-      // Actually strictly speaking, user audio transcript is sent back in `serverContent.modelTurn` only if we asked for it?
-      // No, usually `serverContent.turnComplete` has the final user query.
-
-      // Let's also look for `interrupted` status which might clear transcript.
-
       // Handle interruption
       if (message.serverContent?.interrupted) {
-        // If model was interrupted, we might want to clear its last unfinished thought or just proceed.
-        // For user transcript, since they just spoke to interrupt, we keep it.
+        console.log('⚠️ Model was interrupted');
       }
 
       if (message.serverContent?.modelTurn?.parts) {
@@ -154,11 +221,9 @@ export class LiveAudioService {
           }
         }
 
-        if (modelText) {
-          // Check if this is a new turn to clear the user transcript from the PREVIOUS response?
-          // Actually, we want the user transcript to stay until the USER speaks again.
-          // But we have logic that appends to history.
+        console.log(`🤖 Model text: "${modelText.substring(0, 100)}..." | Audio chunks: ${audioChunks.length}`);
 
+        if (modelText) {
           this.chatHistory.update(h => {
             const last = h[h.length - 1];
             if (last && last.role === 'model') {
@@ -166,29 +231,39 @@ export class LiveAudioService {
               this.currentQuestionText.set(last.parts[0].text || '');
               return [...h];
             } else {
-              // New model turn started
               this.currentQuestionText.set(modelText);
               return [...h, { role: 'model', parts: [{ text: modelText }] }];
             }
           });
-
-          // If it's a new turn, we generally don't clear the user's last speech immediately
-          // so they can read what they just said.
         }
+
         if (audioChunks.length > 0) {
+          console.log(`🎵 Playing ${audioChunks.length} audio chunks`);
           this.playAudio(audioChunks);
+        } else {
+          console.log('⚠️ No audio chunks in this message');
         }
       }
 
       if (message.serverContent?.turnComplete) {
+        console.log('✅ Turn complete');
         this.isSpeaking.set(false);
-        // If turn complete was user, we might want to finalize their transcript display if needed.
       }
     });
   }
 
   private async playAudio(base64Chunks: string[]) {
+    console.log(`🔊 playAudio called with ${base64Chunks.length} chunks`);
+
+    // Check and resume context if needed
+    if (this.outputAudioContext.state === 'suspended') {
+      console.log('⏸️ Output context was suspended, resuming...');
+      await this.outputAudioContext.resume();
+    }
+
     for (const chunk of base64Chunks) {
+      if (!chunk) continue;
+
       const audioData = Uint8Array.from(atob(chunk), c => c.charCodeAt(0)).buffer;
       // The API returns raw 16-bit PCM at 24kHz. Browser needs it in Float32.
       const pcmData = new Int16Array(audioData);
@@ -197,12 +272,19 @@ export class LiveAudioService {
         float32Data[i] = pcmData[i] / 32768.0; // Convert to [-1, 1] range
       }
 
-      if (this.audioContext.state === 'closed') return;
-      const audioBuffer = this.audioContext.createBuffer(1, float32Data.length, 24000);
+      if (this.outputAudioContext.state === 'closed') {
+        console.log('❌ Output context is closed, cannot play audio');
+        return;
+      }
+
+      const audioBuffer = this.outputAudioContext.createBuffer(1, float32Data.length, 24000);
       audioBuffer.copyToChannel(float32Data, 0);
       this.audioQueue.push(audioBuffer);
+      console.log(`📥 Queued audio buffer, queue size: ${this.audioQueue.length}`);
     }
+
     if (!this.isPlaying) {
+      console.log('▶️ Starting playback queue');
       this.playQueue();
     }
   }
@@ -211,19 +293,24 @@ export class LiveAudioService {
     if (this.audioQueue.length === 0) {
       this.isPlaying = false;
       this.isSpeaking.set(false);
+      console.log('⏹️ Playback queue empty, stopping');
       return;
     }
     this.isPlaying = true;
     this.isSpeaking.set(true);
 
     const buffer = this.audioQueue.shift()!;
-    if (this.audioContext.state === 'closed') return;
+    if (this.outputAudioContext.state === 'closed') {
+      console.log('❌ Output context closed during playback');
+      return;
+    }
 
-    const source = this.audioContext.createBufferSource();
+    const source = this.outputAudioContext.createBufferSource();
     source.buffer = buffer;
-    source.connect(this.audioContext.destination);
+    source.connect(this.outputAudioContext.destination);
     source.onended = () => this.playQueue();
     source.start();
+    console.log(`🔈 Playing buffer, remaining in queue: ${this.audioQueue.length}`);
   }
 
   private createWorklet(): string {
