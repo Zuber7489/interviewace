@@ -26,3 +26,6 @@ dist-ssr
 # Environment files with secrets
 src/environments/environment.ts
 src/environments/environment.prod.ts
+
+# Dotenv
+.env
