@@ -31,7 +31,7 @@ export class GeminiService {
     while (attempt < maxRetries) {
       try {
         const response = await this.ai.models.generateContent({
-          model: 'gemini-2.0-flash', // using a stable model alias if possible or keeping generic
+          model: 'gemini-1.5-flash',
           contents: [...history, finalPrompt],
           config: {
             systemInstruction,
@@ -78,10 +78,15 @@ export class GeminiService {
         attempt++;
         console.warn(`Gemini API attempt ${attempt} failed:`, error);
 
-        // Check for 503 or overload errors
-        if (attempt < maxRetries && (error.status === 503 || error.code === 503 || error.message?.includes('overloaded'))) {
-          // Exponential backoff: 1s, 2s, 4s
-          const delay = Math.pow(2, attempt) * 1000;
+        // Check for 503 (Service Unavailable) or 429 (Too Many Requests)
+        const isOverloaded = error.status === 503 || error.code === 503 || error.message?.includes('overloaded');
+        const isRateLimited = error.status === 429 || error.code === 429 || error.message?.includes('quota');
+
+        if (attempt < maxRetries && (isOverloaded || isRateLimited)) {
+          // Longer backoff: 2s, 4s, 8s
+          const baseDelay = 2000;
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          console.log(`Waiting ${delay}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
