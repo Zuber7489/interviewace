@@ -160,7 +160,7 @@ export class LiveAudioService {
 
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
-      // Handle user transcript (server turn)
+      // 1. Handle User Transcript (server turn)
       if (message.serverContent?.userTurn?.parts) {
         const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
         if (transcript) {
@@ -168,14 +168,27 @@ export class LiveAudioService {
         }
       }
 
-      // Handle interruption
-      if (message.serverContent?.interrupted) {
-        // Model was interrupted
-      }
-
+      // 2. Handle Model Turn (AI Speaking)
       if (message.serverContent?.modelTurn?.parts) {
+        // If the model is starting to speak, we should commit the accumulated USER transcript to history
+        // We do this once per model turn start (checking if the last item in history is NOT the model)
+        const currentHistory = this.chatHistory();
+        const lastMsg = currentHistory[currentHistory.length - 1];
+
+        // If the last message was NOT from the model, it means the user just finished speaking.
+        // We should commit the user's transcript to the history now.
+        if (!lastMsg || lastMsg.role !== 'model') {
+          const finalUserText = this.userTranscript();
+          if (finalUserText) {
+            this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: finalUserText }] }]);
+            // Optional: Clear the live transcript view? 
+            // userTranscript.set(''); // No, let's keep it visible until the next user turn updates it.
+          }
+        }
+
         let modelText = '';
         const audioChunks: string[] = [];
+
         for (const part of message.serverContent.modelTurn.parts) {
           if (part.text) {
             modelText += part.text;
@@ -186,19 +199,21 @@ export class LiveAudioService {
         }
 
         if (modelText) {
-          // Clean up the model text to remove markdown artifacts and internal thoughts
-          // Remove **Bold Headers**
+          // Clean up the model text to remove markdown artifacts like **Bold**
           let cleanText = modelText.replace(/\*\*.*?\*\*/g, '').trim();
 
           this.chatHistory.update(h => {
-            const last = h[h.length - 1];
+            const updatedHistory = [...h];
+            const last = updatedHistory[updatedHistory.length - 1];
+
+            // Append to existing model turn or create new one
             if (last && last.role === 'model') {
               last.parts[0].text += cleanText;
               this.currentQuestionText.set(last.parts[0].text || '');
-              return [...h];
+              return updatedHistory;
             } else {
               this.currentQuestionText.set(cleanText);
-              return [...h, { role: 'model', parts: [{ text: cleanText }] }];
+              return [...updatedHistory, { role: 'model', parts: [{ text: cleanText }] }];
             }
           });
         }
@@ -208,8 +223,10 @@ export class LiveAudioService {
         }
       }
 
+      // 3. Handle Turn Complete (Model finished generation)
       if (message.serverContent?.turnComplete) {
         this.isSpeaking.set(false);
+        // We could commit the full model response here if needed, but we update it incrementally above.
       }
     });
   }
