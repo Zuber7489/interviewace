@@ -164,26 +164,23 @@ export class LiveAudioService {
       if (message.serverContent?.userTurn?.parts) {
         const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
         if (transcript) {
-          this.userTranscript.set(transcript);
+          // Accumulate the transcript (assuming deltas) rather than replacing
+          this.userTranscript.update(prev => prev + transcript);
         }
       }
 
       // 2. Handle Model Turn (AI Speaking)
       if (message.serverContent?.modelTurn?.parts) {
         // If the model is starting to speak, we should commit the accumulated USER transcript to history
-        // We do this once per model turn start (checking if the last item in history is NOT the model)
-        const currentHistory = this.chatHistory();
-        const lastMsg = currentHistory[currentHistory.length - 1];
+        // We do this if we have a pending user transcript.
+        const pendingUserText = this.userTranscript();
 
-        // If the last message was NOT from the model, it means the user just finished speaking.
-        // We should commit the user's transcript to the history now.
-        if (!lastMsg || lastMsg.role !== 'model') {
-          const finalUserText = this.userTranscript();
-          if (finalUserText) {
-            this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: finalUserText }] }]);
-            // Optional: Clear the live transcript view? 
-            // userTranscript.set(''); // No, let's keep it visible until the next user turn updates it.
-          }
+        if (pendingUserText && pendingUserText.trim().length > 0) {
+          // Commit the user's transcript to the history
+          this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: pendingUserText }] }]);
+
+          // Clear the live transcript buffer so we don't commit it again for the same turn
+          this.userTranscript.set('');
         }
 
         let modelText = '';
@@ -226,7 +223,6 @@ export class LiveAudioService {
       // 3. Handle Turn Complete (Model finished generation)
       if (message.serverContent?.turnComplete) {
         this.isSpeaking.set(false);
-        // We could commit the full model response here if needed, but we update it incrementally above.
       }
     });
   }
