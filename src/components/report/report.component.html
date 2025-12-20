@@ -1,74 +1,141 @@
-<div class="glass w-full max-w-5xl mx-auto rounded-2xl p-8 animate-fade-in border border-white/5">
-  @if(session(); as currentSession) {
-  <div class="text-center mb-8">
-    <h1 class="text-4xl font-bold text-white">Interview Report</h1>
-    <p class="text-slate-400 mt-2">Here's a summary of your performance.</p>
+<div
+  class="glass w-full max-w-6xl mx-auto rounded-3xl p-8 md:p-12 animate-fade-in border border-white/5 relative overflow-hidden">
+
+  <!-- Background Decorators -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none">
   </div>
 
+  @if(session(); as currentSession) {
+  <header class="text-center mb-12 relative z-10">
+    <div
+      class="inline-block px-4 py-1.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs font-bold uppercase tracking-widest mb-4">
+      Interview Complete
+    </div>
+    <h1 class="text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-4">Performance Report</h1>
+    <p class="text-slate-400 text-lg font-light max-w-2xl mx-auto">
+      A detailed breakdown of your technical accuracy, communication clarity, and problem-solving skills.
+    </p>
+  </header>
+
   <!-- Summary Section -->
-  <div class="glass-card rounded-xl p-8 mb-8 flex flex-col md:flex-row items-center gap-10 border border-white/10">
-    <div class="relative w-40 h-40">
-      <svg class="w-full h-full" viewBox="0 0 100 100">
+  <div
+    class="glass-card rounded-3xl p-8 md:p-10 mb-12 flex flex-col md:flex-row items-center gap-12 border border-white/10 relative overflow-hidden group">
+    <!-- Glow behind score -->
+    <div
+      class="absolute left-10 top-1/2 transform -translate-y-1/2 w-48 h-48 bg-blue-500/20 blur-[60px] rounded-full group-hover:bg-blue-500/30 transition-colors duration-500">
+    </div>
+
+    <div class="relative w-48 h-48 flex-shrink-0 z-10">
+      <svg class="w-full h-full filter drop-shadow-xl" viewBox="0 0 100 100">
         <!-- Background circle -->
-        <circle class="text-slate-700 stroke-current" stroke-width="8" cx="50" cy="50" r="42" fill="transparent">
+        <circle class="text-slate-800" stroke-width="6" cx="50" cy="50" r="44" fill="transparent" stroke="currentColor">
         </circle>
         <!-- Progress circle -->
-        <circle [class]="scoreRingClass()" class="progress-ring__circle stroke-current" stroke-width="8"
-          stroke-linecap="round" cx="50" cy="50" r="42" fill="transparent"
-          [attr.stroke-dashoffset]="42 * 2 * 3.14 * (1 - (overallScore() / 100))" stroke-dasharray="264"
+        <circle [class]="scoreRingClass()" class="transition-all duration-1000 ease-out" stroke-width="6"
+          stroke-linecap="round" cx="50" cy="50" r="44" fill="transparent"
+          [attr.stroke-dashoffset]="44 * 2 * 3.14 * (1 - (overallScore() / 100))" stroke-dasharray="276.32"
           transform="rotate(-90 50 50)"></circle>
-        <!-- Center text -->
-        <text [class]="scoreColorClass()" class="text-3xl font-bold" x="50" y="50" text-anchor="middle"
-          dominant-baseline="central">{{ overallScore() }}</text>
-        <text class="text-sm font-medium fill-slate-400" x="50" y="65" text-anchor="middle"
-          dominant-baseline="central">/ 100</text>
       </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <span class="text-5xl font-extrabold text-white tracking-tighter">{{ overallScore() }}</span>
+        <span class="text-xs uppercase font-bold text-slate-500 mt-1">Overall Score</span>
+      </div>
     </div>
-    <div class="flex-1 text-center md:text-left">
-      <h2 class="text-2xl font-bold text-white mb-2">Overall Feedback</h2>
-      <p class="text-slate-300 leading-relaxed">{{ currentSession.overallFeedback }}</p>
+
+    <div class="flex-1 text-center md:text-left z-10">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center md:justify-start gap-3">
+        <i class="fas fa-chart-pie text-blue-400"></i> Executive Summary
+      </h2>
+      <p class="text-slate-300 leading-relaxed text-lg font-light border-l-4 border-blue-500/50 pl-6">
+        {{ currentSession.overallFeedback }}
+      </p>
     </div>
   </div>
 
   <!-- Detailed Breakdown -->
-  <div class="space-y-6">
-    <h3 class="text-2xl font-bold text-white text-center md:text-left">Question Breakdown</h3>
-    @for(q of currentSession.evaluatedQuestions; track $index) {
-    <div class="glass-card rounded-xl p-6 border border-white/5 hover:bg-white/5 transition-colors duration-300">
-      <div class="flex justify-between items-start mb-3">
-        <p class="font-semibold text-slate-200 flex-1 pr-4">{{ $index + 1 }}. {{ q.question }}</p>
-        <div class="flex items-center gap-2 text-lg font-bold" [class.text-green-400]="q.score >= 8"
-          [class.text-yellow-400]="q.score >= 5 && q.score < 8" [class.text-red-400]="q.score < 5">
-          <i class="fas fa-star"></i>
-          <span>{{ q.score }} / 10</span>
-        </div>
-      </div>
-      <div class="border-t border-slate-600 pt-4">
-        <h4 class="font-semibold text-blue-400 mb-2">Your Answer:</h4>
-        <p class="text-slate-300 bg-black/20 p-3 rounded-md mb-4 whitespace-pre-wrap">{{ q.answer }}</p>
-        <h4 class="font-semibold text-green-400 mb-2">Feedback:</h4>
-        <p class="text-slate-300 bg-black/20 p-3 rounded-md">{{ q.feedback }}</p>
+  <div class="space-y-8">
+    <div class="flex items-center justify-between">
+      <h3 class="text-2xl font-bold text-white tracking-tight">Question Analysis</h3>
+      <div class="text-sm text-slate-400">
+        <span class="font-bold text-white">{{ currentSession.evaluatedQuestions.length }}</span> Questions Evaluated
       </div>
     </div>
-    }
+
+    <div class="space-y-6">
+      @for(q of currentSession.evaluatedQuestions; track $index) {
+      <div
+        class="glass-card rounded-2xl p-8 border border-white/5 hover:border-white/10 hover:bg-white/[0.02] transition-all duration-300 group hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/20">
+        <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+          <div class="flex-1">
+            <span class="inline-block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Question {{ $index
+              + 1 }}</span>
+            <p class="font-semibold text-xl text-slate-100">{{ q.question }}</p>
+          </div>
+
+          <div class="flex items-center gap-3 bg-slate-950/30 px-4 py-2 rounded-xl border border-white/5">
+            <div class="flex gap-1">
+              @for(star of [1,2,3,4,5]; track star) {
+              <i class="fas fa-star text-xs" [class.text-yellow-500]="(q.score/2) >= star"
+                [class.text-slate-700]="(q.score/2) < star"></i>
+              }
+            </div>
+            <span class="font-bold text-white text-lg ml-2">{{ q.score }}</span>
+            <span class="text-xs text-slate-500 uppercase font-bold">/ 10</span>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 border-t border-white/5 pt-6 mt-2">
+          <div>
+            <h4 class="font-bold text-sm text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <i class="fas fa-microphone-alt"></i> Your Response
+            </h4>
+            <div class="bg-black/20 rounded-xl p-4 text-slate-300 text-sm leading-relaxed border border-white/5 h-full">
+              <p class="whitespace-pre-wrap font-light opacity-90 italic">"{{ q.answer }}"</p>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-sm text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <i class="fas fa-check-circle"></i> AI Feedback
+            </h4>
+            <div
+              class="bg-green-500/5 rounded-xl p-4 text-slate-300 text-sm leading-relaxed border border-green-500/10 h-full">
+              <p>{{ q.feedback }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
     @if(currentSession.evaluatedQuestions.length === 0) {
-    <div class="text-center bg-slate-700/50 rounded-lg p-8">
-      <p class="text-slate-400">No questions were answered during the session.</p>
+    <div class="text-center bg-slate-800/30 border border-dashed border-slate-700/50 rounded-3xl p-16">
+      <i class="fas fa-inbox text-4xl text-slate-600 mb-4"></i>
+      <p class="text-slate-400 text-lg">No questions were recorded during this session.</p>
     </div>
     }
   </div>
 
-  <div class="mt-10 text-center">
+  <div class="mt-16 text-center">
     <button (click)="startNew()"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-300">
-      <i class="fas fa-redo-alt mr-2"></i> Start New Interview
+      class="group bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 bg-size-200 hover:bg-pos-100 text-white font-bold py-4 px-10 rounded-full transition-all duration-500 shadow-xl shadow-blue-900/40 hover:shadow-blue-600/30 hover:-translate-y-1">
+      <span class="flex items-center gap-3">
+        <i class="fas fa-redo-alt group-hover:rotate-180 transition-transform duration-500"></i>
+        <span>Start New Interview</span>
+      </span>
     </button>
   </div>
   } @else {
-  <div class="text-center">
-    <p class="text-slate-400">No report available. Please start an interview first.</p>
+  <div class="text-center py-20">
+    <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+      <i class="fas fa-ghost text-4xl text-slate-600"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-white mb-2">No Report Found</h2>
+    <p class="text-slate-400 mb-8 max-w-md mx-auto">It looks like you haven't completed an interview yet. Start one now
+      to get your personalized report.</p>
     <button (click)="startNew()"
-      class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300">
+      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg shadow-blue-500/20">
       Start Interview
     </button>
   </div>
