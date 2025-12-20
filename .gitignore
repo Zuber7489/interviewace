@@ -10,7 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-*.local
+
 
 # Editor directories and files
 .vscode/*
@@ -29,3 +29,4 @@ src/environments/environment.prod.ts
 
 # Dotenv
 .env
+config.env

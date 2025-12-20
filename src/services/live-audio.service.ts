@@ -2,7 +2,6 @@
 import { Injectable, NgZone, signal, WritableSignal } from '@angular/core';
 import { GoogleGenAI, Modality, Content } from '@google/genai';
 import { InterviewConfig } from '../models';
-import { environment } from '../environments/environment';
 
 // Base64 encoding utility
 function toBase64(buffer: ArrayBuffer): string {
@@ -52,17 +51,19 @@ export class LiveAudioService {
       const data = await response.json();
       return data.token;
     } catch (error) {
-      // Fallback to direct API key (for development/testing)
-      return environment.API_KEY;
+      console.error('Failed to get token from backend:', error);
+      throw new Error('Authentication failed: Could not retrieve secure token from backend.');
     }
   }
 
   async startSession(config: InterviewConfig) {
     if (this.isConnected()) return;
 
-    // Get ephemeral token or fall back to API key
     const token = await this.getEphemeralToken();
-    this.ai = new GoogleGenAI({ apiKey: token });
+    this.ai = new GoogleGenAI({
+      apiKey: token,
+      httpOptions: { apiVersion: 'v1alpha' }
+    });
 
     // Create separate audio contexts for input and output
     this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
