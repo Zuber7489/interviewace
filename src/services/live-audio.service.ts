@@ -186,15 +186,19 @@ export class LiveAudioService {
         }
 
         if (modelText) {
+          // Clean up the model text to remove markdown artifacts and internal thoughts
+          // Remove **Bold Headers**
+          let cleanText = modelText.replace(/\*\*.*?\*\*/g, '').trim();
+
           this.chatHistory.update(h => {
             const last = h[h.length - 1];
             if (last && last.role === 'model') {
-              last.parts[0].text += modelText;
+              last.parts[0].text += cleanText;
               this.currentQuestionText.set(last.parts[0].text || '');
               return [...h];
             } else {
-              this.currentQuestionText.set(modelText);
-              return [...h, { role: 'model', parts: [{ text: modelText }] }];
+              this.currentQuestionText.set(cleanText);
+              return [...h, { role: 'model', parts: [{ text: cleanText }] }];
             }
           });
         }
@@ -313,6 +317,6 @@ Follow these rules strictly:
 6. Adapt the difficulty based on the candidate's answers and experience level.
 7. Keep the conversation flowing naturally. Do not end the interview yourself.
 8. The interview MUST be conducted in ${config.language}. If the language is 'Hinglish', use a mix of Hindi and English.
-9. Do NOT output internal thought processes, headers like **Assessing Input**, or meta-commentary. Speak directly to the candidate as a human would.`;
+9. CRITICAL: Do NOT output any markdown formatting (like **bold**). Do NOT output internal thought processes or headers (e.g. "Assess Input", "Formulating Response"). Your text output must MATCH EXACTLY what you are speaking. Speak directly to the candidate as a human interviewer.`;
   }
 }
