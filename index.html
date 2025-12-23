@@ -8,12 +8,47 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
+    :root {
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-heading: 'Space Grotesk', sans-serif;
+    }
+
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: var(--font-body);
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
       min-height: 100vh;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: var(--font-heading);
+      letter-spacing: -0.02em;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.5);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.7);
     }
 
     @keyframes gradientBG {
@@ -30,21 +65,95 @@
       }
     }
 
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse-glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+      }
+
+      50% {
+        box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+      }
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+
     .glass {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
 
     .glass-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(5px);
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
     }
 
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    .glass-card:hover {
+      background: rgba(30, 41, 59, 0.6);
+      border-color: rgba(59, 130, 246, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.3);
+    }
+
+    .text-gradient {
+      background: linear-gradient(to right, #60a5fa, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .input-premium {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .input-premium:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      outline: none;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
   </style>
   <script type="importmap">
 {
@@ -70,6 +179,6 @@
 
 <body class="bg-slate-900 text-slate-100">
   <app-root></app-root>
-<link rel="modulepreload" href="chunk-JBX3JDOW.js"><link rel="modulepreload" href="chunk-HTF4ZKH7.js"><link rel="modulepreload" href="chunk-HJS4A3WU.js"><link rel="modulepreload" href="chunk-2NFLSA4Y.js"><script src="main-WMTSFRFZ.js" type="module"></script></body>
+<link rel="modulepreload" href="chunk-MW2DTLW7.js"><link rel="modulepreload" href="chunk-FCDYOZVY.js"><link rel="modulepreload" href="chunk-3JUY4M7M.js"><link rel="modulepreload" href="chunk-2NFLSA4Y.js"><script src="main-XD3ICCRD.js" type="module"></script></body>
 
 </html>
