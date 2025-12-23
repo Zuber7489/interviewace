@@ -56,8 +56,16 @@ export class LiveAudioService {
     }
   }
 
+  private currentSessionId = 0;
+
   async startSession(config: InterviewConfig) {
-    if (this.isConnected()) return;
+    // Force cleanup of any lingering state first
+    if (this.isConnected()) {
+      await this.stopSession();
+    }
+
+    this.currentSessionId++;
+    const sessionId = this.currentSessionId;
 
     const token = await this.getEphemeralToken();
     this.ai = new GoogleGenAI({
@@ -69,50 +77,73 @@ export class LiveAudioService {
     this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
     this.outputAudioContext = new AudioContext({ sampleRate: 24000 });
 
-    await this.setupMicrophone();
-    await this.connectToGemini(config);
+    await this.setupMicrophone(sessionId);
+    await this.connectToGemini(config, sessionId);
 
     this.isMicOn.set(true);
   }
 
   async stopSession() {
-    if (!this.isConnected()) return;
-
-    this.session?.close();
-    this.microphoneStream?.getTracks().forEach(track => track.stop());
-    this.processorNode?.disconnect();
-
-    if (this.inputAudioContext?.state !== 'closed') {
-      await this.inputAudioContext.close();
-    }
-    if (this.outputAudioContext?.state !== 'closed') {
-      await this.outputAudioContext.close();
-    }
-
+    // 1. Mark as disconnected immediately
     this.isConnected.set(false);
     this.isMicOn.set(false);
     this.isSpeaking.set(false);
-    this.audioQueue = [];
     this.isPlaying = false;
+    this.audioQueue = [];
+
+    // 2. Capture and detach resources synchronously to prevent race conditions
+    const sessionToClose = this.session;
+    const inputCtx = this.inputAudioContext;
+    const outputCtx = this.outputAudioContext;
+    const stream = this.microphoneStream;
+    const processor = this.processorNode;
+
+    // Detach references so new session doesn't get clobbered
+    this.session = undefined;
+    // We don't set contexts to undefined as TS types expect them, 
+    // but startSession will overwrite them safely now that we have local refs.
+
+    // 3. Perform cleanup
+    try {
+      sessionToClose?.close();
+    } catch (e) { console.warn('Error closing session:', e); }
+
+    try {
+      stream?.getTracks().forEach(track => track.stop());
+    } catch (e) { console.warn('Error stopping tracks:', e); }
+
+    try {
+      processor?.disconnect();
+    } catch (e) { console.warn('Error disconnecting processor:', e); }
+
+    if (inputCtx && inputCtx.state !== 'closed') {
+      try { await inputCtx.close(); } catch (e) { console.warn('Error closing input ctx:', e); }
+    }
+    if (outputCtx && outputCtx.state !== 'closed') {
+      try { await outputCtx.close(); } catch (e) { console.warn('Error closing output ctx:', e); }
+    }
   }
 
-  private async setupMicrophone() {
+  private async setupMicrophone(sessionId: number) {
     this.microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     const workletUrl = this.createWorklet();
     await this.inputAudioContext.audioWorklet.addModule(workletUrl);
     URL.revokeObjectURL(workletUrl);
 
+    if (this.currentSessionId !== sessionId) return; // Abort if session changed
+
     const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
     this.processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
     microphoneSource.connect(this.processorNode);
 
     this.processorNode.port.onmessage = (event) => {
-      if (!this.isConnected() || !this.session) return;
+      // Robust check: only process if connected, session exists, AND IDs match
+      if (!this.isConnected() || !this.session || this.currentSessionId !== sessionId) return;
+
       const pcmData = event.data;
       const base64Data = toBase64(pcmData.buffer);
       try {
-        // Send audio using the correct Live API format
         this.session.sendRealtimeInput({
           audio: {
             mimeType: "audio/pcm;rate=16000",
@@ -125,7 +156,7 @@ export class LiveAudioService {
     };
   }
 
-  private async connectToGemini(interviewConfig: InterviewConfig) {
+  private async connectToGemini(interviewConfig: InterviewConfig, sessionId: number) {
     const config = {
       responseModalities: [Modality.AUDIO],
       systemInstruction: this.createSystemInstruction(interviewConfig),
@@ -136,26 +167,40 @@ export class LiveAudioService {
       config: config,
       callbacks: {
         onopen: () => {
-          this.zone.run(() => this.isConnected.set(true));
+          if (this.currentSessionId === sessionId) {
+            this.zone.run(() => this.isConnected.set(true));
+          }
         },
-        onmessage: (message: any) => this.handleGeminiMessage(message),
+        onmessage: (message: any) => {
+          if (this.currentSessionId === sessionId) {
+            this.handleGeminiMessage(message);
+          }
+        },
         onerror: (e: any) => {
           console.error('WebSocket error:', e);
         },
         onclose: (e: any) => {
-          this.zone.run(() => this.stopSession());
+          // Only stop if this specific session is closed and it was expected to be active
+          if (this.currentSessionId === sessionId) {
+            this.zone.run(() => this.stopSession());
+          }
         },
       },
     });
 
-    // Trigger the model to start the interview by sending initial context
+    if (this.currentSessionId !== sessionId) {
+      // If session changed while connecting, close this orphan immediately
+      this.session.close();
+      return;
+    }
+
     try {
       this.session.sendClientContent({
         turns: "Hello, I'm ready for my interview. Please start by introducing yourself and asking me your first question.",
         turnComplete: true
       });
     } catch (e) {
-      // Continue anyway - the mic is active and AI will respond to voice
+      // Continue anyway
     }
   }
 
@@ -165,22 +210,16 @@ export class LiveAudioService {
       if (message.serverContent?.userTurn?.parts) {
         const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
         if (transcript) {
-          // Accumulate the transcript (assuming deltas) rather than replacing
           this.userTranscript.update(prev => prev + transcript);
         }
       }
 
       // 2. Handle Model Turn (AI Speaking)
       if (message.serverContent?.modelTurn?.parts) {
-        // If the model is starting to speak, we should commit the accumulated USER transcript to history
-        // We do this if we have a pending user transcript.
         const pendingUserText = this.userTranscript();
 
         if (pendingUserText && pendingUserText.trim().length > 0) {
-          // Commit the user's transcript to the history
           this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: pendingUserText }] }]);
-
-          // Clear the live transcript buffer so we don't commit it again for the same turn
           this.userTranscript.set('');
         }
 
@@ -197,14 +236,12 @@ export class LiveAudioService {
         }
 
         if (modelText) {
-          // Clean up the model text to remove markdown artifacts like **Bold**
           let cleanText = modelText.replace(/\*\*.*?\*\*/g, '').trim();
 
           this.chatHistory.update(h => {
             const updatedHistory = [...h];
             const last = updatedHistory[updatedHistory.length - 1];
 
-            // Append to existing model turn or create new one
             if (last && last.role === 'model') {
               last.parts[0].text += cleanText;
               this.currentQuestionText.set(last.parts[0].text || '');
