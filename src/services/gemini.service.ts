@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GoogleGenAI, Type, Content } from '@google/genai';
 import { EvaluatedQuestion } from '../models';
+import { environment } from '../environments/environment';
 
 
 @Injectable({
@@ -16,7 +17,7 @@ export class GeminiService {
   async generateFinalFeedback(history: Content[]): Promise<{ overallFeedback: string; overallScore: number; evaluatedQuestions: Omit<EvaluatedQuestion, 'type'>[] }> {
     try {
       // Fetch ephemeral token from backend
-      const tokenRes = await fetch('http://localhost:3001/api/token');
+      const tokenRes = await fetch(`${environment.backendUrl}/api/token`);
       if (!tokenRes.ok) throw new Error('Failed to fetch auth token');
       const tokenData = await tokenRes.json();
 
