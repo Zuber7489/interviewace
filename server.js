@@ -105,7 +105,7 @@ app.post('/api/report', async (req, res) => {
             return res.status(400).json({ error: 'Invalid history data' });
         }
 
-        const systemInstruction = "You are an interview result summarizer. Based on the provided interview chat history, your task is to provide comprehensive overall feedback for the candidate, calculate a final score out of 100, and provide a detailed breakdown for each question. For each question, provide the question text, the candidate's answer, specific feedback on that answer, and a score from 0 to 10. Your response must be a single JSON object.";
+        const systemInstruction = "You are an interview result summarizer. Based on the provided interview chat history, your task is to evaluate the candidate. CRITICAL: If the candidate did not answer any questions, provided mostly empty responses, or if the conversation history is dominated solely by the interviewer, you MUST give an overall score of 0. In this case, the feedback should state that the candidate was silent or non-responsive. Do not hallucinate constant answers. Only grade based on the actual 'user' role responses in the history. Your response must be a single JSON object.";
 
         const finalPrompt = {
             role: 'user',
