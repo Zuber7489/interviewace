@@ -40,13 +40,17 @@ export class LiveAudioService {
   isSpeaking = signal(false);
   currentQuestionText: WritableSignal<string> = signal('');
   userTranscript: WritableSignal<string> = signal('');
+  interimTranscript: WritableSignal<string> = signal('');
   chatHistory: WritableSignal<Content[]> = signal([]);
 
   getChatHistory(): Content[] {
     const history = this.chatHistory();
     const pending = this.userTranscript();
-    if (pending && pending.trim().length > 0) {
-      return [...history, { role: 'user', parts: [{ text: pending.trim() }] }];
+    const interim = this.interimTranscript();
+    const total = (pending + ' ' + interim).trim();
+
+    if (total.length > 0) {
+      return [...history, { role: 'user', parts: [{ text: total }] }];
     }
     return history;
   }
@@ -153,28 +157,30 @@ export class LiveAudioService {
       this.speechRecognition.lang = 'en-US'; // Default
 
       this.speechRecognition.onresult = (event: any) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
+        this.zone.run(() => {
+          let finalTranscript = '';
+          let interimTranscript = '';
 
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
           }
-        }
 
-        // We care about finalized results to add to history
-        // But for now, let's dump everything into the userTranscript signal
-        // The Accumulation logic in handleGeminiMessage (on model turn) will grab this.
-        if (finalTranscript || interimTranscript) {
-          // We just overwrite the signal with the latest "current" thought
-          // The logic in handleMessage will "commit" it when AI starts speaking.
-          // Actually, accumulating might be safer:
           if (finalTranscript) {
+            console.log('🎤 Final Transcript:', finalTranscript);
             this.userTranscript.update(prev => prev + ' ' + finalTranscript);
+            // Clear interim if we have final, roughly
+            this.interimTranscript.set('');
           }
-        }
+
+          if (interimTranscript) {
+            // Update interim signal
+            this.interimTranscript.set(interimTranscript);
+          }
+        });
       };
       try {
         this.speechRecognition.start();
@@ -257,26 +263,27 @@ export class LiveAudioService {
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
       // 1. Handle User Transcript
-      // Now handled via parallel SpeechRecognition updating the userTranscript signal.
+      // Now handled via parallel SpeechRecognition.
 
       // 2. Handle Model Turn (AI Speaking)
-      // When the AI starts sending content, it means it has processed your turn.
-      // This is the PERFECT time to save what you said into the history.
       if (message.serverContent?.modelTurn?.parts) {
 
         // --- SAVE USER TURN ---
-        const pendingUserText = this.userTranscript();
-        // Only save if we actually have text in the buffer
-        if (pendingUserText && pendingUserText.trim().length > 0) {
-          console.log('💾 Saving User Answer to History:', pendingUserText);
+        const pending = this.userTranscript();
+        const interim = this.interimTranscript();
+        const totalUserText = (pending + ' ' + interim).trim();
+
+        if (totalUserText.length > 0) {
+          console.log('💾 Saving User Answer (Final + Interim):', totalUserText);
 
           this.chatHistory.update(h => [
             ...h,
-            { role: 'user', parts: [{ text: pendingUserText.trim() }] }
+            { role: 'user', parts: [{ text: totalUserText }] }
           ]);
 
-          // CRITICAL: Clear the buffer so we don't save it again next time
+          // Clear buffers
           this.userTranscript.set('');
+          this.interimTranscript.set('');
         }
 
         // --- HANDLE AI SPEECH ---
