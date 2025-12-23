@@ -43,8 +43,15 @@ export class InterviewComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.startTimer();
     const currentSession = this.session();
+
+    // Safety check: specific to preventing "Back" button re-entry
+    if (currentSession?.endTime) {
+      this.router.navigate(['/report'], { replaceUrl: true });
+      return;
+    }
+
+    this.startTimer();
     if (currentSession) {
       await this.liveAudioService.startSession(currentSession.config);
       this.isLoading.set(false);
@@ -110,7 +117,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
       this.stateService.finishInterview();
     } finally {
       this.isFinishing.set(false);
-      this.router.navigate(['/report']);
+      this.router.navigate(['/report'], { replaceUrl: true });
     }
   }
 }
