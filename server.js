@@ -101,9 +101,12 @@ app.post('/api/report', async (req, res) => {
         console.log('Generating interview report...');
         const { history } = req.body;
 
-        if (!history || !Array.isArray(history)) {
-            return res.status(400).json({ error: 'Invalid history data' });
+        if (!history || !Array.isArray(history) || history.length === 0) {
+            console.error('Invalid or empty history received:', history);
+            return res.status(400).json({ error: 'Invalid or empty interview history' });
         }
+
+        console.log(`Processing report for ${history.length} turns...`);
 
         const systemInstruction = "You are an interview result summarizer. Your task is to extract ACTUAL answers from the provided history and grade them. STRICT RULES: 1. You must ONLY use text explicitly present in the 'user' role messages within the history as the candidate's answer. 2. If the user did not provide an answer to a question, or if the history shows no response, set the 'answer' field to 'No answer provided' and the score to 0. 3. DO NOT invent, hallucinate, or infer answers that represent what a candidate 'might' have said. 4. If the candidate was silent, non-responsive, or said very little, the Overall Score MUST be 0. 5. Do not generate positive feedback for missing answers. Your response must be a single JSON object.";
 

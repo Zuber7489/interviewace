@@ -83,7 +83,9 @@ export class InterviewComponent implements OnInit, OnDestroy {
       clearInterval(this.timerId);
 
       // Stop the live session and get the history
-      const history = this.liveAudioService.chatHistory();
+      // Use the getter to ensure we grab the latest state
+      const history = this.liveAudioService.getChatHistory();
+      console.log('Final Interview History:', history);
       await this.liveAudioService.stopSession();
 
       // Generate final report

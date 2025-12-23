@@ -42,6 +42,15 @@ export class LiveAudioService {
   userTranscript: WritableSignal<string> = signal('');
   chatHistory: WritableSignal<Content[]> = signal([]);
 
+  getChatHistory(): Content[] {
+    const history = this.chatHistory();
+    const pending = this.userTranscript();
+    if (pending && pending.trim().length > 0) {
+      return [...history, { role: 'user', parts: [{ text: pending.trim() }] }];
+    }
+    return history;
+  }
+
   constructor(private zone: NgZone) { }
 
   private async getEphemeralToken(): Promise<string> {
@@ -124,23 +133,66 @@ export class LiveAudioService {
     if (outputCtx && outputCtx.state !== 'closed') {
       try { await outputCtx.close(); } catch (e) { console.warn('Error closing output ctx:', e); }
     }
+
+    try {
+      this.speechRecognition?.stop();
+    } catch (e) { }
   }
+
+  private speechRecognition: any;
 
   private async setupMicrophone(sessionId: number) {
     this.microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    // --- PARALLEL SPEECH RECOGNITION FOR TRANSCRIPTS ---
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      this.speechRecognition = new SpeechRecognition();
+      this.speechRecognition.continuous = true;
+      this.speechRecognition.interimResults = true;
+      this.speechRecognition.lang = 'en-US'; // Default
+
+      this.speechRecognition.onresult = (event: any) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+
+        // We care about finalized results to add to history
+        // But for now, let's dump everything into the userTranscript signal
+        // The Accumulation logic in handleGeminiMessage (on model turn) will grab this.
+        if (finalTranscript || interimTranscript) {
+          // We just overwrite the signal with the latest "current" thought
+          // The logic in handleMessage will "commit" it when AI starts speaking.
+          // Actually, accumulating might be safer:
+          if (finalTranscript) {
+            this.userTranscript.update(prev => prev + ' ' + finalTranscript);
+          }
+        }
+      };
+      try {
+        this.speechRecognition.start();
+      } catch (e) { console.warn('Speech recognition start failed', e); }
+    }
+
 
     const workletUrl = this.createWorklet();
     await this.inputAudioContext.audioWorklet.addModule(workletUrl);
     URL.revokeObjectURL(workletUrl);
 
-    if (this.currentSessionId !== sessionId) return; // Abort if session changed
+    if (this.currentSessionId !== sessionId) return;
 
     const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
     this.processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
     microphoneSource.connect(this.processorNode);
 
     this.processorNode.port.onmessage = (event) => {
-      // Robust check: only process if connected, session exists, AND IDs match
       if (!this.isConnected() || !this.session || this.currentSessionId !== sessionId) return;
 
       const pcmData = event.data;
@@ -153,7 +205,6 @@ export class LiveAudioService {
           }
         });
       } catch (e) {
-        // Silently ignore errors during connection closing
       }
     };
   }
@@ -182,7 +233,6 @@ export class LiveAudioService {
           console.error('WebSocket error:', e);
         },
         onclose: (e: any) => {
-          // Only stop if this specific session is closed and it was expected to be active
           if (this.currentSessionId === sessionId) {
             this.zone.run(() => this.stopSession());
           }
@@ -191,7 +241,6 @@ export class LiveAudioService {
     });
 
     if (this.currentSessionId !== sessionId) {
-      // If session changed while connecting, close this orphan immediately
       this.session.close();
       return;
     }
@@ -202,29 +251,35 @@ export class LiveAudioService {
         turnComplete: true
       });
     } catch (e) {
-      // Continue anyway
     }
   }
 
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
-      // 1. Handle User Transcript (server turn)
-      if (message.serverContent?.userTurn?.parts) {
-        const transcript = message.serverContent.userTurn.parts.map((p: any) => p.text).join('');
-        if (transcript) {
-          this.userTranscript.update(prev => prev + transcript);
-        }
-      }
+      // 1. Handle User Transcript
+      // Now handled via parallel SpeechRecognition updating the userTranscript signal.
 
       // 2. Handle Model Turn (AI Speaking)
+      // When the AI starts sending content, it means it has processed your turn.
+      // This is the PERFECT time to save what you said into the history.
       if (message.serverContent?.modelTurn?.parts) {
-        const pendingUserText = this.userTranscript();
 
+        // --- SAVE USER TURN ---
+        const pendingUserText = this.userTranscript();
+        // Only save if we actually have text in the buffer
         if (pendingUserText && pendingUserText.trim().length > 0) {
-          this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: pendingUserText }] }]);
+          console.log('💾 Saving User Answer to History:', pendingUserText);
+
+          this.chatHistory.update(h => [
+            ...h,
+            { role: 'user', parts: [{ text: pendingUserText.trim() }] }
+          ]);
+
+          // CRITICAL: Clear the buffer so we don't save it again next time
           this.userTranscript.set('');
         }
 
+        // --- HANDLE AI SPEECH ---
         let modelText = '';
         const audioChunks: string[] = [];
 
@@ -239,20 +294,29 @@ export class LiveAudioService {
 
         if (modelText) {
           let cleanText = modelText.replace(/\*\*.*?\*\*/g, '').trim();
+          // Filter leaked thought updates
+          if (cleanText.startsWith('I process') || cleanText.startsWith('Assess Input')) {
+            cleanText = '';
+          }
+          if (cleanText) {
+            this.chatHistory.update(h => {
+              const params = [...h];
+              const lastMsg = params[params.length - 1];
+              // Append to existing model message if it exists, otherwise create new
+              if (lastMsg && lastMsg.role === 'model') {
+                // IMMUTABLE UPDATE
+                const newParts = [...lastMsg.parts];
+                newParts[0] = { ...newParts[0], text: (newParts[0].text || '') + cleanText };
+                params[params.length - 1] = { ...lastMsg, parts: newParts };
 
-          this.chatHistory.update(h => {
-            const updatedHistory = [...h];
-            const last = updatedHistory[updatedHistory.length - 1];
-
-            if (last && last.role === 'model') {
-              last.parts[0].text += cleanText;
-              this.currentQuestionText.set(last.parts[0].text || '');
-              return updatedHistory;
-            } else {
-              this.currentQuestionText.set(cleanText);
-              return [...updatedHistory, { role: 'model', parts: [{ text: cleanText }] }];
-            }
-          });
+                this.currentQuestionText.set(newParts[0].text);
+                return params;
+              } else {
+                this.currentQuestionText.set(cleanText);
+                return [...params, { role: 'model', parts: [{ text: cleanText }] }];
+              }
+            });
+          }
         }
 
         if (audioChunks.length > 0) {
@@ -260,9 +324,17 @@ export class LiveAudioService {
         }
       }
 
-      // 3. Handle Turn Complete (Model finished generation)
+      // 3. Handle Turn Complete event (End of AI response)
       if (message.serverContent?.turnComplete) {
         this.isSpeaking.set(false);
+
+        // Safety check: Did we miss saving the user's answer? (e.g. if AI answered without text parts first)
+        const leftoverUserText = this.userTranscript();
+        if (leftoverUserText && leftoverUserText.trim().length > 0) {
+          console.log('⚠️ Saving Leftover User Answer (Turn Complete):', leftoverUserText);
+          this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: leftoverUserText.trim() }] }]);
+          this.userTranscript.set('');
+        }
       }
     });
   }
@@ -370,6 +442,6 @@ Follow these rules strictly:
 6. Adapt the difficulty based on the candidate's answers and experience level.
 7. Keep the conversation flowing naturally. Do not end the interview yourself.
 8. The interview MUST be conducted in ${config.language}. If the language is 'Hinglish', use a mix of Hindi and English.
-9. CRITICAL: Do NOT output any markdown formatting (like **bold**). Do NOT output internal thought processes or headers (e.g. "Assess Input", "Formulating Response"). Your text output must MATCH EXACTLY what you are speaking. Speak directly to the candidate as a human interviewer.`;
+9. CRITICAL: Do NOT output any markdown formatting (like **bold**). Do NOT output internal thought processes, planning text, or headers (e.g. "Assess Input", "Formulating Response", "I am now"). Your text output must MATCH EXACTLY what you are speaking. Speak directly to the candidate as a human interviewer. If you think about what to say, do NOT write it down. Only write what you speak.`;
   }
 }
