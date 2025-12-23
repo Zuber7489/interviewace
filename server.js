@@ -150,7 +150,7 @@ app.post('/api/report', async (req, res) => {
         });
 
         console.log('Report generated successfully');
-        const jsonResponse = JSON.parse(response.text() || '{}');
+        const jsonResponse = JSON.parse(response.text || '{}');
         res.json(jsonResponse);
 
     } catch (error) {
