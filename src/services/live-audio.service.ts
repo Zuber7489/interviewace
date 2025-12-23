@@ -14,8 +14,10 @@ function toBase64(buffer: ArrayBuffer): string {
   return window.btoa(binary);
 }
 
+import { environment } from '../environments/environment';
+
 // Backend URL for token generation
-const TOKEN_SERVER_URL = 'http://localhost:3001/api/token';
+// const TOKEN_SERVER_URL = 'http://localhost:3001/api/token';
 
 @Injectable({
   providedIn: 'root',
@@ -44,7 +46,7 @@ export class LiveAudioService {
 
   private async getEphemeralToken(): Promise<string> {
     try {
-      const response = await fetch(TOKEN_SERVER_URL);
+      const response = await fetch(`${environment.backendUrl}/api/token`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
