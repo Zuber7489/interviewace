@@ -95,6 +95,73 @@ app.get('/api/token', async (req, res) => {
     }
 });
 
+// Endpoint to generate interview report
+app.post('/api/report', async (req, res) => {
+    try {
+        console.log('Generating interview report...');
+        const { history } = req.body;
+
+        if (!history || !Array.isArray(history)) {
+            return res.status(400).json({ error: 'Invalid history data' });
+        }
+
+        const systemInstruction = "You are an interview result summarizer. Based on the provided interview chat history, your task is to provide comprehensive overall feedback for the candidate, calculate a final score out of 100, and provide a detailed breakdown for each question. For each question, provide the question text, the candidate's answer, specific feedback on that answer, and a score from 0 to 10. Your response must be a single JSON object.";
+
+        const finalPrompt = {
+            role: 'user',
+            parts: [{ text: 'The interview is now over. Please analyze our entire conversation and provide the final summary, overall score, and per-question breakdown.' }]
+        };
+
+        const response = await client.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [...history, finalPrompt],
+            config: {
+                systemInstruction,
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: 'OBJECT',
+                    properties: {
+                        overallFeedback: {
+                            type: 'STRING',
+                            description: "A comprehensive summary of the candidate's performance, highlighting strengths and areas for improvement."
+                        },
+                        overallScore: {
+                            type: 'NUMBER',
+                            description: 'A final score for the interview, out of 100.'
+                        },
+                        evaluatedQuestions: {
+                            type: 'ARRAY',
+                            description: "A detailed breakdown of each question in the interview.",
+                            items: {
+                                type: 'OBJECT',
+                                properties: {
+                                    question: { type: 'STRING', description: "The question asked by the interviewer." },
+                                    answer: { type: 'STRING', description: "The candidate's transcribed answer." },
+                                    feedback: { type: 'STRING', description: "Specific feedback on the candidate's answer." },
+                                    score: { type: 'NUMBER', description: "A score for the answer from 0 to 10." }
+                                },
+                                required: ["question", "answer", "feedback", "score"]
+                            }
+                        }
+                    },
+                    required: ['overallFeedback', 'overallScore', 'evaluatedQuestions'],
+                },
+            },
+        });
+
+        console.log('Report generated successfully');
+        const jsonResponse = JSON.parse(response.text() || '{}');
+        res.json(jsonResponse);
+
+    } catch (error) {
+        console.error('Error generating report:', error);
+        res.status(500).json({
+            error: 'Failed to generate report',
+            details: error.message
+        });
+    }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Token server running on http://localhost:${PORT}`);
