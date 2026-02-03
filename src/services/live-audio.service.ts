@@ -43,6 +43,9 @@ export class LiveAudioService {
   interimTranscript: WritableSignal<string> = signal('');
   chatHistory: WritableSignal<Content[]> = signal([]);
 
+  private readonly CHAT_HISTORY_KEY = 'interviewace_chat_history';
+  private sessionId: string = '';
+
   getChatHistory(): Content[] {
     const history = this.chatHistory();
     const pending = this.userTranscript();
@@ -53,6 +56,32 @@ export class LiveAudioService {
       return [...history, { role: 'user', parts: [{ text: total }] }];
     }
     return history;
+  }
+
+  private saveChatHistoryToStorage(history: Content[]) {
+    try {
+      localStorage.setItem(this.CHAT_HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.error('Failed to save chat history to localStorage:', e);
+    }
+  }
+
+  private loadChatHistoryFromStorage(): Content[] {
+    try {
+      const data = localStorage.getItem(this.CHAT_HISTORY_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('Failed to load chat history from localStorage:', e);
+      return [];
+    }
+  }
+
+  clearChatHistoryStorage() {
+    try {
+      localStorage.removeItem(this.CHAT_HISTORY_KEY);
+    } catch (e) {
+      console.error('Failed to clear chat history from localStorage:', e);
+    }
   }
 
   constructor(private zone: NgZone) { }
@@ -81,6 +110,16 @@ export class LiveAudioService {
 
     this.currentSessionId++;
     const sessionId = this.currentSessionId;
+    this.sessionId = `session_${Date.now()}`;
+
+    // Load any existing chat history from storage
+    const existingHistory = this.loadChatHistoryFromStorage();
+    if (existingHistory.length > 0) {
+      console.log('📂 Loaded existing chat history from storage:', existingHistory.length, 'messages');
+      this.chatHistory.set(existingHistory);
+    } else {
+      this.chatHistory.set([]);
+    }
 
     const token = await this.getEphemeralToken();
     this.ai = new GoogleGenAI({
@@ -141,6 +180,9 @@ export class LiveAudioService {
     try {
       this.speechRecognition?.stop();
     } catch (e) { }
+
+    // Clear chat history storage when session stops
+    this.clearChatHistoryStorage();
   }
 
   private speechRecognition: any;
@@ -179,10 +221,9 @@ export class LiveAudioService {
             const totalUserText = (this.userTranscript() + ' ' + this.interimTranscript()).trim();
             if (totalUserText.length > 0) {
               console.log('💾 Saving User Answer (Speech Recognition):', totalUserText);
-              this.chatHistory.update(h => [
-                ...h,
-                { role: 'user', parts: [{ text: totalUserText }] }
-              ]);
+              const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: totalUserText }] }];
+              this.chatHistory.set(newHistory);
+              this.saveChatHistoryToStorage(newHistory);
               this.userTranscript.set('');
             }
           }
@@ -280,10 +321,9 @@ export class LiveAudioService {
         const userText = message.serverContent.input_transcription.text.trim();
         if (userText && userText.length > 0) {
           console.log('💾 Saving User Answer (Live API Transcription):', userText);
-          this.chatHistory.update(h => [
-            ...h,
-            { role: 'user', parts: [{ text: userText }] }
-          ]);
+          const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: userText }] }];
+          this.chatHistory.set(newHistory);
+          this.saveChatHistoryToStorage(newHistory);
         }
       }
 
@@ -310,23 +350,25 @@ export class LiveAudioService {
             cleanText = '';
           }
           if (cleanText) {
-            this.chatHistory.update(h => {
-              const params = [...h];
-              const lastMsg = params[params.length - 1];
-              // Append to existing model message if it exists, otherwise create new
-              if (lastMsg && lastMsg.role === 'model') {
-                // IMMUTABLE UPDATE
-                const newParts = [...lastMsg.parts];
-                newParts[0] = { ...newParts[0], text: (newParts[0].text || '') + cleanText };
-                params[params.length - 1] = { ...lastMsg, parts: newParts };
-
-                this.currentQuestionText.set(newParts[0].text);
-                return params;
-              } else {
-                this.currentQuestionText.set(cleanText);
-                return [...params, { role: 'model', parts: [{ text: cleanText }] }];
-              }
-            });
+            const currentHistory = this.chatHistory();
+            const lastMsg = currentHistory[currentHistory.length - 1];
+            let newHistory;
+            
+            // Append to existing model message if it exists, otherwise create new
+            if (lastMsg && lastMsg.role === 'model') {
+              // IMMUTABLE UPDATE
+              const newParts = [...lastMsg.parts];
+              newParts[0] = { ...newParts[0], text: (newParts[0].text || '') + cleanText };
+              newHistory = [...currentHistory];
+              newHistory[currentHistory.length - 1] = { ...lastMsg, parts: newParts };
+              this.currentQuestionText.set(newParts[0].text);
+            } else {
+              this.currentQuestionText.set(cleanText);
+              newHistory = [...currentHistory, { role: 'model', parts: [{ text: cleanText }] }];
+            }
+            
+            this.chatHistory.set(newHistory);
+            this.saveChatHistoryToStorage(newHistory);
           }
         }
 

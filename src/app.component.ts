@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { StateService } from './services/state.service';
@@ -9,6 +9,11 @@ import { StateService } from './services/state.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterOutlet]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   stateService = inject(StateService);
+
+  ngOnInit() {
+    // Load any active session from localStorage on app startup
+    this.stateService.loadActiveSession();
+  }
 }

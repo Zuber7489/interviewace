@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 export class StateService {
   private authService = inject(AuthService);
   private readonly HISTORY_KEY = 'interviewace_history';
+  private readonly ACTIVE_SESSION_KEY = 'interviewace_active_session';
 
   // Current active interview session (in-memory)
   activeSession = signal<InterviewSession | null>(null);
@@ -22,6 +23,8 @@ export class StateService {
 
   startInterview(session: InterviewSession) {
     this.activeSession.set(session);
+    // Save active session to localStorage for recovery
+    this.saveActiveSession(session);
   }
 
   finishInterview() {
@@ -31,6 +34,9 @@ export class StateService {
       const allHistory = this.getAllHistory();
       allHistory.push(session);
       localStorage.setItem(this.HISTORY_KEY, JSON.stringify(allHistory));
+
+      // Clear active session storage
+      localStorage.removeItem(this.ACTIVE_SESSION_KEY);
 
       // Clear active session (or keep it for the report view until they navigate away)
       // We'll keep it for now so ReportComponent can read it.
@@ -42,6 +48,32 @@ export class StateService {
     const session = allHistory.find((s: InterviewSession) => s.id === sessionId);
     if (session) {
       this.activeSession.set(session);
+    }
+  }
+
+  loadActiveSession() {
+    try {
+      const data = localStorage.getItem(this.ACTIVE_SESSION_KEY);
+      if (data) {
+        const session = JSON.parse(data) as InterviewSession;
+        const user = this.authService.currentUser();
+        // Only restore if it belongs to current user and hasn't ended
+        if (user && session.userId === user.id && !session.endTime) {
+          this.activeSession.set(session);
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load active session:', e);
+    }
+    return false;
+  }
+
+  private saveActiveSession(session: InterviewSession) {
+    try {
+      localStorage.setItem(this.ACTIVE_SESSION_KEY, JSON.stringify(session));
+    } catch (e) {
+      console.error('Failed to save active session:', e);
     }
   }
 
