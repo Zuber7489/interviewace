@@ -8,10 +8,30 @@ import { StateService } from '../../services/state.service';
   selector: 'app-sidebar',
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <aside class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50">
+    <!-- Mobile Menu Button -->
+    <button 
+      (click)="toggleSidebar()"
+      class="lg:hidden fixed top-4 left-4 z-[1001] bg-black text-white p-3 rounded-lg shadow-lg hover:bg-gray-800 transition-all"
+      aria-label="Toggle menu">
+      <i class="fas fa-bars text-lg"></i>
+    </button>
+
+    <!-- Overlay for mobile -->
+    @if (isSidebarOpen) {
+      <div 
+        (click)="toggleSidebar()"
+        class="lg:hidden fixed inset-0 bg-black/50 z-[999] backdrop-blur-sm transition-opacity"></div>
+    }
+
+    <!-- Sidebar -->
+    <aside 
+      [class]="sidebarClasses"
+      [class.translate-x-0]="isSidebarOpen"
+      [class.-translate-x-full]="!isSidebarOpen"
+      class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50 transition-transform duration-300 ease-in-out">
       <!-- Logo -->
       <div class="p-6 border-b border-black/10 bg-gray-50">
-        <button routerLink="/dashboard" class="flex items-center gap-2 group">
+        <button routerLink="/dashboard" (click)="closeSidebarOnMobile()" class="flex items-center gap-2 group">
           <i class="fas fa-brain text-black text-2xl group-hover:scale-110 transition-transform"></i>
           <span class="text-xl font-bold text-black tracking-tight">InterviewAce</span>
         </button>
@@ -20,12 +40,12 @@ import { StateService } from '../../services/state.service';
       <!-- User Profile -->
       <div class="p-6 border-b border-black/10">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 bg-black/10 rounded-full flex items-center justify-center">
+          <div class="w-12 h-12 bg-black/10 rounded-full flex items-center justify-center flex-shrink-0">
             <i class="fas fa-user text-black text-lg"></i>
           </div>
-          <div class="flex-1">
-            <p class="font-bold text-black text-sm">{{ currentUser()?.name || 'User' }}</p>
-            <p class="text-xs text-gray-600">{{ currentUser()?.email || '' }}</p>
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-black text-sm truncate">{{ currentUser()?.name || 'User' }}</p>
+            <p class="text-xs text-gray-600 truncate">{{ currentUser()?.email || '' }}</p>
           </div>
         </div>
       </div>
@@ -34,9 +54,9 @@ import { StateService } from '../../services/state.service';
       <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
         <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Main</div>
         
-        <a routerLink="/dashboard" routerLinkActive="bg-black/10 text-black"
+        <a routerLink="/dashboard" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-home w-5"></i>
+          <i class="fas fa-home w-5 flex-shrink-0"></i>
           <span>Dashboard</span>
         </a>
 
@@ -44,26 +64,26 @@ import { StateService } from '../../services/state.service';
 
         <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3 mt-6">History</div>
         
-        <a routerLink="/dashboard/history" routerLinkActive="bg-black/10 text-black"
+        <a routerLink="/dashboard/history" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-history w-5"></i>
+          <i class="fas fa-history w-5 flex-shrink-0"></i>
           <span>Past Interviews</span>
           @if(history().length > 0) {
-          <span class="ml-auto bg-black text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ history().length }}</span>
+          <span class="ml-auto bg-black text-white text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0">{{ history().length }}</span>
           }
         </a>
 
         <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3 mt-6">Profile</div>
         
-        <a routerLink="/dashboard/resume" routerLinkActive="bg-black/10 text-black"
+        <a routerLink="/dashboard/resume" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-file-upload w-5"></i>
+          <i class="fas fa-file-upload w-5 flex-shrink-0"></i>
           <span>Upload Resume</span>
         </a>
 
-        <a routerLink="/dashboard/settings" routerLinkActive="bg-black/10 text-black"
+        <a routerLink="/dashboard/settings" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-cog w-5"></i>
+          <i class="fas fa-cog w-5 flex-shrink-0"></i>
           <span>Settings</span>
         </a>
       </nav>
@@ -74,7 +94,7 @@ import { StateService } from '../../services/state.service';
       <div class="p-4 border-t border-black/10">
         <button (click)="logout()"
           class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-red-500/10 hover:text-red-600 transition-all">
-          <i class="fas fa-sign-out-alt w-5"></i>
+          <i class="fas fa-sign-out-alt w-5 flex-shrink-0"></i>
           <span>Logout</span>
         </button>
       </div>
@@ -85,6 +105,25 @@ import { StateService } from '../../services/state.service';
       z-index: 1000;
       position: fixed;
     }
+
+    /* Mobile styles - sidebar hidden by default */
+    @media (max-width: 1023px) {
+      aside {
+        transform: translateX(-100%);
+      }
+      
+      aside.translate-x-0 {
+        transform: translateX(0);
+      }
+    }
+
+    /* Desktop styles - sidebar always visible */
+    @media (min-width: 1024px) {
+      aside {
+        transform: translateX(0) !important;
+      }
+    }
+
     ::-webkit-scrollbar {
       width: 4px;
     }
@@ -95,6 +134,13 @@ import { StateService } from '../../services/state.service';
       background: rgba(0, 0, 0, 0.2);
       border-radius: 2px;
     }
+
+    /* Responsive text sizes */
+    @media (max-width: 640px) {
+      aside {
+        width: 100%;
+      }
+    }
   `]
 })
 export class SidebarComponent {
@@ -104,6 +150,21 @@ export class SidebarComponent {
 
   currentUser = this.authService.currentUser;
   history = this.stateService.history;
+  isSidebarOpen = false;
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  closeSidebarOnMobile() {
+    if (window.innerWidth < 1024) {
+      this.isSidebarOpen = false;
+    }
+  }
+
+  get sidebarClasses(): string {
+    return '';
+  }
 
   logout() {
     this.authService.logout();
