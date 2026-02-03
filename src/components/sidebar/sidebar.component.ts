@@ -77,7 +77,7 @@ import { StateService } from '../../services/state.service';
       <nav class="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2 overflow-y-auto">
         <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-2 sm:px-3">Main</div>
         
-        <a routerLink="/dashboard" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
+        <a routerLink="/dashboard" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
           <i class="fas fa-home w-4 sm:w-5 flex-shrink-0"></i>
           <span class="text-sm sm:text-base">Dashboard</span>
@@ -87,24 +87,24 @@ import { StateService } from '../../services/state.service';
 
         <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-2 sm:px-3 mt-4 sm:mt-6">History</div>
         
-        <a routerLink="/dashboard/history" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
+        <a routerLink="/dashboard/history" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
           <i class="fas fa-history w-4 sm:w-5 flex-shrink-0"></i>
           <span class="text-sm sm:text-base">Past Interviews</span>
           @if(history().length > 0) {
-          <span class="ml-auto bg-black text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full flex-shrink-0">{{ history().length }}</span>
+          <span class="ml-auto bg-white text-black text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full flex-shrink-0">{{ history().length }}</span>
           }
         </a>
 
         <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-2 sm:px-3 mt-4 sm:mt-6">Profile</div>
         
-        <a routerLink="/dashboard/resume" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
+        <a routerLink="/dashboard/resume" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
           <i class="fas fa-file-upload w-4 sm:w-5 flex-shrink-0"></i>
           <span class="text-sm sm:text-base">Upload Resume</span>
         </a>
 
-        <a routerLink="/dashboard/settings" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
+        <a routerLink="/dashboard/settings" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
           <i class="fas fa-cog w-4 sm:w-5 flex-shrink-0"></i>
           <span class="text-sm sm:text-base">Settings</span>
