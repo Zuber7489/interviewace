@@ -208,54 +208,8 @@ export class LiveAudioService {
       throw new Error('Microphone access denied or not available');
     }
 
-    // --- PARALLEL SPEECH RECOGNITION FOR TRANSCRIPTS ---
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      this.speechRecognition = new SpeechRecognition();
-      this.speechRecognition.continuous = true;
-      this.speechRecognition.interimResults = true;
-      this.speechRecognition.lang = 'en-US'; // Default
-
-      this.speechRecognition.onresult = (event: any) => {
-        this.zone.run(() => {
-          let finalTranscript = '';
-          let interimTranscript = '';
-
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
-            } else {
-              interimTranscript += event.results[i][0].transcript;
-            }
-          }
-
-          if (finalTranscript) {
-            console.log('🎤 Final Transcript:', finalTranscript);
-            this.userTranscript.update(prev => prev + ' ' + finalTranscript);
-            // Clear interim if we have final, roughly
-            this.interimTranscript.set('');
-
-            // Save to chat history immediately when user finishes speaking
-            // Save only the NEW transcript, not accumulated
-            if (finalTranscript.trim().length > 0) {
-              console.log('💾 Saving User Answer (Speech Recognition):', finalTranscript);
-              const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: finalTranscript }] }];
-              this.chatHistory.set(newHistory);
-              this.saveChatHistoryToStorage(newHistory);
-            }
-          }
-
-          if (interimTranscript) {
-            // Update interim signal
-            this.interimTranscript.set(interimTranscript);
-          }
-        });
-      };
-      try {
-        this.speechRecognition.start();
-        console.log('🎤 Speech recognition started');
-      } catch (e) { console.warn('Speech recognition start failed', e); }
-    }
+    // Note: We rely on Live API's input_audio_transcription for user transcription
+    // Web Speech API is not used for recording to avoid reliability issues
 
 
     try {
