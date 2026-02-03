@@ -30,16 +30,30 @@ export class StateService {
   finishInterview() {
     const session = this.activeSession();
     if (session && this.authService.currentUser()) {
-      // Save to history
-      const allHistory = this.getAllHistory();
-      allHistory.push(session);
-      localStorage.setItem(this.HISTORY_KEY, JSON.stringify(allHistory));
+      try {
+        // Save to history
+        const allHistory = this.getAllHistory();
+        
+        // Check if session already exists to avoid duplicates
+        const existingIndex = allHistory.findIndex((s: InterviewSession) => s.id === session.id);
+        if (existingIndex >= 0) {
+          // Update existing session
+          allHistory[existingIndex] = session;
+        } else {
+          // Add new session
+          allHistory.push(session);
+        }
+        
+        localStorage.setItem(this.HISTORY_KEY, JSON.stringify(allHistory));
 
-      // Clear active session storage
-      localStorage.removeItem(this.ACTIVE_SESSION_KEY);
+        // Clear active session storage
+        localStorage.removeItem(this.ACTIVE_SESSION_KEY);
 
-      // Clear active session (or keep it for the report view until they navigate away)
-      // We'll keep it for now so ReportComponent can read it.
+        // Clear active session (or keep it for the report view until they navigate away)
+        // We'll keep it for now so ReportComponent can read it.
+      } catch (e) {
+        console.error('Failed to save interview to history:', e);
+      }
     }
   }
 
