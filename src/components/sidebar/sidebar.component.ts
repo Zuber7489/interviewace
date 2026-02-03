@@ -40,11 +40,7 @@ import { StateService } from '../../services/state.service';
           <span>Dashboard</span>
         </a>
 
-        <a routerLink="/dashboard/interviews" routerLinkActive="bg-black/10 text-black"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-microphone-alt w-5"></i>
-          <span>New Interview</span>
-        </a>
+
 
         <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3 mt-6">History</div>
         
