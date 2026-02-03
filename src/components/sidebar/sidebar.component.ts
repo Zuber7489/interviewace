@@ -11,9 +11,9 @@ import { StateService } from '../../services/state.service';
     <!-- Mobile Menu Button -->
     <button 
       (click)="toggleSidebar()"
-      class="lg:hidden fixed top-4 left-4 z-[1001] bg-black text-white p-3 rounded-lg shadow-lg hover:bg-gray-800 transition-all"
+      class="lg:hidden fixed top-3 sm:top-4 left-3 sm:left-4 z-[1001] bg-black text-white p-2.5 sm:p-3 rounded-lg shadow-lg hover:bg-gray-800 transition-all min-w-[44px] min-h-[44px]"
       aria-label="Toggle menu">
-      <i class="fas fa-bars text-lg"></i>
+      <i class="fas fa-bars text-base sm:text-lg"></i>
     </button>
 
     <!-- Overlay for mobile -->
@@ -38,64 +38,64 @@ import { StateService } from '../../services/state.service';
       </div>
 
       <!-- User Profile -->
-      <div class="p-6 border-b border-black/10">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 bg-black/10 rounded-full flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-user text-black text-lg"></i>
+      <div class="p-4 sm:p-6 border-b border-black/10">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-black/10 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-user text-black text-sm sm:text-lg"></i>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="font-bold text-black text-sm truncate">{{ currentUser()?.name || 'User' }}</p>
-            <p class="text-xs text-gray-600 truncate">{{ currentUser()?.email || '' }}</p>
+            <p class="font-bold text-black text-xs sm:text-sm truncate">{{ currentUser()?.name || 'User' }}</p>
+            <p class="text-[10px] sm:text-xs text-gray-600 truncate">{{ currentUser()?.email || '' }}</p>
           </div>
         </div>
       </div>
 
       <!-- Navigation Menu -->
-      <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Main</div>
+      <nav class="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2 overflow-y-auto">
+        <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-2 sm:px-3">Main</div>
         
         <a routerLink="/dashboard" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-home w-5 flex-shrink-0"></i>
-          <span>Dashboard</span>
+          class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
+          <i class="fas fa-home w-4 sm:w-5 flex-shrink-0"></i>
+          <span class="text-sm sm:text-base">Dashboard</span>
         </a>
 
 
 
-        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3 mt-6">History</div>
+        <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-2 sm:px-3 mt-4 sm:mt-6">History</div>
         
         <a routerLink="/dashboard/history" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-history w-5 flex-shrink-0"></i>
-          <span>Past Interviews</span>
+          class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
+          <i class="fas fa-history w-4 sm:w-5 flex-shrink-0"></i>
+          <span class="text-sm sm:text-base">Past Interviews</span>
           @if(history().length > 0) {
-          <span class="ml-auto bg-black text-white text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0">{{ history().length }}</span>
+          <span class="ml-auto bg-black text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full flex-shrink-0">{{ history().length }}</span>
           }
         </a>
 
-        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3 mt-6">Profile</div>
+        <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-2 sm:px-3 mt-4 sm:mt-6">Profile</div>
         
         <a routerLink="/dashboard/resume" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-file-upload w-5 flex-shrink-0"></i>
-          <span>Upload Resume</span>
+          class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
+          <i class="fas fa-file-upload w-4 sm:w-5 flex-shrink-0"></i>
+          <span class="text-sm sm:text-base">Upload Resume</span>
         </a>
 
         <a routerLink="/dashboard/settings" routerLinkActive="bg-black/10 text-black" (click)="closeSidebarOnMobile()"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all">
-          <i class="fas fa-cog w-5 flex-shrink-0"></i>
-          <span>Settings</span>
+          class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
+          <i class="fas fa-cog w-4 sm:w-5 flex-shrink-0"></i>
+          <span class="text-sm sm:text-base">Settings</span>
         </a>
       </nav>
 
       
 
       <!-- Logout -->
-      <div class="p-4 border-t border-black/10">
+      <div class="p-3 sm:p-4 border-t border-black/10">
         <button (click)="logout()"
-          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-red-500/10 hover:text-red-600 transition-all">
-          <i class="fas fa-sign-out-alt w-5 flex-shrink-0"></i>
-          <span>Logout</span>
+          class="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-red-500/10 hover:text-red-600 transition-all min-h-[44px]">
+          <i class="fas fa-sign-out-alt w-4 sm:w-5 flex-shrink-0"></i>
+          <span class="text-sm sm:text-base">Logout</span>
         </button>
       </div>
     </aside>
