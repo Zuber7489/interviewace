@@ -105,6 +105,10 @@ export class InterviewComponent implements OnInit, OnDestroy {
           s.endTime = Date.now();
           s.overallFeedback = overallFeedback;
           s.overallScore = overallScore;
+          s.chatHistory = history.map(h => ({
+            role: h.role as 'user' | 'model',
+            parts: h.parts.map(p => ({ text: (p as any).text || '' }))
+          }));
           s.evaluatedQuestions = evaluatedQuestions.map(q => ({ ...q, type: 'Live' }));
           return s;
         });
