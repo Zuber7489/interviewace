@@ -236,13 +236,12 @@ export class LiveAudioService {
             this.interimTranscript.set('');
 
             // Save to chat history immediately when user finishes speaking
-            const totalUserText = (this.userTranscript() + ' ' + this.interimTranscript()).trim();
-            if (totalUserText.length > 0) {
-              console.log('💾 Saving User Answer (Speech Recognition):', totalUserText);
-              const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: totalUserText }] }];
+            // Save only the NEW transcript, not accumulated
+            if (finalTranscript.trim().length > 0) {
+              console.log('💾 Saving User Answer (Speech Recognition):', finalTranscript);
+              const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: finalTranscript }] }];
               this.chatHistory.set(newHistory);
               this.saveChatHistoryToStorage(newHistory);
-              this.userTranscript.set('');
             }
           }
 
