@@ -1,35 +1,35 @@
 <div
-  class="glass w-full max-w-6xl mx-auto rounded-3xl p-8 md:p-12 animate-fade-in border border-white/5 relative overflow-hidden">
+  class="glass w-full max-w-6xl mx-auto rounded-3xl p-8 md:p-12 animate-fade-in border border-black/5 relative overflow-hidden">
 
   <!-- Background Decorators -->
-  <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-  <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none">
+  <div class="absolute top-0 right-0 w-96 h-96 bg-black/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-black/5 rounded-full blur-3xl -z-10 pointer-events-none">
   </div>
 
   @if(session(); as currentSession) {
   <header class="text-center mb-12 relative z-10">
     <div
-      class="inline-block px-4 py-1.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs font-bold uppercase tracking-widest mb-4">
+      class="inline-block px-4 py-1.5 rounded-full border border-black/30 bg-black/10 text-black text-xs font-bold uppercase tracking-widest mb-4">
       Interview Complete
     </div>
-    <h1 class="text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-4">Performance Report</h1>
-    <p class="text-slate-400 text-lg font-light max-w-2xl mx-auto">
+    <h1 class="text-5xl md:text-6xl font-extrabold text-black tracking-tight mb-4">Performance Report</h1>
+    <p class="text-gray-600 text-lg font-light max-w-2xl mx-auto">
       A detailed breakdown of your technical accuracy, communication clarity, and problem-solving skills.
     </p>
   </header>
 
   <!-- Summary Section -->
   <div
-    class="glass-card rounded-3xl p-8 md:p-10 mb-12 flex flex-col md:flex-row items-center gap-12 border border-white/10 relative overflow-hidden group">
+    class="glass-card rounded-3xl p-8 md:p-10 mb-12 flex flex-col md:flex-row items-center gap-12 border border-black/10 relative overflow-hidden group">
     <!-- Glow behind score -->
     <div
-      class="absolute left-10 top-1/2 transform -translate-y-1/2 w-48 h-48 bg-blue-500/20 blur-[60px] rounded-full group-hover:bg-blue-500/30 transition-colors duration-500">
+      class="absolute left-10 top-1/2 transform -translate-y-1/2 w-48 h-48 bg-black/10 blur-[60px] rounded-full group-hover:bg-black/15 transition-colors duration-500">
     </div>
 
     <div class="relative w-48 h-48 flex-shrink-0 z-10">
       <svg class="w-full h-full filter drop-shadow-xl" viewBox="0 0 100 100">
         <!-- Background circle -->
-        <circle class="text-slate-800" stroke-width="6" cx="50" cy="50" r="44" fill="transparent" stroke="currentColor">
+        <circle class="text-gray-200" stroke-width="6" cx="50" cy="50" r="44" fill="transparent" stroke="currentColor">
         </circle>
         <!-- Progress circle -->
         <circle [class]="scoreRingClass()" class="transition-all duration-1000 ease-out" stroke-width="6"
@@ -38,16 +38,16 @@
           transform="rotate(-90 50 50)"></circle>
       </svg>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span class="text-5xl font-extrabold text-white tracking-tighter">{{ overallScore() }}</span>
-        <span class="text-xs uppercase font-bold text-slate-500 mt-1">Overall Score</span>
+        <span class="text-5xl font-extrabold text-black tracking-tighter">{{ overallScore() }}</span>
+        <span class="text-xs uppercase font-bold text-gray-500 mt-1">Overall Score</span>
       </div>
     </div>
 
     <div class="flex-1 text-center md:text-left z-10">
-      <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center md:justify-start gap-3">
-        <i class="fas fa-chart-pie text-blue-400"></i> Executive Summary
+      <h2 class="text-2xl font-bold text-black mb-4 flex items-center justify-center md:justify-start gap-3">
+        <i class="fas fa-chart-pie text-gray-600"></i> Executive Summary
       </h2>
-      <p class="text-slate-300 leading-relaxed text-lg font-light border-l-4 border-blue-500/50 pl-6">
+      <p class="text-gray-700 leading-relaxed text-lg font-light border-l-4 border-black/50 pl-6">
         {{ currentSession.overallFeedback }}
       </p>
     </div>
@@ -56,51 +56,51 @@
   <!-- Detailed Breakdown -->
   <div class="space-y-8">
     <div class="flex items-center justify-between">
-      <h3 class="text-2xl font-bold text-white tracking-tight">Question Analysis</h3>
-      <div class="text-sm text-slate-400">
-        <span class="font-bold text-white">{{ currentSession.evaluatedQuestions.length }}</span> Questions Evaluated
+      <h3 class="text-2xl font-bold text-black tracking-tight">Question Analysis</h3>
+      <div class="text-sm text-gray-600">
+        <span class="font-bold text-black">{{ currentSession.evaluatedQuestions.length }}</span> Questions Evaluated
       </div>
     </div>
 
     <div class="space-y-6">
       @for(q of currentSession.evaluatedQuestions; track $index) {
       <div
-        class="glass-card rounded-2xl p-8 border border-white/5 hover:border-white/10 hover:bg-white/[0.02] transition-all duration-300 group hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/20">
+        class="glass-card rounded-2xl p-8 border border-black/5 hover:border-black/10 hover:bg-black/[0.02] transition-all duration-300 group hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/20">
         <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
           <div class="flex-1">
-            <span class="inline-block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Question {{ $index
+            <span class="inline-block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Question {{ $index
               + 1 }}</span>
-            <p class="font-semibold text-xl text-slate-100">{{ q.question }}</p>
+            <p class="font-semibold text-xl text-gray-900">{{ q.question }}</p>
           </div>
 
-          <div class="flex items-center gap-3 bg-slate-950/30 px-4 py-2 rounded-xl border border-white/5">
+          <div class="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-xl border border-black/5">
             <div class="flex gap-1">
               @for(star of [1,2,3,4,5]; track star) {
-              <i class="fas fa-star text-xs" [class.text-yellow-500]="(q.score/2) >= star"
-                [class.text-slate-700]="(q.score/2) < star"></i>
+              <i class="fas fa-star text-xs" [class.text-black]="(q.score/2) >= star"
+                [class.text-gray-400]="(q.score/2) < star"></i>
               }
             </div>
-            <span class="font-bold text-white text-lg ml-2">{{ q.score }}</span>
-            <span class="text-xs text-slate-500 uppercase font-bold">/ 10</span>
+            <span class="font-bold text-black text-lg ml-2">{{ q.score }}</span>
+            <span class="text-xs text-gray-500 uppercase font-bold">/ 10</span>
           </div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-8 border-t border-white/5 pt-6 mt-2">
+        <div class="grid md:grid-cols-2 gap-8 border-t border-black/5 pt-6 mt-2">
           <div>
-            <h4 class="font-bold text-sm text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <h4 class="font-bold text-sm text-black uppercase tracking-wider mb-3 flex items-center gap-2">
               <i class="fas fa-microphone-alt"></i> Your Response
             </h4>
-            <div class="bg-black/20 rounded-xl p-4 text-slate-300 text-sm leading-relaxed border border-white/5 h-full">
+            <div class="bg-white rounded-xl p-4 text-gray-700 text-sm leading-relaxed border border-black/5 h-full">
               <p class="whitespace-pre-wrap font-light opacity-90 italic">"{{ q.answer }}"</p>
             </div>
           </div>
 
           <div>
-            <h4 class="font-bold text-sm text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <h4 class="font-bold text-sm text-black uppercase tracking-wider mb-3 flex items-center gap-2">
               <i class="fas fa-check-circle"></i> AI Feedback
             </h4>
             <div
-              class="bg-green-500/5 rounded-xl p-4 text-slate-300 text-sm leading-relaxed border border-green-500/10 h-full">
+              class="bg-black/5 rounded-xl p-4 text-gray-700 text-sm leading-relaxed border border-black/10 h-full">
               <p>{{ q.feedback }}</p>
             </div>
           </div>
@@ -110,16 +110,16 @@
     </div>
 
     @if(currentSession.evaluatedQuestions.length === 0) {
-    <div class="text-center bg-slate-800/30 border border-dashed border-slate-700/50 rounded-3xl p-16">
-      <i class="fas fa-inbox text-4xl text-slate-600 mb-4"></i>
-      <p class="text-slate-400 text-lg">No questions were recorded during this session.</p>
+    <div class="text-center bg-gray-100 border border-dashed border-gray-300 rounded-3xl p-16">
+      <i class="fas fa-inbox text-4xl text-gray-400 mb-4"></i>
+      <p class="text-gray-600 text-lg">No questions were recorded during this session.</p>
     </div>
     }
   </div>
 
   <div class="mt-16 text-center">
     <button (click)="startNew()"
-      class="group bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 bg-size-200 hover:bg-pos-100 text-white font-bold py-4 px-10 rounded-full transition-all duration-500 shadow-xl shadow-blue-900/40 hover:shadow-blue-600/30 hover:-translate-y-1">
+      class="group bg-black hover:bg-gray-800 text-white font-bold py-4 px-10 rounded-full transition-all duration-500 shadow-xl hover:shadow-2xl hover:-translate-y-1">
       <span class="flex items-center gap-3">
         <i class="fas fa-redo-alt group-hover:rotate-180 transition-transform duration-500"></i>
         <span>Start New Interview</span>
@@ -128,14 +128,14 @@
   </div>
   } @else {
   <div class="text-center py-20">
-    <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-      <i class="fas fa-ghost text-4xl text-slate-600"></i>
+    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+      <i class="fas fa-ghost text-4xl text-gray-400"></i>
     </div>
-    <h2 class="text-2xl font-bold text-white mb-2">No Report Found</h2>
-    <p class="text-slate-400 mb-8 max-w-md mx-auto">It looks like you haven't completed an interview yet. Start one now
+    <h2 class="text-2xl font-bold text-black mb-2">No Report Found</h2>
+    <p class="text-gray-600 mb-8 max-w-md mx-auto">It looks like you haven't completed an interview yet. Start one now
       to get your personalized report.</p>
     <button (click)="startNew()"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg shadow-blue-500/20">
+      class="bg-black hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg">
       Start Interview
     </button>
   </div>
