@@ -37,6 +37,14 @@ export class StateService {
     }
   }
 
+  loadSession(sessionId: string) {
+    const allHistory = this.getAllHistory();
+    const session = allHistory.find((s: InterviewSession) => s.id === sessionId);
+    if (session) {
+      this.activeSession.set(session);
+    }
+  }
+
   private getAllHistory(): InterviewSession[] {
     const data = localStorage.getItem(this.HISTORY_KEY);
     return data ? JSON.parse(data) : [];

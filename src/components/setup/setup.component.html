@@ -1,23 +1,7 @@
-<div class="max-w-7xl mx-auto p-6 md:p-8 bg-white">
-  <header class="flex flex-col md:flex-row justify-between items-center mb-12 animate-fade-in">
-    <div>
-      <h1 class="text-5xl font-extrabold text-black mb-2 tracking-tight">
-        Hello, <span class="text-black">{{ currentUser()?.name }}</span>
-      </h1>
-      <p class="text-gray-600 text-lg font-light">Ready to ace your next technical interview?</p>
-    </div>
-    <div class="mt-6 md:mt-0">
-      <button (click)="logout()"
-        class="group flex items-center gap-2 px-6 py-3 rounded-full glass-card hover:bg-black/10 hover:border-black/30 text-gray-600 hover:text-black transition-all duration-300">
-        <i class="fas fa-sign-out-alt group-hover:-translate-x-1 transition-transform"></i>
-        <span class="font-medium">Logout</span>
-      </button>
-    </div>
-  </header>
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Left Column: Setup New Interview -->
-    <div class="lg:col-span-1 space-y-8 animate-fade-in" style="animation-delay: 0.1s;">
+<div class="max-w-7xl mx-auto p-6 md:p-8">
+  <div class="grid grid-cols-1 gap-8">
+    <!-- New Interview Setup -->
+    <div class="space-y-8 animate-fade-in" style="animation-delay: 0.1s;">
       <h2 class="text-2xl font-bold text-black mb-6 flex items-center">
         <div
           class="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center mr-3 border border-black/30">
@@ -160,93 +144,6 @@
       </div>
     </div>
 
-    <!-- Right Column: History & Stats -->
-    <div class="lg:col-span-2 space-y-8 animate-fade-in" style="animation-delay: 0.2s;">
-      <h2 class="text-2xl font-bold text-black mb-6 flex items-center">
-        <div
-          class="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center mr-3 border border-black/30">
-          <i class="fas fa-history text-black"></i>
-        </div>
-        Past Performance
-      </h2>
 
-      @if(history().length > 0) {
-      <div class="grid gap-5">
-        @for(session of history(); track session.id) {
-        <div
-          class="glass-card p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 group hover:border-black/30 cursor-default">
-          <!-- Score Circle -->
-          <div class="relative w-20 h-20 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-            <!-- Glow effect behind circle -->
-            <div class="absolute inset-0 rounded-full bg-black/5 blur-md"></div>
-            <svg class="w-full h-full transform -rotate-90 relative z-10">
-              <circle cx="40" cy="40" r="36" stroke="rgba(0,0,0,0.1)" stroke-width="6" fill="transparent" />
-              <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="6" fill="transparent"
-                [class.text-black]="(session.overallScore || 0) >= 80"
-                [class.text-gray-600]="(session.overallScore || 0) >= 50 && (session.overallScore || 0) < 80"
-                [class.text-gray-400]="(session.overallScore || 0) < 50" [attr.stroke-dasharray]="2 * 3.14 * 36"
-                [attr.stroke-dashoffset]="2 * 3.14 * 36 * (1 - ((session.overallScore || 0) / 100))" />
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
-              <span class="font-bold text-xl text-black tracking-tighter leading-none">
-                {{ session.overallScore || 0 }}
-              </span>
-              <span class="text-[10px] uppercase text-gray-600 font-bold">Score</span>
-            </div>
-          </div>
-
-          <div class="flex-grow text-center md:text-left space-y-2">
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <h3 class="font-bold text-black text-xl tracking-tight group-hover:text-black transition-colors">
-                {{ session.config.primaryTechnology || 'Technical Interview' }}
-              </h3>
-              <div class="flex gap-2">
-                <span
-                  class="text-xs font-bold px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 border border-black/5">
-                  <i class="far fa-clock mr-1 text-gray-500"></i> {{ session.config.interviewDuration }}m
-                </span>
-                <span
-                  class="text-xs font-bold px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 border border-black/5">
-                  <i class="fas fa-language mr-1 text-gray-500"></i> {{ session.config.language }}
-                </span>
-              </div>
-            </div>
-
-            <p class="text-sm text-gray-600 leading-relaxed max-w-2xl">
-              {{ session.overallFeedback || 'No detailed feedback recorded for this session.' }}
-            </p>
-
-            <div class="flex items-center justify-center md:justify-start gap-4 pt-1">
-              <span class="text-xs text-gray-500 font-mono">
-                <i class="far fa-calendar-alt mr-1"></i> {{ session.date | date:'medium' }}
-              </span>
-              <!-- Could add a 'View Report' button here in future -->
-            </div>
-          </div>
-
-          <div
-            class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 group-hover:translate-x-0">
-            <button
-              class="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center hover:bg-black/10 text-black transition-colors">
-              <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
-        </div>
-        }
-      </div>
-      } @else {
-      <div
-        class="glass rounded-3xl border border-black/5 text-center flex flex-col items-center justify-center py-20 animate-fade-in">
-        <div
-          class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6 border border-black/5 shadow-inner">
-          <i class="fas fa-history text-3xl text-gray-400"></i>
-        </div>
-        <h3 class="text-xl font-bold text-black mb-2">No Past Interviews</h3>
-        <p class="text-gray-600 max-w-sm mx-auto leading-relaxed">
-          Your interview history will appear here once you complete your first session.
-        </p>
-      </div>
-      }
-    </div>
   </div>
 </div>
