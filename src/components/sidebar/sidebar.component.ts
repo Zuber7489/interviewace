@@ -182,10 +182,11 @@ export class SidebarComponent {
   private loadReportGenerationPreference(): boolean {
     try {
       const value = localStorage.getItem(this.REPORT_GENERATION_KEY);
-      return value !== 'false'; // Default to true if not set
+      // Default to false (OFF) if not set
+      return value === 'true';
     } catch (e) {
       console.error('Failed to load report generation preference:', e);
-      return true;
+      return false;
     }
   }
 
