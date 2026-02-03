@@ -9,12 +9,12 @@ import { AuthService } from '../../services/auth.service';
     selector: 'app-signup',
     imports: [CommonModule, FormsModule, RouterLink],
     template: `
-    <div class="min-h-screen flex items-center justify-center px-4 py-8">
-      <div class="glass w-full max-w-md p-8 rounded-2xl border border-black/10 animate-fade-in relative z-10">
+    <div class="min-h-screen flex items-center justify-center px-4 py-8 sm:py-12">
+      <div class="glass w-full max-w-md p-6 sm:p-8 rounded-2xl border border-black/10 animate-fade-in relative z-10">
         
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-black">Create Account</h2>
-            <p class="text-gray-600 mt-2">Start your interview journey today</p>
+        <div class="text-center mb-6 sm:mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-black">Create Account</h2>
+            <p class="text-gray-600 mt-2 text-sm sm:text-base">Start your interview journey today</p>
         </div>
 
         @if(error()) {
