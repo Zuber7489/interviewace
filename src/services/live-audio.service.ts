@@ -174,6 +174,17 @@ export class LiveAudioService {
             this.userTranscript.update(prev => prev + ' ' + finalTranscript);
             // Clear interim if we have final, roughly
             this.interimTranscript.set('');
+
+            // Save to chat history immediately when user finishes speaking
+            const totalUserText = (this.userTranscript() + ' ' + this.interimTranscript()).trim();
+            if (totalUserText.length > 0) {
+              console.log('💾 Saving User Answer (Speech Recognition):', totalUserText);
+              this.chatHistory.update(h => [
+                ...h,
+                { role: 'user', parts: [{ text: totalUserText }] }
+              ]);
+              this.userTranscript.set('');
+            }
           }
 
           if (interimTranscript) {
@@ -219,6 +230,8 @@ export class LiveAudioService {
     const config = {
       responseModalities: [Modality.AUDIO],
       systemInstruction: this.createSystemInstruction(interviewConfig),
+      inputAudioTranscription: {},
+      outputAudioTranscription: {},
     };
 
     this.session = await this.ai.live.connect({
@@ -262,29 +275,20 @@ export class LiveAudioService {
 
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
-      // 1. Handle User Transcript
-      // Now handled via parallel SpeechRecognition.
+      // 1. Handle User Transcription from Live API
+      if (message.serverContent?.input_transcription?.text) {
+        const userText = message.serverContent.input_transcription.text.trim();
+        if (userText && userText.length > 0) {
+          console.log('💾 Saving User Answer (Live API Transcription):', userText);
+          this.chatHistory.update(h => [
+            ...h,
+            { role: 'user', parts: [{ text: userText }] }
+          ]);
+        }
+      }
 
       // 2. Handle Model Turn (AI Speaking)
       if (message.serverContent?.modelTurn?.parts) {
-
-        // --- SAVE USER TURN ---
-        const pending = this.userTranscript();
-        const interim = this.interimTranscript();
-        const totalUserText = (pending + ' ' + interim).trim();
-
-        if (totalUserText.length > 0) {
-          console.log('💾 Saving User Answer (Final + Interim):', totalUserText);
-
-          this.chatHistory.update(h => [
-            ...h,
-            { role: 'user', parts: [{ text: totalUserText }] }
-          ]);
-
-          // Clear buffers
-          this.userTranscript.set('');
-          this.interimTranscript.set('');
-        }
 
         // --- HANDLE AI SPEECH ---
         let modelText = '';
@@ -334,14 +338,6 @@ export class LiveAudioService {
       // 3. Handle Turn Complete event (End of AI response)
       if (message.serverContent?.turnComplete) {
         this.isSpeaking.set(false);
-
-        // Safety check: Did we miss saving the user's answer? (e.g. if AI answered without text parts first)
-        const leftoverUserText = this.userTranscript();
-        if (leftoverUserText && leftoverUserText.trim().length > 0) {
-          console.log('⚠️ Saving Leftover User Answer (Turn Complete):', leftoverUserText);
-          this.chatHistory.update(h => [...h, { role: 'user', parts: [{ text: leftoverUserText.trim() }] }]);
-          this.userTranscript.set('');
-        }
       }
     });
   }
