@@ -308,11 +308,17 @@ export class LiveAudioService {
 
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
+      // Debug: Log message structure
+      console.log('📨 Received message from Live API:', JSON.stringify(message, null, 2));
+
       // 1. Handle User Transcription from Live API
-      if (message.serverContent?.input_transcription?.text) {
-        const userText = message.serverContent.input_transcription.text.trim();
+      if (message.serverContent?.inputTranscription?.text) {
+        const userText = message.serverContent.inputTranscription.text.trim();
         if (userText && userText.length > 0) {
           console.log('💾 Saving User Answer (Live API Transcription):', userText);
+          // Update userTranscript for display in UI
+          this.userTranscript.update(prev => prev + ' ' + userText);
+          // Save to chat history
           const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: userText }] }];
           this.chatHistory.set(newHistory);
           this.saveChatHistoryToStorage(newHistory);
