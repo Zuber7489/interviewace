@@ -128,8 +128,9 @@ export class LiveAudioService {
     });
 
     // Create separate audio contexts for input and output
-    this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
-    this.outputAudioContext = new AudioContext({ sampleRate: 24000 });
+    // Use device's native sample rate for better mobile compatibility
+    this.inputAudioContext = new AudioContext();
+    this.outputAudioContext = new AudioContext();
 
     await this.setupMicrophone(sessionId);
     await this.connectToGemini(config, sessionId);
@@ -188,7 +189,23 @@ export class LiveAudioService {
   private speechRecognition: any;
 
   private async setupMicrophone(sessionId: number) {
-    this.microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Mobile-friendly microphone constraints
+    const constraints = {
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1
+      }
+    };
+
+    try {
+      this.microphoneStream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log('🎤 Microphone access granted, sample rate:', this.inputAudioContext.sampleRate);
+    } catch (error) {
+      console.error('❌ Failed to get microphone access:', error);
+      throw new Error('Microphone access denied or not available');
+    }
 
     // --- PARALLEL SPEECH RECOGNITION FOR TRANSCRIPTS ---
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -247,18 +264,19 @@ export class LiveAudioService {
     if (this.currentSessionId !== sessionId) return;
 
     const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
-    this.processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
-    microphoneSource.connect(this.processorNode);
+    const processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
+    microphoneSource.connect(processorNode);
 
-    this.processorNode.port.onmessage = (event) => {
+    processorNode.port.onmessage = (event) => {
       if (!this.isConnected() || !this.session || this.currentSessionId !== sessionId) return;
 
       const pcmData = event.data;
       const base64Data = toBase64(pcmData.buffer);
+      const sampleRate = this.inputAudioContext.sampleRate;
       try {
         this.session.sendRealtimeInput({
           audio: {
-            mimeType: "audio/pcm;rate=16000",
+            mimeType: `audio/pcm;rate=${sampleRate}`,
             data: base64Data,
           }
         });
