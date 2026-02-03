@@ -31,7 +31,7 @@ import { StateService } from '../../services/state.service';
       class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50 transition-transform duration-300 ease-in-out">
       
       <!-- Report Generation Toggle -->
-      <div class="p-3 sm:p-4 border-b border-black/10 bg-gray-50">
+      <div class="p-3 sm:p-4 border-b border-black/10 bg-gray-50 lg:pt-3 lg:pb-4 pt-16 pb-3">
         <div class="flex items-center justify-between">
           <span class="text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-wider">
             <i class="fas fa-chart-line mr-1.5 sm:mr-2"></i> Report Generation
