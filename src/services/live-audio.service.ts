@@ -202,6 +202,7 @@ export class LiveAudioService {
     try {
       this.microphoneStream = await navigator.mediaDevices.getUserMedia(constraints);
       console.log('🎤 Microphone access granted, sample rate:', this.inputAudioContext.sampleRate);
+      console.log('🎤 Audio tracks:', this.microphoneStream.getAudioTracks().length);
     } catch (error) {
       console.error('❌ Failed to get microphone access:', error);
       throw new Error('Microphone access denied or not available');
@@ -253,36 +254,56 @@ export class LiveAudioService {
       };
       try {
         this.speechRecognition.start();
+        console.log('🎤 Speech recognition started');
       } catch (e) { console.warn('Speech recognition start failed', e); }
     }
 
 
-    const workletUrl = this.createWorklet();
-    await this.inputAudioContext.audioWorklet.addModule(workletUrl);
-    URL.revokeObjectURL(workletUrl);
+    try {
+      const workletUrl = this.createWorklet();
+      console.log('🎵 Loading AudioWorklet...');
+      await this.inputAudioContext.audioWorklet.addModule(workletUrl);
+      console.log('🎵 AudioWorklet loaded successfully');
+      URL.revokeObjectURL(workletUrl);
+    } catch (e) {
+      console.error('❌ Failed to load AudioWorklet:', e);
+      throw new Error('AudioWorklet loading failed');
+    }
 
     if (this.currentSessionId !== sessionId) return;
 
-    const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
-    const processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
-    microphoneSource.connect(processorNode);
+    try {
+      const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
+      const processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
+      microphoneSource.connect(processorNode);
+      console.log('🎵 Audio pipeline connected: microphone → processor');
 
-    processorNode.port.onmessage = (event) => {
-      if (!this.isConnected() || !this.session || this.currentSessionId !== sessionId) return;
+      processorNode.port.onmessage = (event) => {
+        if (!this.isConnected() || !this.session || this.currentSessionId !== sessionId) return;
 
-      const pcmData = event.data;
-      const base64Data = toBase64(pcmData.buffer);
-      const sampleRate = this.inputAudioContext.sampleRate;
-      try {
-        this.session.sendRealtimeInput({
-          audio: {
-            mimeType: `audio/pcm;rate=${sampleRate}`,
-            data: base64Data,
+        const pcmData = event.data;
+        const base64Data = toBase64(pcmData.buffer);
+        const sampleRate = this.inputAudioContext.sampleRate;
+        try {
+          this.session.sendRealtimeInput({
+            audio: {
+              mimeType: `audio/pcm;rate=${sampleRate}`,
+              data: base64Data,
+            }
+          });
+          // Log occasionally to avoid spam
+          if (Math.random() < 0.01) {
+            console.log('🎵 Sending audio chunk:', pcmData.length, 'samples at', sampleRate, 'Hz');
           }
-        });
-      } catch (e) {
-      }
-    };
+        } catch (e) {
+          console.error('❌ Error sending audio to Live API:', e);
+        }
+      };
+      console.log('🎵 Audio processor ready, sending to Live API');
+    } catch (e) {
+      console.error('❌ Failed to setup audio pipeline:', e);
+      throw new Error('Audio pipeline setup failed');
+    }
   }
 
   private async connectToGemini(interviewConfig: InterviewConfig, sessionId: number) {
