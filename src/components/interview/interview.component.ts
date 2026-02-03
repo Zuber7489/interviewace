@@ -90,13 +90,15 @@ export class InterviewComponent implements OnInit, OnDestroy {
       clearInterval(this.timerId);
 
       // Stop the live session and get the history
-      // Use the getter to ensure we grab the latest state
       const history = this.liveAudioService.getChatHistory();
       console.log('Final Interview History:', history);
       await this.liveAudioService.stopSession();
 
-      // Generate final report
-      if (this.session() && history.length > 0) {
+      // Check if report generation is enabled
+      const reportGenerationEnabled = localStorage.getItem('interviewace_report_generation') !== 'false';
+
+      // Generate final report only if enabled
+      if (this.session() && history.length > 0 && reportGenerationEnabled) {
         // Use the regular Gemini service for final evaluation
         const { overallFeedback, overallScore, evaluatedQuestions } = await this.geminiService.generateFinalFeedback(history);
 
@@ -112,16 +114,32 @@ export class InterviewComponent implements OnInit, OnDestroy {
           s.evaluatedQuestions = evaluatedQuestions.map(q => ({ ...q, type: 'Live' }));
           return s;
         });
+      } else if (this.session() && history.length > 0) {
+        // Save chat history even without report generation
+        this.session.update(s => {
+          if (!s) return null;
+          s.endTime = Date.now();
+          s.chatHistory = history.map(h => ({
+            role: h.role as 'user' | 'model',
+            parts: h.parts.map(p => ({ text: (p as any).text || '' }))
+          }));
+          return s;
+        });
       }
 
       this.stateService.finishInterview();
     } catch (e) {
       console.error("Error during interview finishing:", e);
-      // Even if reporting fails, we should move to report state
       this.stateService.finishInterview();
     } finally {
       this.isFinishing.set(false);
-      this.router.navigate(['/report'], { replaceUrl: true });
+      // Navigate to dashboard if report generation is disabled, otherwise go to report page
+      const reportGenerationEnabled = localStorage.getItem('interviewace_report_generation') !== 'false';
+      if (reportGenerationEnabled) {
+        this.router.navigate(['/report'], { replaceUrl: true });
+      } else {
+        this.router.navigate(['/dashboard'], { replaceUrl: true });
+      }
     }
   }
 }
