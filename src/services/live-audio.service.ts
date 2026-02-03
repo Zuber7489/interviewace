@@ -318,10 +318,22 @@ export class LiveAudioService {
           console.log('💾 Saving User Answer (Live API Transcription):', userText);
           // Update userTranscript for display in UI
           this.userTranscript.update(prev => prev + ' ' + userText);
+          // Don't save word-by-word to chat history - accumulate instead
+          // The complete answer will be saved when the user finishes speaking (turnComplete)
+        }
+      }
+
+      // Save complete user answer when turn is complete
+      if (message.serverContent?.turnComplete) {
+        const totalUserText = this.userTranscript().trim();
+        if (totalUserText.length > 0) {
+          console.log('💾 Saving complete user answer:', totalUserText);
           // Save to chat history
-          const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: userText }] }];
+          const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: totalUserText }] }];
           this.chatHistory.set(newHistory);
           this.saveChatHistoryToStorage(newHistory);
+          // Clear userTranscript after saving
+          this.userTranscript.set('');
         }
       }
 
