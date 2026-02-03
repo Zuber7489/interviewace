@@ -38,11 +38,12 @@ import { StateService } from '../../services/state.service';
           </span>
           <button 
             (click)="toggleReportGeneration()"
-            [class]="enableReports() ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'"
-            class="relative w-10 h-5 sm:w-12 sm:h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-black/20">
+            [class]="enableReports() ? 'bg-black' : 'bg-gray-300'"
+            class="relative w-11 h-6 sm:w-12 sm:h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-black/20 shadow-inner">
             <div 
               [class.translate-x-full]="enableReports()"
-              class="absolute top-0.5 sm:top-1 left-0.5 sm:left-1 w-4 h-4 sm:w-5 sm:h-5 bg-white rounded-full shadow-md transition-transform duration-300">
+              class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 flex items-center justify-center">
+              <i class="fas fa-check text-[8px] sm:text-[10px] text-black opacity-0 transition-opacity duration-300" [class.opacity-100]="enableReports()"></i>
             </div>
           </button>
         </div>
