@@ -9,9 +9,33 @@ export class StateService {
   private authService = inject(AuthService);
   private readonly HISTORY_KEY = 'interviewace_history';
   private readonly ACTIVE_SESSION_KEY = 'interviewace_active_session';
+  private readonly REPORT_GENERATION_KEY = 'interviewace_report_generation';
 
   // Current active interview session (in-memory)
   activeSession = signal<InterviewSession | null>(null);
+
+  // Report Generation Preference
+  enableReports = signal<boolean>(this.loadReportGenerationPreference());
+
+  private loadReportGenerationPreference(): boolean {
+    try {
+      const value = localStorage.getItem(this.REPORT_GENERATION_KEY);
+      return value === 'true';
+    } catch (e) {
+      console.error('Failed to load report generation preference:', e);
+      return false;
+    }
+  }
+
+  toggleReportGeneration() {
+    const newValue = !this.enableReports();
+    this.enableReports.set(newValue);
+    try {
+      localStorage.setItem(this.REPORT_GENERATION_KEY, newValue.toString());
+    } catch (e) {
+      console.error('Failed to save report generation preference:', e);
+    }
+  }
 
   // History signal derived from local storage + user
   history = computed(() => {
@@ -33,7 +57,7 @@ export class StateService {
       try {
         // Save to history
         const allHistory = this.getAllHistory();
-        
+
         // Check if session already exists to avoid duplicates
         const existingIndex = allHistory.findIndex((s: InterviewSession) => s.id === session.id);
         if (existingIndex >= 0) {
@@ -43,7 +67,7 @@ export class StateService {
           // Add new session
           allHistory.push(session);
         }
-        
+
         localStorage.setItem(this.HISTORY_KEY, JSON.stringify(allHistory));
 
         // Clear active session storage

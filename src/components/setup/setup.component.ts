@@ -37,6 +37,11 @@ export class SetupComponent {
   // Dashboard Data
   currentUser = this.authService.currentUser;
   history = this.stateService.history;
+  enableReports = this.stateService.enableReports;
+
+  toggleReportGeneration() {
+    this.stateService.toggleReportGeneration();
+  }
 
   async onFileSelected(event: any) {
     const file: File = event.target.files[0];

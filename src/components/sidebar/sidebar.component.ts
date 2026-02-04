@@ -30,28 +30,6 @@ import { StateService } from '../../services/state.service';
       [class.-translate-x-full]="!isSidebarOpen"
       class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50 transition-transform duration-300 ease-in-out">
       
-      <!-- Report Generation Toggle -->
-      <div class="p-3 sm:p-4 border-b border-black/10 bg-gray-50 lg:pt-3 lg:pb-4 pt-16 pb-3">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-wider">
-            <i class="fas fa-chart-line mr-1.5 sm:mr-2"></i> Report Generation
-          </span>
-          <button 
-            (click)="toggleReportGeneration()"
-            [class]="enableReports() ? 'bg-black' : 'bg-gray-300'"
-            class="relative w-11 h-6 sm:w-12 sm:h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-black/20 shadow-inner">
-            <div 
-              [class.translate-x-full]="enableReports()"
-              class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 flex items-center justify-center">
-              <i class="fas fa-check text-[8px] sm:text-[10px] text-black opacity-0 transition-opacity duration-300" [class.opacity-100]="enableReports()"></i>
-            </div>
-          </button>
-        </div>
-        <p class="text-[8px] sm:text-[9px] text-gray-500 mt-1 sm:mt-1.5">
-          {{ enableReports() ? 'AI feedback enabled' : 'Save API tokens' }}
-        </p>
-      </div>
-
       <!-- Logo -->
       <div class="p-6 border-b border-black/10 bg-gray-50">
         <button routerLink="/dashboard" (click)="closeSidebarOnMobile()" class="flex items-center gap-2 group">
@@ -170,34 +148,7 @@ export class SidebarComponent {
   history = this.stateService.history;
   isSidebarOpen = false;
 
-  private readonly REPORT_GENERATION_KEY = 'interviewace_report_generation';
 
-  enableReports = signal<boolean>(this.loadReportGenerationPreference());
-
-  private loadReportGenerationPreference(): boolean {
-    try {
-      const value = localStorage.getItem(this.REPORT_GENERATION_KEY);
-      // Default to false (OFF) if not set
-      return value === 'true';
-    } catch (e) {
-      console.error('Failed to load report generation preference:', e);
-      return false;
-    }
-  }
-
-  private saveReportGenerationPreference(enabled: boolean) {
-    try {
-      localStorage.setItem(this.REPORT_GENERATION_KEY, enabled.toString());
-    } catch (e) {
-      console.error('Failed to save report generation preference:', e);
-    }
-  }
-
-  toggleReportGeneration() {
-    const newValue = !this.enableReports();
-    this.enableReports.set(newValue);
-    this.saveReportGenerationPreference(newValue);
-  }
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;

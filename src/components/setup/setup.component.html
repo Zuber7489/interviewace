@@ -37,8 +37,12 @@
         <div class="space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in">
           <div>
             <div class="flex justify-between items-end mb-1.5 sm:mb-2">
-              <label class="text-[8px] sm:text-[10px] md:text-xs font-bold text-gray-600 uppercase tracking-wider">Experience Level</label>
-              <span class="text-black font-mono font-bold text-[10px] sm:text-xs md:text-sm bg-black/10 px-1.5 sm:px-2 py-0.5 rounded">{{ yearsOfExperience() }} Years</span>
+              <label
+                class="text-[8px] sm:text-[10px] md:text-xs font-bold text-gray-600 uppercase tracking-wider">Experience
+                Level</label>
+              <span
+                class="text-black font-mono font-bold text-[10px] sm:text-xs md:text-sm bg-black/10 px-1.5 sm:px-2 py-0.5 rounded">{{
+                yearsOfExperience() }} Years</span>
             </div>
             <input type="range" min="0" max="15" [ngModel]="yearsOfExperience()"
               (ngModelChange)="yearsOfExperience.set($event)"
@@ -46,14 +50,18 @@
           </div>
 
           <div>
-            <label class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Target Role</label>
+            <label
+              class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Target
+              Role</label>
             <input type="text" [ngModel]="primaryTechnology()" (ngModelChange)="primaryTechnology.set($event)"
               placeholder="e.g. Senior Frontend Engineer"
               class="w-full input-premium rounded-xl px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-black placeholder-gray-500 focus:placeholder-gray-400 text-xs sm:text-sm md:text-base">
           </div>
 
           <div>
-            <label class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Focus Topics</label>
+            <label
+              class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Focus
+              Topics</label>
             <input type="text" [ngModel]="secondarySkills()" (ngModelChange)="secondarySkills.set($event)"
               placeholder="e.g. React, Performance, System Design"
               class="w-full input-premium rounded-xl px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-black placeholder-gray-500 focus:placeholder-gray-400 text-xs sm:text-sm md:text-base">
@@ -67,7 +75,9 @@
               class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 sm:mb-2 md:mb-3 group-hover:scale-110 transition-transform duration-300 shadow-xl">
               <i class="fas fa-cloud-upload-alt text-base sm:text-lg md:text-xl text-black"></i>
             </div>
-            <span class="text-[10px] sm:text-xs md:text-sm font-medium text-gray-600 group-hover:text-black transition-colors">Click to upload
+            <span
+              class="text-[10px] sm:text-xs md:text-sm font-medium text-gray-600 group-hover:text-black transition-colors">Click
+              to upload
               PDF Resume</span>
             <span class="text-[8px] sm:text-[10px] md:text-xs text-gray-500 mt-0.5 sm:mt-1">Maximum size 5MB</span>
             <input type="file" class="hidden" accept=".pdf" (change)="onFileSelected($event)">
@@ -87,9 +97,11 @@
         }
 
         <!-- Common settings -->
-        <div class="mt-4 sm:mt-6 md:mt-8 space-y-3 sm:space-y-4 md:space-y-5 border-t border-white/5 pt-3 sm:pt-4 md:pt-6">
+        <div
+          class="mt-4 sm:mt-6 md:mt-8 space-y-3 sm:space-y-4 md:space-y-5 border-t border-white/5 pt-3 sm:pt-4 md:pt-6">
           <div>
-            <label class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2 md:mb-3">Duration</label>
+            <label
+              class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2 md:mb-3">Duration</label>
             <div class="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3">
               @for (d of [10, 20, 30]; track d) {
               <button (click)="interviewDuration.set(d)" [class.bg-black]="interviewDuration() === d"
@@ -104,7 +116,8 @@
           </div>
 
           <div>
-            <label class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Interviewer
+            <label
+              class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Interviewer
               Language</label>
             <div class="relative">
               <select [ngModel]="language()" (ngModelChange)="language.set($event)"
@@ -113,17 +126,41 @@
                 <option value="Hindi">Hindi</option>
                 <option value="Hinglish">Hinglish</option>
               </select>
-              <div class="absolute inset-y-0 right-0 flex items-center px-2 sm:px-3 md:px-4 pointer-events-none text-gray-600">
+              <div
+                class="absolute inset-y-0 right-0 flex items-center px-2 sm:px-3 md:px-4 pointer-events-none text-gray-600">
                 <i class="fas fa-chevron-down text-[8px] sm:text-[10px] md:text-xs"></i>
               </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between bg-black/5 p-3 sm:p-4 rounded-2xl border border-black/10">
+              <div class="flex flex-col">
+                <span class="text-[10px] sm:text-xs md:text-sm font-bold text-gray-700 uppercase tracking-wider">
+                  <i class="fas fa-chart-line mr-1.5 sm:mr-2"></i> Report Generation
+                </span>
+                <span class="text-[8px] sm:text-[9px] md:text-[10px] text-gray-500 mt-0.5 sm:mt-1">
+                  {{ enableReports() ? 'Comprehensive AI feedback enabled' : 'Basic interview mode' }}
+                </span>
+              </div>
+              <button (click)="toggleReportGeneration()" [class]="enableReports() ? 'bg-black' : 'bg-gray-300'"
+                class="relative w-11 h-6 sm:w-12 sm:h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-black/20 shadow-inner shrink-0">
+                <div [class.translate-x-full]="enableReports()"
+                  class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 flex items-center justify-center">
+                  <i class="fas fa-check text-[8px] sm:text-[10px] text-black opacity-0 transition-opacity duration-300"
+                    [class.opacity-100]="enableReports()"></i>
+                </div>
+              </button>
             </div>
           </div>
         </div>
 
         <div class="mt-4 sm:mt-6 md:mt-8">
           @if(error()) {
-          <div class="bg-black/10 border border-black/20 rounded-lg p-1.5 sm:p-2 md:p-3 mb-2 sm:mb-3 md:mb-4 animate-fade-in">
-            <p class="text-[8px] sm:text-[10px] md:text-xs text-black text-center flex items-center justify-center gap-0.5 sm:gap-1 md:gap-2">
+          <div
+            class="bg-black/10 border border-black/20 rounded-lg p-1.5 sm:p-2 md:p-3 mb-2 sm:mb-3 md:mb-4 animate-fade-in">
+            <p
+              class="text-[8px] sm:text-[10px] md:text-xs text-black text-center flex items-center justify-center gap-0.5 sm:gap-1 md:gap-2">
               <i class="fas fa-exclamation-circle"></i> {{ error() }}
             </p>
           </div>
