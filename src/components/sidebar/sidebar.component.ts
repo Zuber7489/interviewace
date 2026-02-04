@@ -31,8 +31,7 @@ import { StateService } from '../../services/state.service';
       class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50 transition-transform duration-300 ease-in-out">
       
       <!-- Logo -->
-      <div class="p-6 border-b border-black/10 bg-gray-50 flex items-center h-20 sm:h-24 lg:h-auto">
-        <div class="lg:hidden w-12 mr-2"></div> <!-- Spacer for mobile menu button -->
+      <div class="p-6 border-b border-black/10 bg-gray-50 flex items-center justify-center h-20 sm:h-24 lg:h-auto">
         <button routerLink="/dashboard" (click)="closeSidebarOnMobile()" class="flex items-center gap-2 group mb-[10px]">
           <i class="fas fa-brain text-black text-2xl group-hover:scale-110 transition-transform"></i>
           <span class="text-xl font-bold text-black tracking-tight">ScoreMyInterview</span>
