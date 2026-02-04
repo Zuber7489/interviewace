@@ -31,8 +31,9 @@ import { StateService } from '../../services/state.service';
       class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50 transition-transform duration-300 ease-in-out">
       
       <!-- Logo -->
-      <div class="p-6 border-b border-black/10 bg-gray-50">
-        <button routerLink="/dashboard" (click)="closeSidebarOnMobile()" class="flex items-center gap-2 group">
+      <div class="p-6 border-b border-black/10 bg-gray-50 flex items-center h-20 sm:h-24 lg:h-auto">
+        <div class="lg:hidden w-12 mr-2"></div> <!-- Spacer for mobile menu button -->
+        <button routerLink="/dashboard" (click)="closeSidebarOnMobile()" class="flex items-center gap-2 group mb-[10px]">
           <i class="fas fa-brain text-black text-2xl group-hover:scale-110 transition-transform"></i>
           <span class="text-xl font-bold text-black tracking-tight">ScoreMyInterview</span>
         </button>
@@ -80,18 +81,17 @@ import { StateService } from '../../services/state.service';
           <i class="fas fa-cog w-4 sm:w-5 flex-shrink-0"></i>
           <span class="text-sm sm:text-base">Settings</span>
         </a>
-      </nav>
 
-      
-
-      <!-- Logout -->
-      <div class="p-3 sm:p-4 border-t border-black/10">
         <button (click)="logout()"
           class="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-red-500/10 hover:text-red-600 transition-all min-h-[44px]">
           <i class="fas fa-sign-out-alt w-4 sm:w-5 flex-shrink-0"></i>
           <span class="text-sm sm:text-base">Logout</span>
         </button>
-      </div>
+      </nav>
+
+      
+
+
     </aside>
   `,
   styles: [`
