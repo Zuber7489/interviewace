@@ -1,44 +1,32 @@
 import { GoogleGenAI } from '@google/genai';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load environment variables
-const envPath = path.resolve(__dirname, '../../config.env');
-dotenv.config({ path: envPath });
-
-const API_KEY = process.env.API_KEY;
-
-export default async function handler(req, res) {
+export const handler = async (event, context) => {
   // Handle CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   try {
-    console.log('Generating interview report...');
-    const { history } = req.body;
-
-    if (!history || !Array.isArray(history) || history.length === 0) {
-      console.error('Invalid or empty history received:', history);
-      return res.status(400).json({ error: 'Invalid or empty interview history' });
+    const API_KEY = process.env.API_KEY;
+    if (!API_KEY) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'API_KEY not configured' }) };
     }
 
-    console.log(`Processing report for ${history.length} turns...`);
+    const body = JSON.parse(event.body || '{}');
+    const { history } = body;
 
-    if (!API_KEY) {
-      throw new Error('API_KEY not configured');
+    if (!history || !Array.isArray(history) || history.length === 0) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid or empty interview history' }) };
     }
 
     const client = new GoogleGenAI({ apiKey: API_KEY });
@@ -59,24 +47,17 @@ export default async function handler(req, res) {
         responseSchema: {
           type: 'OBJECT',
           properties: {
-            overallFeedback: {
-              type: 'STRING',
-              description: "A comprehensive summary of the candidate's performance, highlighting strengths and areas for improvement."
-            },
-            overallScore: {
-              type: 'NUMBER',
-              description: 'A final score for the interview, out of 100.'
-            },
+            overallFeedback: { type: 'STRING' },
+            overallScore: { type: 'NUMBER' },
             evaluatedQuestions: {
               type: 'ARRAY',
-              description: "A detailed breakdown of each question in the interview.",
               items: {
                 type: 'OBJECT',
                 properties: {
-                  question: { type: 'STRING', description: "The question asked by the interviewer." },
-                  answer: { type: 'STRING', description: "The candidate's transcribed answer." },
-                  feedback: { type: 'STRING', description: "Specific feedback on the candidate's answer." },
-                  score: { type: 'NUMBER', description: "A score for the answer from 0 to 10." }
+                  question: { type: 'STRING' },
+                  answer: { type: 'STRING' },
+                  feedback: { type: 'STRING' },
+                  score: { type: 'NUMBER' }
                 },
                 required: ["question", "answer", "feedback", "score"]
               }
@@ -87,15 +68,21 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log('Report generated successfully');
-    const jsonResponse = JSON.parse(response.text || '{}');
-    res.json(jsonResponse);
+    return {
+      statusCode: 200,
+      headers,
+      body: response.text
+    };
 
   } catch (error) {
     console.error('Error generating report:', error);
-    res.status(500).json({
-      error: 'Failed to generate report',
-      details: error.message
-    });
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: 'Failed to generate report',
+        details: error.message
+      })
+    };
   }
-}
+};
