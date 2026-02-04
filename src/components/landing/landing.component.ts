@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
            <span class="text-lg sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600 tracking-tight">ScoreMyInterview</span>
         </button>
         <div class="flex items-center gap-2 sm:gap-4 md:gap-6">
-          <a routerLink="/login" class="text-xs sm:text-sm md:text-base font-medium text-gray-600 hover:text-black transition-colors relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-black after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Login</a>
+         
           <a routerLink="/signup" class="bg-black hover:bg-gray-800 text-white text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 rounded-full font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 min-w-[88px] min-h-[44px] flex items-center justify-center">Get Started</a>
         </div>
       </nav>
