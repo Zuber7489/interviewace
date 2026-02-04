@@ -58,6 +58,17 @@ export class LiveAudioService {
     return history;
   }
 
+  resetSignals() {
+    this.zone.run(() => {
+      this.currentQuestionText.set('');
+      this.userTranscript.set('');
+      this.interimTranscript.set('');
+      this.chatHistory.set([]);
+      this.nextStartTime = 0;
+      this.clearChatHistoryStorage();
+    });
+  }
+
   private saveChatHistoryToStorage(history: Content[]) {
     try {
       localStorage.setItem(this.CHAT_HISTORY_KEY, JSON.stringify(history));
@@ -112,14 +123,23 @@ export class LiveAudioService {
     const sessionId = this.currentSessionId;
     this.sessionId = `session_${Date.now()}`;
 
-    // Load any existing chat history from storage
-    const existingHistory = this.loadChatHistoryFromStorage();
-    if (existingHistory.length > 0) {
-      console.log('📂 Loaded existing chat history from storage:', existingHistory.length, 'messages');
-      this.chatHistory.set(existingHistory);
-    } else {
+    // --- FRESH START HARD RESET ---
+    console.log('🔄 LiveAudioService: Hard resetting all internal state for a fresh session.');
+    this.nextStartTime = 0; // Reset scheduling timer
+    this.audioQueue = [];
+    this.isPlaying = false;
+
+    // Clear display signals immediately
+    this.zone.run(() => {
+      this.currentQuestionText.set('');
+      this.userTranscript.set('');
+      this.interimTranscript.set('');
       this.chatHistory.set([]);
-    }
+    });
+
+    // Clear stale history from storage to prevent leakage
+    this.clearChatHistoryStorage();
+    // ----------------------------
 
     const token = await this.getEphemeralToken();
     this.ai = new GoogleGenAI({
@@ -128,9 +148,13 @@ export class LiveAudioService {
     });
 
     // Create separate audio contexts for input and output
-    // Use device's native sample rate for better mobile compatibility
     this.inputAudioContext = new AudioContext();
     this.outputAudioContext = new AudioContext();
+
+    // CRITICAL: Resume context immediately to avoid silent start on some browsers
+    if (this.outputAudioContext.state === 'suspended') {
+      await this.outputAudioContext.resume();
+    }
 
     await this.setupMicrophone(sessionId);
     await this.connectToGemini(config, sessionId);
@@ -145,6 +169,7 @@ export class LiveAudioService {
     this.isSpeaking.set(false);
     this.isPlaying = false;
     this.audioQueue = [];
+    this.nextStartTime = 0; // Reset scheduling timer 
 
     // 2. Capture and detach resources synchronously to prevent race conditions
     const sessionToClose = this.session;
@@ -155,6 +180,8 @@ export class LiveAudioService {
 
     // Detach references so new session doesn't get clobbered
     this.session = undefined;
+    this.processorNode = undefined;
+    this.microphoneStream = undefined as any;
     // We don't set contexts to undefined as TS types expect them, 
     // but startSession will overwrite them safely now that we have local refs.
 
@@ -171,19 +198,20 @@ export class LiveAudioService {
       processor?.disconnect();
     } catch (e) { console.warn('Error disconnecting processor:', e); }
 
+    // Close contexts in background but ensure they are cleaned up
     if (inputCtx && inputCtx.state !== 'closed') {
-      try { await inputCtx.close(); } catch (e) { console.warn('Error closing input ctx:', e); }
+      inputCtx.close().catch(() => { });
     }
     if (outputCtx && outputCtx.state !== 'closed') {
-      try { await outputCtx.close(); } catch (e) { console.warn('Error closing output ctx:', e); }
+      outputCtx.close().catch(() => { });
     }
 
     try {
       this.speechRecognition?.stop();
     } catch (e) { }
 
-    // Clear chat history storage when session stops
-    this.clearChatHistoryStorage();
+    // Final purge of all signals to ensure clean state for next session
+    this.resetSignals();
   }
 
   private speechRecognition: any;
@@ -227,11 +255,11 @@ export class LiveAudioService {
 
     try {
       const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
-      const processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
-      microphoneSource.connect(processorNode);
+      this.processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
+      microphoneSource.connect(this.processorNode);
       console.log('🎵 Audio pipeline connected: microphone → processor');
 
-      processorNode.port.onmessage = (event) => {
+      this.processorNode.port.onmessage = (event) => {
         if (!this.isConnected() || !this.session || this.currentSessionId !== sessionId) return;
 
         const pcmData = event.data;
@@ -363,7 +391,7 @@ export class LiveAudioService {
             const currentHistory = this.chatHistory();
             const lastMsg = currentHistory[currentHistory.length - 1];
             let newHistory;
-            
+
             // Append to existing model message if it exists, otherwise create new
             if (lastMsg && lastMsg.role === 'model') {
               // IMMUTABLE UPDATE
@@ -376,7 +404,7 @@ export class LiveAudioService {
               this.currentQuestionText.set(cleanText);
               newHistory = [...currentHistory, { role: 'model', parts: [{ text: cleanText }] }];
             }
-            
+
             this.chatHistory.set(newHistory);
             this.saveChatHistoryToStorage(newHistory);
           }

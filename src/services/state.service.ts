@@ -14,6 +14,13 @@ export class StateService {
   // Current active interview session (in-memory)
   activeSession = signal<InterviewSession | null>(null);
 
+  private _historyUpdateTrigger = signal(0);
+
+  resetActiveSession() {
+    this.activeSession.set(null);
+    localStorage.removeItem(this.ACTIVE_SESSION_KEY);
+  }
+
   // Report Generation Preference
   enableReports = signal<boolean>(this.loadReportGenerationPreference());
 
@@ -39,6 +46,7 @@ export class StateService {
 
   // History signal derived from local storage + user
   history = computed(() => {
+    this._historyUpdateTrigger(); // Dependency for reactivity
     const user = this.authService.currentUser();
     if (!user) return [];
     const allHistory = this.getAllHistory();
@@ -69,6 +77,7 @@ export class StateService {
         }
 
         localStorage.setItem(this.HISTORY_KEY, JSON.stringify(allHistory));
+        this._historyUpdateTrigger.update(v => v + 1); // Trigger reactivity
 
         // Clear active session storage
         localStorage.removeItem(this.ACTIVE_SESSION_KEY);

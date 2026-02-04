@@ -1,9 +1,10 @@
-import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { AuthService } from '../../services/auth.service';
+import { LiveAudioService } from '../../services/live-audio.service';
 import { InterviewConfig, InterviewSession } from '../../models';
 
 @Component({
@@ -13,9 +14,10 @@ import { InterviewConfig, InterviewSession } from '../../models';
   templateUrl: './setup.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SetupComponent {
+export class SetupComponent implements OnInit {
   stateService = inject(StateService);
   authService = inject(AuthService);
+  liveAudioService = inject(LiveAudioService);
   router = inject(Router);
 
   setupMethod = signal<'form' | 'resume'>('form');
@@ -38,6 +40,12 @@ export class SetupComponent {
   currentUser = this.authService.currentUser;
   history = this.stateService.history;
   enableReports = this.stateService.enableReports;
+
+  ngOnInit() {
+    // Hard reset all session and audio state when entering setup
+    this.stateService.resetActiveSession();
+    this.liveAudioService.resetSignals();
+  }
 
   toggleReportGeneration() {
     this.stateService.toggleReportGeneration();
@@ -93,6 +101,7 @@ export class SetupComponent {
   }
 
   startInterview() {
+    this.liveAudioService.resetSignals(); // Final signal cleanup
     this.isLoading.set(true);
     this.error.set(null);
 
