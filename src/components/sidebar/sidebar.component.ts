@@ -25,7 +25,6 @@ import { StateService } from '../../services/state.service';
 
     <!-- Sidebar -->
     <aside 
-      [class]="sidebarClasses"
       [class.translate-x-0]="isSidebarOpen"
       [class.-translate-x-full]="!isSidebarOpen"
       class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50 transition-transform duration-300 ease-in-out">

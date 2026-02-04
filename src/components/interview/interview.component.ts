@@ -95,7 +95,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
       await this.liveAudioService.stopSession();
 
       // Check if report generation is enabled
-      const reportGenerationEnabled = localStorage.getItem('interviewace_report_generation') !== 'false';
+      const reportGenerationEnabled = this.stateService.enableReports();
 
       // Generate final report only if enabled
       if (this.session() && history.length > 0 && reportGenerationEnabled) {
@@ -134,7 +134,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
     } finally {
       this.isFinishing.set(false);
       // Navigate to dashboard if report generation is disabled, otherwise go to report page
-      const reportGenerationEnabled = localStorage.getItem('interviewace_report_generation') !== 'false';
+      const reportGenerationEnabled = this.stateService.enableReports();
       if (reportGenerationEnabled) {
         this.router.navigate(['/report'], { replaceUrl: true });
       } else {
