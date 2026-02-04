@@ -12,7 +12,7 @@ import { RouterLink } from '@angular/router';
       <nav class="glass sticky top-0 z-50 px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex justify-between items-center border-b border-black/10 backdrop-blur-md bg-white/80 supports-[backdrop-filter]:bg-white/40">
         <button class="flex items-center gap-1.5 sm:gap-2 group focus:outline-none" routerLink="/">
            <i class="fas fa-brain text-black text-xl sm:text-2xl group-hover:scale-110 transition-transform duration-300"></i>
-           <span class="text-lg sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600 tracking-tight">InterviewAce</span>
+           <span class="text-lg sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600 tracking-tight">ScoreMyInterview</span>
         </button>
         <div class="flex items-center gap-2 sm:gap-4 md:gap-6">
           <a routerLink="/login" class="text-xs sm:text-sm md:text-base font-medium text-gray-600 hover:text-black transition-colors relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-black after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Login</a>
@@ -80,7 +80,7 @@ import { RouterLink } from '@angular/router';
       </main>
 
       <footer class="py-6 sm:py-8 text-center text-gray-500 text-[10px] sm:text-xs md:text-sm border-t border-black/5 bg-white">
-        &copy; 2025 InterviewAce. Built with Gemini 2.0 Flash.
+        &copy; 2025 ScoreMyInterview. Built with Gemini 2.0 Flash.
       </footer>
     </div>
   `

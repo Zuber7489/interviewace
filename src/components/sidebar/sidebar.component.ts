@@ -34,7 +34,7 @@ import { StateService } from '../../services/state.service';
       <div class="p-6 border-b border-black/10 bg-gray-50">
         <button routerLink="/dashboard" (click)="closeSidebarOnMobile()" class="flex items-center gap-2 group">
           <i class="fas fa-brain text-black text-2xl group-hover:scale-110 transition-transform"></i>
-          <span class="text-xl font-bold text-black tracking-tight">InterviewAce</span>
+          <span class="text-xl font-bold text-black tracking-tight">ScoreMyInterview</span>
         </button>
       </div>
 

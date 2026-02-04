@@ -1,5 +1,5 @@
 {
-  "name": "Copy of InterviewAce – AI‑Powered Angular Interview Platform",
+  "name": "ScoreMyInterview – AI‑Powered Mock Interview Platform",
   "description": "An AI-powered platform to conduct realistic, structured, and time-based technical interviews for Angular developers. Get personalized interviews by providing your skills or pasting your resume, and receive detailed feedback to ace your next interview.",
   "requestFramePermissions": [
     "microphone"
