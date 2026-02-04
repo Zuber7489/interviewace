@@ -69,8 +69,6 @@ import { StateService } from '../../services/state.service';
           }
         </a>
 
-        <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-2 sm:px-3 mt-4 sm:mt-6">Profile</div>
-        
         <a routerLink="/dashboard/resume" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
           <i class="fas fa-file-upload w-4 sm:w-5 flex-shrink-0"></i>
