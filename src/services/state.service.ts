@@ -114,6 +114,20 @@ export class StateService {
 
         // Clear active session storage
         localStorage.removeItem(this.ACTIVE_SESSION_KEY);
+
+        // --- SaaS: Increment Interview Count ---
+        try {
+          const userRef = ref(database, `users/${user.id}`);
+          const newCount = (user.interviewsCount || 0) + 1;
+          await set(child(userRef, 'interviewsCount'), newCount);
+
+          // Update local signal to reflect immediately
+          this.authService.currentUser.update(u => u ? ({ ...u, interviewsCount: newCount }) : null);
+        } catch (saasErr) {
+          console.error("Failed to update SaaS usage count", saasErr);
+        }
+        // ----------------------------------------
+
       } catch (e) {
         console.error('Failed to save interview to history:', e);
       }
