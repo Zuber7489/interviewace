@@ -1,6 +1,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 import { ref as dbRef, getDatabase, update } from 'firebase/database';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from '../../firebase.config';
@@ -20,6 +21,9 @@ const database = getDatabase(app);
           <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4">Upload PDF Resume</h2>
             @if(uploading()) {
                 <div class="text-blue-600 mb-2 font-medium">Uploading {{ uploadProgress() }}%</div>
+            }
+            @if(error()) {
+                <div class="text-red-600 mb-2 font-medium">{{ error() }}</div>
             }
           <label
             class="group block w-full h-40 sm:h-48 md:h-64 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-black/50 hover:bg-black/5 transition-all duration-300">
@@ -116,8 +120,8 @@ export class DashboardResumeComponent {
   role = signal('');
   skills = signal('');
 
-  selectedFile: File | null = null;
-  resumeDownloadUrl = signal<string>('');
+  resumeText = signal<string>('');
+  error = signal<string>('');
 
   uploading = signal(false);
   uploadProgress = signal(0);
@@ -136,7 +140,6 @@ export class DashboardResumeComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      this.selectedFile = file;
       this.resumeFileName.set(file.name);
       this.fileSize.set(this.formatFileSize(file.size));
       this.error.set(''); // Clear previous errors
@@ -187,7 +190,6 @@ export class DashboardResumeComponent {
   removeFile() {
     this.resumeFileName.set('');
     this.fileSize.set('');
-    this.selectedFile = null;
     this.resumeText.set(''); // Changed from resumeDownloadUrl
     this.error.set(''); // Added error clear
   }
