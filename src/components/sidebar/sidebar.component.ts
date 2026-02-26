@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -150,6 +150,7 @@ export class SidebarComponent {
   authService = inject(AuthService);
   stateService = inject(StateService);
   router = inject(Router);
+  ngZone = inject(NgZone);
 
   currentUser = this.authService.currentUser;
   history = this.stateService.history;
@@ -174,7 +175,9 @@ export class SidebarComponent {
   async logout() {
     try {
       await this.authService.logout();
-      await this.router.navigate(['/login']);
+      this.ngZone.run(() => {
+        this.router.navigate(['/login']);
+      });
     } catch (error) {
       console.error('Logout error:', error);
     }

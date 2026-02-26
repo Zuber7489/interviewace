@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal, effect, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -149,6 +149,7 @@ export class DashboardSettingsComponent {
   authService = inject(AuthService);
   router = inject(Router);
   toastService = inject(ToastService);
+  ngZone = inject(NgZone);
 
   currentUser = this.authService.currentUser;
 
@@ -263,8 +264,14 @@ export class DashboardSettingsComponent {
     }
   }
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  async logout() {
+    try {
+      await this.authService.logout();
+      this.ngZone.run(() => {
+        this.router.navigate(['/login']);
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   }
 }

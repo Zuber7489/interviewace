@@ -1,5 +1,5 @@
 
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -7,9 +7,9 @@ import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
-    selector: 'app-signup',
-    imports: [CommonModule, FormsModule, RouterLink],
-    template: `
+  selector: 'app-signup',
+  imports: [CommonModule, FormsModule, RouterLink],
+  template: `
     <div class="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8 md:py-12">
       <div class="glass w-full max-w-md p-4 sm:p-6 md:p-8 rounded-2xl border border-black/10 animate-fade-in relative z-10">
         
@@ -68,36 +68,39 @@ import { ToastService } from '../../services/toast.service';
   `
 })
 export class SignupComponent {
-    authService = inject(AuthService);
-    router = inject(Router);
-    toastService = inject(ToastService);
+  authService = inject(AuthService);
+  router = inject(Router);
+  toastService = inject(ToastService);
+  ngZone = inject(NgZone);
 
-    name = '';
-    email = '';
-    password = '';
-    error = signal('');
-    isLoading = signal(false);
+  name = '';
+  email = '';
+  password = '';
+  error = signal('');
+  isLoading = signal(false);
 
-    async onSubmit(e: Event) {
-        e.preventDefault();
-        if (!this.name || !this.email || !this.password) return;
+  async onSubmit(e: Event) {
+    e.preventDefault();
+    if (!this.name || !this.email || !this.password) return;
 
-        this.isLoading.set(true);
-        this.error.set('');
+    this.isLoading.set(true);
+    this.error.set('');
 
-        try {
-            await this.authService.signup({
-                name: this.name,
-                email: this.email,
-                password: this.password
-            });
-            this.toastService.success('Account created successfully!');
-            this.router.navigate(['/dashboard']);
-        } catch (err: any) {
-            this.error.set(err.message || 'Email already registered or another error occurred');
-            this.toastService.error('Sign up failed.');
-        } finally {
-            this.isLoading.set(false);
-        }
+    try {
+      await this.authService.signup({
+        name: this.name,
+        email: this.email,
+        password: this.password
+      });
+      this.toastService.success('Account created successfully!');
+      this.ngZone.run(() => {
+        this.router.navigate(['/dashboard']);
+      });
+    } catch (err: any) {
+      this.error.set(err.message || 'Email already registered or another error occurred');
+      this.toastService.error('Sign up failed.');
+    } finally {
+      this.isLoading.set(false);
     }
+  }
 }
