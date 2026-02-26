@@ -117,6 +117,7 @@ export class AuthService {
             return true;
         } catch (error) {
             console.error(error);
+            this.authInitialized.set(true); // Restore on error
             throw error;
         }
     }
@@ -128,11 +129,13 @@ export class AuthService {
             return true;
         } catch (error) {
             console.error(error);
+            this.authInitialized.set(true); // Restore on error
             throw error;
         }
     }
 
     async logout(): Promise<void> {
+        this.authInitialized.set(false); // Reset to catch the state change
         await signOut(auth);
         this.currentUser.set(null);
     }
