@@ -24,8 +24,9 @@ dist-ssr
 *.sw?
 
 # Environment files with secrets
-# src/environments/environment.ts
-# src/environments/environment.prod.ts
+src/environments/environment.ts
+src/environments/environment.prod.ts
+src/firebase.config.ts
 
 # Dotenv
 .env
