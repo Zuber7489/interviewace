@@ -130,6 +130,11 @@ export class SetupComponent implements OnInit {
       startTime: Date.now(),
     };
 
+    // Firebase cannot store undefined properties. Strip them out.
+    if (session.config.resumeText === undefined) {
+      delete session.config.resumeText;
+    }
+
     this.stateService.startInterview(session);
     this.router.navigate(['/interview']);
   }

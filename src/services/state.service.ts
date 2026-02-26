@@ -93,9 +93,12 @@ export class StateService {
 
     if (session && user) {
       try {
+        // Firebase crashes if anything is 'undefined'. We must clean the session safely.
+        const cleanSession = JSON.parse(JSON.stringify(session));
+
         // Save to Firebase under users/[uid]/history/[session_id]
         const sessionRef = ref(database, `users/${user.id}/history/${session.id}`);
-        await set(sessionRef, session);
+        await set(sessionRef, cleanSession);
 
         // Update local list
         const currentList = this.historyList();
