@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { GeminiService } from '../../services/gemini.service';
 import { LiveAudioService } from '../../services/live-audio.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-interview',
@@ -17,6 +18,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
   geminiService = inject(GeminiService);
   liveAudioService = inject(LiveAudioService);
   router = inject(Router);
+  toastService = inject(ToastService);
 
   session = this.stateService.activeSession;
 
@@ -128,8 +130,10 @@ export class InterviewComponent implements OnInit, OnDestroy {
       }
 
       this.stateService.finishInterview();
+      this.toastService.success('Interview completed!');
     } catch (e) {
       console.error("Error during interview finishing:", e);
+      this.toastService.error('Failed to save interview session.');
       this.stateService.finishInterview();
     } finally {
       this.isFinishing.set(false);
