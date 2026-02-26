@@ -2,6 +2,7 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { Router } from '@angular/router';
 import { getDatabase, ref as dbRef, update, get } from 'firebase/database';
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -101,6 +102,7 @@ const database = getDatabase(app);
 export class DashboardSettingsComponent {
   authService = inject(AuthService);
   router = inject(Router);
+  toastService = inject(ToastService);
 
   currentUser = this.authService.currentUser;
 
@@ -151,10 +153,12 @@ export class DashboardSettingsComponent {
       await update(dbRef(database, `users/${user.id}`), {
         name: this.name()
       });
+      this.toastService.success('Profile updated successfully!');
       this.profileSuccess.set('Profile updated successfully!');
       setTimeout(() => this.profileSuccess.set(''), 3000);
     } catch (err) {
       console.error(err);
+      this.toastService.error('Failed to update profile.');
     } finally {
       this.savingProfile.set(false);
     }
@@ -173,10 +177,12 @@ export class DashboardSettingsComponent {
         duration: Number(this.defaultDuration()),
         language: this.preferredLanguage()
       });
+      this.toastService.success('Preferences saved safely!');
       this.prefSuccess.set('Preferences saved successfully!');
       setTimeout(() => this.prefSuccess.set(''), 3000);
     } catch (e) {
       console.error(e);
+      this.toastService.error('Failed to save preferences.');
     } finally {
       this.savingPref.set(false);
     }

@@ -2,6 +2,7 @@ import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { ref as dbRef, getDatabase, update } from 'firebase/database';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { firebaseConfig } from '../../firebase.config';
@@ -111,6 +112,7 @@ const database = getDatabase(app);
 })
 export class DashboardResumeComponent {
   authService = inject(AuthService);
+  toastService = inject(ToastService);
 
   resumeFileName = signal<string>('');
   fileSize = signal<string>('');
@@ -170,9 +172,11 @@ export class DashboardResumeComponent {
       }
       this.resumeText.set(fullText);
       this.uploadProgress.set(100);
+      this.toastService.success('PDF parsed gracefully!');
     } catch (e: any) {
       console.error("PDF Parsing failed", e);
       this.error.set("Failed to parse PDF.");
+      this.toastService.error('Failed to read PDF file.');
       this.removeFile();
     } finally {
       setTimeout(() => {
@@ -219,8 +223,10 @@ export class DashboardResumeComponent {
 
       await update(dbRef(database), updates);
       this.successMessage.set('Profile saved successfully!');
+      this.toastService.success('Profile saved successfully!');
     } catch (err) {
       console.error("Save failed", err);
+      this.toastService.error('Failed to save profile!');
     } finally {
       this.saving.set(false);
     }
