@@ -15,54 +15,38 @@ const __dirname = path.dirname(__filename);
 // Explicitly point to config.env in the current directory (renamed to avoid gitignore issues during setup)
 const envPath = path.resolve(__dirname, 'config.env');
 console.log('Loading env from:', envPath);
-console.log('Current working directory:', process.cwd());
-console.log('Script directory:', __dirname);
 
 // Try loading from standard locations
 const result = dotenv.config({ path: envPath });
 
 if (result.error) {
-    console.log('Standard dotenv.config() failed for config.env...');
     if (fs.existsSync(envPath)) {
         dotenv.config({ path: envPath });
     } else {
-        console.error('CRITICAL: config.env file not found at', envPath);
+        console.warn('config.env file not found at', envPath);
     }
 }
 
-console.log('Environment variables loaded. Checking API_KEY...');
 const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-    console.error('ERROR: API_KEY is NOT set. Debugging content...');
-    // Last ditch debug: read the file manually
-    try {
-        const raw = fs.readFileSync('config.env', 'utf8');
-        console.log('Raw config.env content length:', raw.length);
-        console.log('First 20 chars:', raw.substring(0, 20));
-
-        // Manual parse fallback
-        const manualParse = dotenv.parse(raw);
-        if (manualParse.API_KEY) {
-            console.log('Manual parse succeeded! Using that.');
-            process.env.API_KEY = manualParse.API_KEY;
-        }
-    } catch (e) {
-        console.error('Could not read .env manually:', e.message);
-    }
-}
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // Use the API_KEY loaded above
-if (!process.env.API_KEY && API_KEY) {
-    // If manual parse worked but process.env wasn't set (unlikely but safe)
-    process.env.API_KEY = API_KEY;
-}
-
 const client = new GoogleGenAI({ apiKey: API_KEY });
+
+// --- Static File Serving & SPA Fallback ---
+// Serve static files from the 'dist/interviewace/browser' directory
+const buildPath = path.resolve(__dirname, 'dist', 'interviewace', 'browser');
+if (fs.existsSync(buildPath)) {
+    console.log('Serving production build from:', buildPath);
+    app.use(express.static(buildPath));
+} else {
+    // If build doesn't exist, serve the root (for dev environments using root index.html)
+    console.log('Build directory not found, serving files from root as fallback...');
+    app.use(express.static(__dirname));
+}
 
 // Endpoint to get an ephemeral token
 app.get('/api/token', async (req, res) => {
@@ -105,8 +89,6 @@ app.post('/api/report', async (req, res) => {
             console.error('Invalid or empty history received:', history);
             return res.status(400).json({ error: 'Invalid or empty interview history' });
         }
-
-        console.log(`Processing report for ${history.length} turns...`);
 
         const systemInstruction = `You are an interview result summarizer. Your task is to extract ACTUAL answers from the provided history and grade them. STRICT RULES: 
 1. You must ONLY use text explicitly present in the 'user' role messages within the history as the candidate's answer. 
@@ -172,8 +154,25 @@ Your response must be a single JSON object.`;
     }
 });
 
+// CRITICAL: Handle the SPA fallback to index.html for all sub-routes
+// This prevents 404 errors when refreshing on deep links like /dashboard/history
+app.get('*', (req, res) => {
+    // 1. Try serving from the production build first
+    const prodIndex = path.join(buildPath, 'index.html');
+    if (fs.existsSync(prodIndex)) {
+        return res.sendFile(prodIndex);
+    }
+    // 2. Fallback to the root index.html
+    const rootIndex = path.resolve(__dirname, 'index.html');
+    if (fs.existsSync(rootIndex)) {
+        return res.sendFile(rootIndex);
+    }
+    res.status(404).send('index.html not found. Please build the project: npm run build');
+});
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`Token server running on http://localhost:${PORT}`);
-    console.log('Frontend should call GET /api/token to get an ephemeral token');
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Unified SaaS Server running on http://localhost:${PORT}`);
+    console.log('✅ API Endpoints: /api/token, /api/report');
+    console.log('✅ SPA Fallback: Enabled (Prevents 404s on refresh)');
 });
