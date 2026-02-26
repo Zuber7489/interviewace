@@ -83,6 +83,52 @@ const database = getDatabase(app);
           </form>
         </div>
 
+        <!-- Subscription & Billing -->
+        <div class="glass-card p-3 sm:p-4 md:p-6 rounded-2xl border border-black/5">
+          <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4 md:mb-6">Subscription & Billing</h2>
+          
+          <div class="space-y-4">
+            <div class="p-4 rounded-xl bg-gray-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div class="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Current Plan</div>
+                <div class="flex items-center gap-2">
+                  <span class="text-lg sm:text-xl font-bold text-black capitalize">{{ currentUser()?.subscription || 'Free' }}</span>
+                  @if(currentUser()?.subscription === 'pro') {
+                    <span class="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] sm:text-xs font-bold rounded-full">Active</span>
+                  }
+                </div>
+              </div>
+              
+              <div class="flex flex-col sm:items-end">
+                <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 text-center">Interviews Used</div>
+                <div class="text-sm sm:text-base font-medium text-black text-center">
+                  {{ currentUser()?.interviewsCount || 0 }} / {{ currentUser()?.subscription === 'pro' ? '∞' : (currentUser()?.maxInterviews || 2) }}
+                </div>
+              </div>
+            </div>
+
+            @if(currentUser()?.subscription === 'free') {
+              <div class="p-4 rounded-xl bg-black text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:scale-[1.01]">
+                <div class="space-y-1">
+                  <h3 class="font-bold text-sm sm:text-base">Upgrade to Pro</h3>
+                  <p class="text-[10px] sm:text-xs text-gray-400">Get unlimited interviews, resume tailoring, and advanced feedback.</p>
+                </div>
+                <button (click)="upgradeToPro()" [disabled]="upgrading()"
+                  class="whitespace-nowrap px-4 py-2 bg-white text-black text-xs sm:text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors">
+                  {{ upgrading() ? 'Processing...' : 'Upgrade for ₹999' }}
+                </button>
+              </div>
+            } @else {
+               <div class="p-4 rounded-xl border border-green-200 bg-green-50/50">
+                  <p class="text-xs sm:text-sm text-green-800 font-medium flex items-center gap-2">
+                    <i class="fas fa-crown"></i>
+                    You are on the Pro plan! Enjoy unlimited technical interviews.
+                  </p>
+               </div>
+            }
+          </div>
+        </div>
+
         <!-- Account Actions -->
         <div class="glass-card p-3 sm:p-4 md:p-6 rounded-2xl border border-black/5">
           <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4 md:mb-6">Account Actions</h2>
@@ -116,6 +162,8 @@ export class DashboardSettingsComponent {
 
   savingPref = signal(false);
   prefSuccess = signal('');
+
+  upgrading = signal(false);
 
   constructor() {
     effect(() => {
@@ -185,6 +233,33 @@ export class DashboardSettingsComponent {
       this.toastService.error('Failed to save preferences.');
     } finally {
       this.savingPref.set(false);
+    }
+  }
+
+  async upgradeToPro() {
+    const user = this.currentUser();
+    if (!user) return;
+
+    this.upgrading.set(true);
+
+    try {
+      // Simulate Payment Gateway Delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Update to Pro in Firebase
+      await update(dbRef(database, `users/${user.id}`), {
+        subscription: 'pro'
+      });
+
+      // Update local signal
+      this.authService.currentUser.update(u => u ? ({ ...u, subscription: 'pro' }) : u);
+
+      this.toastService.success('Welcome to Pro! Your account has been upgraded.');
+    } catch (e) {
+      console.error(e);
+      this.toastService.error('Upgrade failed. Please try again.');
+    } finally {
+      this.upgrading.set(false);
     }
   }
 
