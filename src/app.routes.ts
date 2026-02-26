@@ -51,7 +51,7 @@ export const routes: Routes = [
         children: [
             {
                 path: '',
-                loadComponent: () => import('./components/setup/setup.component').then(m => m.SetupComponent)
+                loadComponent: () => import('./components/dashboard-home/dashboard-home.component').then(m => m.DashboardHomeComponent)
             },
             {
                 path: 'interviews',
