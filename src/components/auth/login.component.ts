@@ -1,5 +1,5 @@
 
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -62,6 +62,7 @@ export class LoginComponent {
     authService = inject(AuthService);
     router = inject(Router);
     toastService = inject(ToastService);
+    ngZone = inject(NgZone);
 
     email = '';
     password = '';
@@ -78,7 +79,9 @@ export class LoginComponent {
         try {
             await this.authService.login(this.email, this.password);
             this.toastService.success('Successfully logged in!');
-            this.router.navigate(['/dashboard']);
+            this.ngZone.run(() => {
+                this.router.navigate(['/dashboard']);
+            });
         } catch (err: any) {
             this.error.set(err.message || 'Invalid email or password');
             this.toastService.error('Login failed.');

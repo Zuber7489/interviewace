@@ -1,6 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, NgZone } from '@angular/core';
 import { User } from '../models';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+// ... existing imports ...
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -26,44 +27,47 @@ export class AuthService {
     currentUser = signal<User | null>(null);
     isLoggedIn = computed(() => !!this.currentUser());
     authInitialized = signal<boolean>(false);
+    private ngZone = inject(NgZone);
 
     constructor() {
         onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser) {
-                // Fetch user data from Realtime Database
-                const dbRef = ref(database);
-                try {
-                    const snapshot = await get(child(dbRef, `users/${firebaseUser.uid}`));
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-                        this.currentUser.set({
-                            id: firebaseUser.uid,
-                            email: firebaseUser.email || '',
-                            password: '', // Don't store or retrieve password
-                            name: userData.name || firebaseUser.displayName || 'User',
-                            subscription: userData.subscription || 'free',
-                            interviewsCount: userData.interviewsCount || 0,
-                            maxInterviews: userData.maxInterviews || 2
-                        });
-                    } else {
-                        // Fallback if DB record doesn't exist
-                        this.currentUser.set({
-                            id: firebaseUser.uid,
-                            email: firebaseUser.email || '',
-                            password: '',
-                            name: firebaseUser.displayName || 'User',
-                            subscription: 'free',
-                            interviewsCount: 0,
-                            maxInterviews: 2
-                        });
+            this.ngZone.run(async () => {
+                if (firebaseUser) {
+                    // Fetch user data from Realtime Database
+                    const dbRef = ref(database);
+                    try {
+                        const snapshot = await get(child(dbRef, `users/${firebaseUser.uid}`));
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            this.currentUser.set({
+                                id: firebaseUser.uid,
+                                email: firebaseUser.email || '',
+                                password: '', // Don't store or retrieve password
+                                name: userData.name || firebaseUser.displayName || 'User',
+                                subscription: userData.subscription || 'free',
+                                interviewsCount: userData.interviewsCount || 0,
+                                maxInterviews: userData.maxInterviews || 2
+                            });
+                        } else {
+                            // Fallback if DB record doesn't exist
+                            this.currentUser.set({
+                                id: firebaseUser.uid,
+                                email: firebaseUser.email || '',
+                                password: '',
+                                name: firebaseUser.displayName || 'User',
+                                subscription: 'free',
+                                interviewsCount: 0,
+                                maxInterviews: 2
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error fetching user data", e);
                     }
-                } catch (e) {
-                    console.error("Error fetching user data", e);
+                } else {
+                    this.currentUser.set(null);
                 }
-            } else {
-                this.currentUser.set(null);
-            }
-            this.authInitialized.set(true);
+                this.authInitialized.set(true);
+            });
         });
     }
 

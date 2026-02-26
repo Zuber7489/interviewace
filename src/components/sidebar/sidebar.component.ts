@@ -171,9 +171,13 @@ export class SidebarComponent {
     return '';
   }
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  async logout() {
+    try {
+      await this.authService.logout();
+      await this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   }
 
   viewReport(sessionId: string) {
