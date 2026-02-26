@@ -38,6 +38,11 @@ export const routes: Routes = [
         canActivate: [publicGuard]
     },
     {
+        path: 'forgot-password',
+        loadComponent: () => import('./components/auth/forgot-password.component').then(m => m.ForgotPasswordComponent),
+        canActivate: [publicGuard]
+    },
+    {
         path: 'dashboard',
         loadComponent: () => import('./components/dashboard-layout/dashboard-layout.component').then(m => m.DashboardLayoutComponent),
         canActivate: [authGuard],

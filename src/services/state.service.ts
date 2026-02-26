@@ -1,27 +1,46 @@
-import { Injectable, signal, inject, computed } from '@angular/core';
+import { Injectable, signal, inject, computed, effect } from '@angular/core';
 import { InterviewSession } from '../models';
 import { AuthService } from './auth.service';
+import { getDatabase, ref, get, set, child } from 'firebase/database';
+import { initializeApp } from 'firebase/app';
+import { firebaseConfig } from '../firebase.config';
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 @Injectable({
   providedIn: 'root',
 })
 export class StateService {
   private authService = inject(AuthService);
-  private readonly HISTORY_KEY = 'interviewace_history';
   private readonly ACTIVE_SESSION_KEY = 'interviewace_active_session';
   private readonly REPORT_GENERATION_KEY = 'interviewace_report_generation';
 
   // Current active interview session (in-memory)
   activeSession = signal<InterviewSession | null>(null);
 
-  private _historyUpdateTrigger = signal(0);
+  // Instead of computing from local storage, we maintain a standalone signal that triggers fetched data.
+  historyList = signal<InterviewSession[]>([]);
+  history = computed(() => this.historyList());
+
+  constructor() {
+    // Whenever the user changes, reload history from Firebase
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user) {
+        this.fetchHistoryFromFirebase(user.id);
+      } else {
+        this.historyList.set([]);
+      }
+    });
+  }
 
   resetActiveSession() {
     this.activeSession.set(null);
     localStorage.removeItem(this.ACTIVE_SESSION_KEY);
   }
 
-  // Report Generation Preference
+  // Report Generation Preference (kept in LocalStorage since it's device-specific generally, or could be moved similarly)
   enableReports = signal<boolean>(this.loadReportGenerationPreference());
 
   private loadReportGenerationPreference(): boolean {
@@ -44,46 +63,54 @@ export class StateService {
     }
   }
 
-  // History signal derived from local storage + user
-  history = computed(() => {
-    this._historyUpdateTrigger(); // Dependency for reactivity
-    const user = this.authService.currentUser();
-    if (!user) return [];
-    const allHistory = this.getAllHistory();
-    return allHistory.filter((s: InterviewSession) => s.userId === user.id).sort((a: InterviewSession, b: InterviewSession) => b.startTime - a.startTime);
-  });
+  async fetchHistoryFromFirebase(userId: string) {
+    try {
+      const dbRef = ref(database);
+      const snapshot = await get(child(dbRef, `users/${userId}/history`));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        // history nodes are stored by ID under history object
+        const parsedHistory: InterviewSession[] = Object.values(data);
+        parsedHistory.sort((a, b) => b.startTime - a.startTime);
+        this.historyList.set(parsedHistory);
+      } else {
+        this.historyList.set([]);
+      }
+    } catch (err) {
+      console.error("Failed fetching history from FB", err);
+    }
+  }
 
   startInterview(session: InterviewSession) {
     this.activeSession.set(session);
-    // Save active session to localStorage for recovery
+    // Keep temporary active session in local storage for crash recovery
     this.saveActiveSession(session);
   }
 
-  finishInterview() {
+  async finishInterview() {
     const session = this.activeSession();
-    if (session && this.authService.currentUser()) {
+    const user = this.authService.currentUser();
+
+    if (session && user) {
       try {
-        // Save to history
-        const allHistory = this.getAllHistory();
+        // Save to Firebase under users/[uid]/history/[session_id]
+        const sessionRef = ref(database, `users/${user.id}/history/${session.id}`);
+        await set(sessionRef, session);
 
-        // Check if session already exists to avoid duplicates
-        const existingIndex = allHistory.findIndex((s: InterviewSession) => s.id === session.id);
+        // Update local list
+        const currentList = this.historyList();
+        const existingIndex = currentList.findIndex(s => s.id === session.id);
+        const newList = [...currentList];
         if (existingIndex >= 0) {
-          // Update existing session
-          allHistory[existingIndex] = session;
+          newList[existingIndex] = session;
         } else {
-          // Add new session
-          allHistory.push(session);
+          newList.unshift(session);
         }
-
-        localStorage.setItem(this.HISTORY_KEY, JSON.stringify(allHistory));
-        this._historyUpdateTrigger.update(v => v + 1); // Trigger reactivity
+        newList.sort((a, b) => b.startTime - a.startTime);
+        this.historyList.set(newList);
 
         // Clear active session storage
         localStorage.removeItem(this.ACTIVE_SESSION_KEY);
-
-        // Clear active session (or keep it for the report view until they navigate away)
-        // We'll keep it for now so ReportComponent can read it.
       } catch (e) {
         console.error('Failed to save interview to history:', e);
       }
@@ -91,8 +118,7 @@ export class StateService {
   }
 
   loadSession(sessionId: string) {
-    const allHistory = this.getAllHistory();
-    const session = allHistory.find((s: InterviewSession) => s.id === sessionId);
+    const session = this.historyList().find((s: InterviewSession) => s.id === sessionId);
     if (session) {
       this.activeSession.set(session);
     }
@@ -122,10 +148,5 @@ export class StateService {
     } catch (e) {
       console.error('Failed to save active session:', e);
     }
-  }
-
-  private getAllHistory(): InterviewSession[] {
-    const data = localStorage.getItem(this.HISTORY_KEY);
-    return data ? JSON.parse(data) : [];
   }
 }

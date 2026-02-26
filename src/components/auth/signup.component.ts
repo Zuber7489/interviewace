@@ -71,27 +71,24 @@ export class SignupComponent {
     error = signal('');
     isLoading = signal(false);
 
-    onSubmit(e: Event) {
+    async onSubmit(e: Event) {
         e.preventDefault();
         if (!this.name || !this.email || !this.password) return;
 
         this.isLoading.set(true);
         this.error.set('');
 
-        // Simulate network delay
-        setTimeout(() => {
-            const success = this.authService.signup({
+        try {
+            await this.authService.signup({
                 name: this.name,
                 email: this.email,
                 password: this.password
             });
-
+            this.router.navigate(['/dashboard']);
+        } catch (err: any) {
+            this.error.set(err.message || 'Email already registered or another error occurred');
+        } finally {
             this.isLoading.set(false);
-            if (success) {
-                this.router.navigate(['/dashboard']);
-            } else {
-                this.error.set('Email already registered');
-            }
-        }, 1000);
+        }
     }
 }

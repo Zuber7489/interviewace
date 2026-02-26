@@ -1,53 +1,104 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { User } from '../models';
+import { initializeApp } from 'firebase/app';
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    sendPasswordResetEmail,
+    updateProfile
+} from 'firebase/auth';
+import { getDatabase, ref, set, get, child } from 'firebase/database';
+import { getStorage } from 'firebase/storage';
+import { firebaseConfig } from '../firebase.config';
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
+export const storage = getStorage(app);
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    private readonly USERS_KEY = 'interviewace_users';
-    private readonly SESSION_KEY = 'interviewace_session';
-
-    currentUser = signal<User | null>(this.loadSession());
+    currentUser = signal<User | null>(null);
     isLoggedIn = computed(() => !!this.currentUser());
+    authInitialized = signal<boolean>(false);
 
-    constructor() { }
-
-    private loadSession(): User | null {
-        const session = localStorage.getItem(this.SESSION_KEY);
-        return session ? JSON.parse(session) : null;
+    constructor() {
+        onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser) {
+                // Fetch user data from Realtime Database
+                const dbRef = ref(database);
+                try {
+                    const snapshot = await get(child(dbRef, `users/${firebaseUser.uid}`));
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        this.currentUser.set({
+                            id: firebaseUser.uid,
+                            email: firebaseUser.email || '',
+                            password: '', // Don't store or retrieve password
+                            name: userData.name || firebaseUser.displayName || 'User'
+                        });
+                    } else {
+                        // Fallback if DB record doesn't exist
+                        this.currentUser.set({
+                            id: firebaseUser.uid,
+                            email: firebaseUser.email || '',
+                            password: '',
+                            name: firebaseUser.displayName || 'User'
+                        });
+                    }
+                } catch (e) {
+                    console.error("Error fetching user data", e);
+                }
+            } else {
+                this.currentUser.set(null);
+            }
+            this.authInitialized.set(true);
+        });
     }
 
-    signup(user: Omit<User, 'id'>): boolean {
-        const users = this.getUsers();
-        if (users.some(u => u.email === user.email)) {
-            return false; // Email exists
-        }
-        const newUser: User = { ...user, id: crypto.randomUUID() };
-        users.push(newUser);
-        localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
-        this.login(user.email, user.password);
-        return true;
-    }
+    async signup(user: Omit<User, 'id'>): Promise<boolean> {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
 
-    login(email: string, pass: string): boolean {
-        const users = this.getUsers();
-        const user = users.find(u => u.email === email && u.password === pass);
-        if (user) {
-            localStorage.setItem(this.SESSION_KEY, JSON.stringify(user));
-            this.currentUser.set(user);
+            // Set display name in Auth
+            await updateProfile(userCredential.user, {
+                displayName: user.name
+            });
+
+            // Store user in Realtime Database
+            await set(ref(database, 'users/' + userCredential.user.uid), {
+                name: user.name,
+                email: user.email
+            });
+
             return true;
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-        return false;
     }
 
-    logout() {
-        localStorage.removeItem(this.SESSION_KEY);
+    async login(email: string, pass: string): Promise<boolean> {
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            return true;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async logout(): Promise<void> {
+        await signOut(auth);
         this.currentUser.set(null);
     }
 
-    private getUsers(): User[] {
-        const users = localStorage.getItem(this.USERS_KEY);
-        return users ? JSON.parse(users) : [];
+    async resetPassword(email: string): Promise<void> {
+        await sendPasswordResetEmail(auth, email);
     }
 }
