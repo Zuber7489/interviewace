@@ -2,10 +2,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { LegalFooterComponent } from '../legal/legal-footer.component';
 
 @Component({
     selector: 'app-landing',
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule, RouterLink, LegalFooterComponent],
     template: `
     <div class="min-h-screen flex flex-col font-sans selection:bg-black/30">
       <!-- Navbar -->
@@ -15,7 +16,8 @@ import { RouterLink } from '@angular/router';
            <span class="text-lg sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600 tracking-tight">ScoreMyInterview</span>
         </button>
         <div class="flex items-center gap-2 sm:gap-4 md:gap-6">
-         
+          <a routerLink="/about" class="hidden sm:block text-sm font-medium text-gray-600 hover:text-black transition-colors">About</a>
+          <a routerLink="/contact" class="hidden sm:block text-sm font-medium text-gray-600 hover:text-black transition-colors">Contact</a>
           <a routerLink="/signup" class="bg-black hover:bg-gray-800 text-white text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 rounded-full font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 min-w-[88px] min-h-[44px] flex items-center justify-center">Get Started</a>
         </div>
       </nav>
@@ -181,9 +183,7 @@ import { RouterLink } from '@angular/router';
         </div>
       </main>
 
-      <footer class="py-6 sm:py-8 text-center text-gray-500 text-[10px] sm:text-xs md:text-sm border-t border-black/5 bg-white mt-12 sm:mt-20">
-        &copy; 2025 ScoreMyInterview. Built with Gemini 2.0 Flash.
-      </footer>
+      <app-legal-footer />
     </div>
   `
 })

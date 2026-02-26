@@ -44,10 +44,21 @@ import { StateService } from '../../services/state.service';
             <i class="fas fa-user text-black text-sm sm:text-lg"></i>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="font-bold text-black text-xs sm:text-sm truncate">{{ currentUser()?.name || 'User' }}</p>
+            <p class="font-bold text-black text-xs sm:text-sm truncate flex items-center gap-1.5">
+              {{ currentUser()?.name || 'User' }}
+              @if(currentUser()?.subscription === 'pro') {
+                <i class="fas fa-crown text-amber-500 text-[10px]" title="Pro Member"></i>
+              }
+            </p>
             <p class="text-[10px] sm:text-xs text-gray-600 truncate">{{ currentUser()?.email || '' }}</p>
           </div>
         </div>
+        @if(currentUser()?.subscription === 'free') {
+          <div class="mt-4 p-3 bg-black rounded-xl text-white text-[10px] sm:text-xs">
+            <p class="font-bold mb-1 italic">Free Plan Limit: {{ (currentUser()?.interviewsCount || 0) }}/{{ (currentUser()?.maxInterviews || 2) }}</p>
+            <a routerLink="/dashboard/settings" class="underline hover:text-gray-300">Upgrade to Pro</a>
+          </div>
+        }
       </div>
 
       <!-- Navigation Menu -->
@@ -72,6 +83,12 @@ import { StateService } from '../../services/state.service';
           class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
           <i class="fas fa-cog w-4 sm:w-5 flex-shrink-0"></i>
           <span class="text-sm sm:text-base">Settings</span>
+        </a>
+
+        <a routerLink="/contact" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
+          class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
+          <i class="fas fa-question-circle w-4 sm:w-5 flex-shrink-0"></i>
+          <span class="text-sm sm:text-base">Help & Support</span>
         </a>
 
         <button (click)="logout()"

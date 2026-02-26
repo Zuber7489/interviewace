@@ -81,5 +81,29 @@ export const routes: Routes = [
         loadComponent: () => import('./components/report/report.component').then(m => m.ReportComponent),
         canActivate: [authGuard]
     },
+    {
+        path: 'about',
+        loadComponent: () => import('./components/legal/about.component').then(m => m.AboutComponent)
+    },
+    {
+        path: 'contact',
+        loadComponent: () => import('./components/legal/contact.component').then(m => m.ContactComponent)
+    },
+    {
+        path: 'privacy-policy',
+        loadComponent: () => import('./components/legal/privacy-policy.component').then(m => m.PrivacyPolicyComponent)
+    },
+    {
+        path: 'terms-of-service',
+        loadComponent: () => import('./components/legal/terms-of-service.component').then(m => m.TermsOfServiceComponent)
+    },
+    {
+        path: 'cookie-policy',
+        loadComponent: () => import('./components/legal/cookie-policy.component').then(m => m.CookiePolicyComponent)
+    },
+    {
+        path: 'refund-policy',
+        loadComponent: () => import('./components/legal/refund-policy.component').then(m => m.RefundPolicyComponent)
+    },
     { path: '**', redirectTo: '' }
 ];

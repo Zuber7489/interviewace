@@ -2,10 +2,11 @@ import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { LegalFooterComponent } from './legal-footer.component';
 
 @Component({
     selector: 'app-contact',
-    imports: [RouterLink, FormsModule, CommonModule],
+    imports: [RouterLink, FormsModule, CommonModule, LegalFooterComponent],
     template: `
     <div class="min-h-screen flex flex-col font-sans bg-white">
       <nav class="sticky top-0 z-50 px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center border-b border-black/10 backdrop-blur-md bg-white/80">

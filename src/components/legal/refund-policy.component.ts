@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LegalFooterComponent } from './legal-footer.component';
 
 @Component({
-    selector: 'app-refund-policy',
-    imports: [RouterLink],
-    template: `
+  selector: 'app-refund-policy',
+  imports: [RouterLink, LegalFooterComponent],
+  template: `
     <div class="min-h-screen flex flex-col font-sans bg-white">
       <nav class="sticky top-0 z-50 px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center border-b border-black/10 backdrop-blur-md bg-white/80">
         <a routerLink="/" class="flex items-center gap-2 group">
