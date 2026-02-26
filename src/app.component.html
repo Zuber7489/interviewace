@@ -1,1 +1,38 @@
 <router-outlet></router-outlet>
+
+<!-- Global Toast Container -->
+<div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+    @for(toast of toastService.toasts(); track toast.id) {
+    <div class="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-md min-w-[280px] max-w-sm transition-all duration-300 animate-slide-in-right"
+        [ngClass]="{
+        'bg-green-500/10 border-green-500/20 text-green-700': toast.type === 'success',
+        'bg-red-500/10 border-red-500/20 text-red-700': toast.type === 'error',
+        'bg-blue-500/10 border-blue-500/20 text-blue-700': toast.type === 'info'
+      }">
+
+        <!-- Icons based on type -->
+        <div class="flex-shrink-0">
+            @if(toast.type === 'success') {
+            <i class="fas fa-check-circle text-lg"></i>
+            }
+            @if(toast.type === 'error') {
+            <i class="fas fa-exclamation-circle text-lg"></i>
+            }
+            @if(toast.type === 'info') {
+            <i class="fas fa-info-circle text-lg"></i>
+            }
+        </div>
+
+        <!-- Message -->
+        <div class="flex-1 text-sm font-medium">
+            {{ toast.message }}
+        </div>
+
+        <!-- Close Button -->
+        <button (click)="toastService.remove(toast.id)"
+            class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors ml-2">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    }
+</div>

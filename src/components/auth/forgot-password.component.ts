@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-forgot-password',
@@ -55,6 +56,7 @@ import { AuthService } from '../../services/auth.service';
 export class ForgotPasswordComponent {
     authService = inject(AuthService);
     router = inject(Router);
+    toastService = inject(ToastService);
 
     email = '';
     error = signal('');
@@ -72,8 +74,10 @@ export class ForgotPasswordComponent {
         try {
             await this.authService.resetPassword(this.email);
             this.successMessage.set('Password reset email sent. Check your inbox.');
+            this.toastService.success('Reset link sent!');
         } catch (err: any) {
             this.error.set(err.message || 'Failed to send reset email');
+            this.toastService.error('Failed to send reset email.');
         } finally {
             this.isLoading.set(false);
         }

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-signup',
@@ -64,6 +65,7 @@ import { AuthService } from '../../services/auth.service';
 export class SignupComponent {
     authService = inject(AuthService);
     router = inject(Router);
+    toastService = inject(ToastService);
 
     name = '';
     email = '';
@@ -84,9 +86,11 @@ export class SignupComponent {
                 email: this.email,
                 password: this.password
             });
+            this.toastService.success('Account created successfully!');
             this.router.navigate(['/dashboard']);
         } catch (err: any) {
             this.error.set(err.message || 'Email already registered or another error occurred');
+            this.toastService.error('Sign up failed.');
         } finally {
             this.isLoading.set(false);
         }

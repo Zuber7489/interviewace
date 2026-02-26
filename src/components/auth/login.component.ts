@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-login',
@@ -60,6 +61,7 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
     authService = inject(AuthService);
     router = inject(Router);
+    toastService = inject(ToastService);
 
     email = '';
     password = '';
@@ -75,9 +77,11 @@ export class LoginComponent {
 
         try {
             await this.authService.login(this.email, this.password);
+            this.toastService.success('Successfully logged in!');
             this.router.navigate(['/dashboard']);
         } catch (err: any) {
             this.error.set(err.message || 'Invalid email or password');
+            this.toastService.error('Login failed.');
         } finally {
             this.isLoading.set(false);
         }
