@@ -40,7 +40,10 @@ export class AuthService {
                             id: firebaseUser.uid,
                             email: firebaseUser.email || '',
                             password: '', // Don't store or retrieve password
-                            name: userData.name || firebaseUser.displayName || 'User'
+                            name: userData.name || firebaseUser.displayName || 'User',
+                            subscription: userData.subscription || 'free',
+                            interviewsCount: userData.interviewsCount || 0,
+                            maxInterviews: userData.maxInterviews || 2
                         });
                     } else {
                         // Fallback if DB record doesn't exist
@@ -48,7 +51,10 @@ export class AuthService {
                             id: firebaseUser.uid,
                             email: firebaseUser.email || '',
                             password: '',
-                            name: firebaseUser.displayName || 'User'
+                            name: firebaseUser.displayName || 'User',
+                            subscription: 'free',
+                            interviewsCount: 0,
+                            maxInterviews: 2
                         });
                     }
                 } catch (e) {
@@ -83,10 +89,13 @@ export class AuthService {
                 displayName: user.name
             });
 
-            // Store user in Realtime Database
+            // Store user in Realtime Database with SaaS defaults
             await set(ref(database, 'users/' + userCredential.user.uid), {
                 name: user.name,
-                email: user.email
+                email: user.email,
+                subscription: 'free',
+                interviewsCount: 0,
+                maxInterviews: 2
             });
 
             return true;

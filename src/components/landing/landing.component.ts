@@ -76,10 +76,112 @@ import { RouterLink } from '@angular/router';
                     <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Get a comprehensive score and question-by-question breakdown to identify your weak spots immediately.</p>
                 </div>
             </div>
+            <!-- Pricing Section -->
+            <section id="pricing" class="mt-20 sm:mt-24 md:mt-32 w-full max-w-6xl mx-auto px-4 pb-12 sm:pb-16 animate-fade-in-up">
+                <div class="text-center mb-12 sm:mb-16">
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black mb-4">Simple, Transparent Pricing</h2>
+                    <p class="text-gray-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">Choose the plan that fits your career goals. No hidden fees, just pure interview prep.</p>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch pt-4">
+                    <!-- Free Tier -->
+                    <div class="glass-card flex flex-col p-6 sm:p-8 rounded-3xl border border-black/5 hover:border-black/20 transition-all hover:-translate-y-2 bg-white/50 relative overflow-hidden group">
+                        <div class="mb-6 sm:mb-8">
+                             <h3 class="text-xl sm:text-2xl font-bold text-black mb-2">Free</h3>
+                             <p class="text-gray-500 text-sm">Best for trying out the platform.</p>
+                        </div>
+                        <div class="flex items-baseline mb-6 sm:mb-8">
+                            <span class="text-4xl sm:text-5xl font-extrabold text-black">₹0</span>
+                            <span class="text-gray-500 ml-1">/month</span>
+                        </div>
+                        <ul class="space-y-3 sm:space-y-4 mb-8 sm:mb-10 flex-grow text-left">
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                2 Mock Interviews /mo
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                Basic AI Feedback
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base opacity-50">
+                                <i class="fas fa-times-circle text-gray-400 mr-2 text-lg"></i>
+                                Resume Tailoring
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base opacity-50">
+                                <i class="fas fa-times-circle text-gray-400 mr-2 text-lg"></i>
+                                Priority Support
+                            </li>
+                        </ul>
+                        <a routerLink="/signup" class="w-full py-3 sm:py-4 rounded-xl border border-black text-black font-bold hover:bg-black hover:text-white transition-all text-center">Get Started</a>
+                    </div>
+
+                    <!-- Pro Tier (Recommended) -->
+                    <div class="glass-card flex flex-col p-6 sm:p-8 rounded-3xl border-2 border-black/80 scale-100 sm:scale-105 transition-all hover:-translate-y-2 bg-white shadow-2xl shadow-black/10 relative overflow-hidden group">
+                         <div class="absolute top-0 right-0 bg-black text-white px-4 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-widest rounded-bl-xl">Recommended</div>
+                         <div class="mb-6 sm:mb-8">
+                             <h3 class="text-xl sm:text-2xl font-bold text-black mb-2">Pro</h3>
+                             <p class="text-gray-500 text-sm">For serious job seekers.</p>
+                        </div>
+                        <div class="flex items-baseline mb-6 sm:mb-8">
+                            <span class="text-4xl sm:text-5xl font-extrabold text-black">₹999</span>
+                            <span class="text-gray-500 ml-1">/month</span>
+                        </div>
+                        <ul class="space-y-3 sm:space-y-4 mb-8 sm:mb-10 flex-grow text-left">
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                Unlimited Mock Interviews
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                Advanced Question Analysis
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                AI-Tailored Resume Tips
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                Real-time Interview Coach
+                            </li>
+                        </ul>
+                        <a routerLink="/signup" class="w-full py-3 sm:py-4 rounded-xl bg-black text-white font-bold hover:bg-gray-800 transition-all text-center shadow-lg hover:shadow-xl">Upgrade to Pro</a>
+                    </div>
+
+                    <!-- Enterprise Tier -->
+                    <div class="glass-card flex flex-col p-6 sm:p-8 rounded-3xl border border-black/5 hover:border-black/20 transition-all hover:-translate-y-2 bg-white/50 relative overflow-hidden group">
+                        <div class="mb-6 sm:mb-8">
+                             <h3 class="text-xl sm:text-2xl font-bold text-black mb-2">Enterprise</h3>
+                             <p class="text-gray-500 text-sm">For bootcamps & universities.</p>
+                        </div>
+                        <div class="flex items-baseline mb-6 sm:mb-8">
+                            <span class="text-4xl sm:text-5xl font-extrabold text-black">Contact</span>
+                        </div>
+                        <ul class="space-y-3 sm:space-y-4 mb-8 sm:mb-10 flex-grow text-left">
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                50+ Team Accounts
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                Custom Interview Personas
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                Bulk Export Reports
+                            </li>
+                            <li class="flex items-center text-gray-700 text-sm sm:text-base">
+                                <i class="fas fa-check-circle text-black mr-2 text-lg"></i>
+                                Dedicated Support Manager
+                            </li>
+                        </ul>
+                        <button class="w-full py-3 sm:py-4 rounded-xl border border-black/20 text-gray-600 font-bold hover:bg-black hover:text-white transition-all">Contact Sales</button>
+                    </div>
+                </div>
+            </section>
         </div>
       </main>
 
-      <footer class="py-6 sm:py-8 text-center text-gray-500 text-[10px] sm:text-xs md:text-sm border-t border-black/5 bg-white">
+      <footer class="py-6 sm:py-8 text-center text-gray-500 text-[10px] sm:text-xs md:text-sm border-t border-black/5 bg-white mt-12 sm:mt-20">
         &copy; 2025 ScoreMyInterview. Built with Gemini 2.0 Flash.
       </footer>
     </div>
