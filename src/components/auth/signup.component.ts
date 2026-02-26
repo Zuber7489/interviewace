@@ -52,10 +52,15 @@ import { ToastService } from '../../services/toast.service';
           </button>
         </form>
 
-        <div class="mt-4 sm:mt-6 text-center">
+        <div class="mt-4 sm:mt-6 text-center space-y-3">
             <p class="text-gray-600 text-xs sm:text-sm">
                 Already have an account? 
-                <a routerLink="/login" class="text-gray-800 hover:text-black font-medium transition-colors">Log In</a>
+                <a routerLink="/login" class="text-gray-800 hover:text-black font-medium transition-colors underline decoration-black/20 underline-offset-4">Log In</a>
+            </p>
+            <p class="text-[10px] sm:text-xs text-gray-400">
+              By signing up, you agree to our 
+              <a routerLink="/terms-of-service" class="underline hover:text-gray-600">Terms of Service</a> and 
+              <a routerLink="/privacy-policy" class="underline hover:text-gray-600">Privacy Policy</a>.
             </p>
         </div>
       </div>
