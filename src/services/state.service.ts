@@ -2,10 +2,10 @@ import { Injectable, signal, inject, computed, effect } from '@angular/core';
 import { InterviewSession } from '../models';
 import { AuthService } from './auth.service';
 import { getDatabase, ref, get, set, child } from 'firebase/database';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { firebaseConfig } from '../firebase.config';
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const database = getDatabase(app);
 
 @Injectable({

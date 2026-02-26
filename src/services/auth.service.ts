@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { User } from '../models';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -14,7 +14,7 @@ import { getDatabase, ref, set, get, child } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
 import { firebaseConfig } from '../firebase.config';
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const database = getDatabase(app);
 export const storage = getStorage(app);
