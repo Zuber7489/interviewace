@@ -3,18 +3,20 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 
-const authGuard = () => {
+const authGuard = async () => {
     const auth = inject(AuthService);
     const router = inject(Router);
+    await auth.waitForAuth();
     if (auth.isLoggedIn()) {
         return true;
     }
     return router.parseUrl('/login');
 };
 
-const publicGuard = () => {
+const publicGuard = async () => {
     const auth = inject(AuthService);
     const router = inject(Router);
+    await auth.waitForAuth();
     if (auth.isLoggedIn()) {
         return router.parseUrl('/dashboard');
     }

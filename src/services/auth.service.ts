@@ -61,6 +61,19 @@ export class AuthService {
         });
     }
 
+    waitForAuth(): Promise<void> {
+        return new Promise((resolve) => {
+            if (this.authInitialized()) {
+                resolve();
+            } else {
+                const unsubscribe = onAuthStateChanged(auth, () => {
+                    resolve();
+                    unsubscribe();
+                });
+            }
+        });
+    }
+
     async signup(user: Omit<User, 'id'>): Promise<boolean> {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
