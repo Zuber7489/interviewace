@@ -27,11 +27,16 @@ export interface EvaluatedQuestion extends Question {
 }
 
 
+export type SubscriptionTier = 'free' | 'pro' | 'enterprise';
+
 export interface User {
   id: string;
   email: string;
-  password: string; // Storing plain text for MVP as requested, but highly insecure in real world
+  password: string;
   name: string;
+  subscription?: SubscriptionTier;
+  interviewsCount?: number;
+  maxInterviews?: number;
 }
 
 export interface InterviewSession {
