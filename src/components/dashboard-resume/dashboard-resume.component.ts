@@ -1,9 +1,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService, storage } from '../../services/auth.service';
 import { ref as dbRef, getDatabase, update } from 'firebase/database';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from '../../firebase.config';
 
@@ -141,25 +139,38 @@ export class DashboardResumeComponent {
       this.selectedFile = file;
       this.resumeFileName.set(file.name);
       this.fileSize.set(this.formatFileSize(file.size));
+      this.error.set(''); // Clear previous errors
 
-      await this.uploadResume(file);
+      if (file.type === 'application/pdf') {
+        await this.extractTextFromPDF(file);
+      } else {
+        this.error.set('Only PDF files are supported.');
+        this.removeFile();
+      }
     }
   }
 
-  async uploadResume(file: File) {
-    const user = this.authService.currentUser();
-    if (!user) return;
-
+  async extractTextFromPDF(file: File) {
     this.uploading.set(true);
-    this.uploadProgress.set(50); // Simulating progress since we are doing simple uploadBytes
+    this.uploadProgress.set(50);
     try {
-      const fileRef = storageRef(storage, `resumes/${user.id}/${file.name}`);
-      await uploadBytes(fileRef, file);
-      const url = await getDownloadURL(fileRef);
-      this.resumeDownloadUrl.set(url);
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map((item: any) => item.str).join(' ') + '\n'; // Changed to '\n' for consistency
+      }
+      this.resumeText.set(fullText);
       this.uploadProgress.set(100);
-    } catch (err) {
-      console.error("Upload failed", err);
+    } catch (e: any) {
+      console.error("PDF Parsing failed", e);
+      this.error.set("Failed to parse PDF.");
+      this.removeFile();
     } finally {
       setTimeout(() => {
         this.uploading.set(false);
@@ -177,7 +188,8 @@ export class DashboardResumeComponent {
     this.resumeFileName.set('');
     this.fileSize.set('');
     this.selectedFile = null;
-    this.resumeDownloadUrl.set('');
+    this.resumeText.set(''); // Changed from resumeDownloadUrl
+    this.error.set(''); // Added error clear
   }
 
   async onSubmit(e: Event) {
@@ -196,7 +208,7 @@ export class DashboardResumeComponent {
         experience: this.experience(),
         role: this.role(),
         skills: this.skills(),
-        resumeUrl: this.resumeDownloadUrl()
+        resumeText: this.resumeText() // Changed from resumeUrl
       };
 
       if (this.name() !== user.name) {
