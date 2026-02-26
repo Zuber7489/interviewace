@@ -73,18 +73,30 @@ export class AuthService {
 
     waitForAuth(): Promise<void> {
         return new Promise((resolve) => {
+            // If already initialized, resolve immediately
             if (this.authInitialized()) {
                 resolve();
-            } else {
-                const unsubscribe = onAuthStateChanged(auth, () => {
-                    resolve();
-                    unsubscribe();
-                });
+                return;
             }
+
+            // Watch the signal for changes
+            const checkInit = () => {
+                if (this.authInitialized()) {
+                    resolve();
+                } else {
+                    // Check again in the next microtask or after a short delay
+                    // Since we are in a Promise, we can use a polling approach or better yet,
+                    // just rely on the fact that any change to authInitialized will be caught by anyone watching it.
+                    // However, to make this specific promise work:
+                    setTimeout(checkInit, 50);
+                }
+            };
+            checkInit();
         });
     }
 
     async signup(user: Omit<User, 'id'>): Promise<boolean> {
+        this.authInitialized.set(false); // Reset to wait for the new state
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
 
@@ -110,6 +122,7 @@ export class AuthService {
     }
 
     async login(email: string, pass: string): Promise<boolean> {
+        this.authInitialized.set(false); // Reset to wait for the new state
         try {
             await signInWithEmailAndPassword(auth, email, pass);
             return true;
