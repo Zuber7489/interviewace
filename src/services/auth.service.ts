@@ -8,7 +8,9 @@ import {
     signOut,
     onAuthStateChanged,
     sendPasswordResetEmail,
-    updateProfile
+    updateProfile,
+    signInWithPopup,
+    GoogleAuthProvider
 } from 'firebase/auth';
 import { getDatabase, ref, set, get, child } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
@@ -158,6 +160,36 @@ export class AuthService {
             return true;
         } catch (error) {
             this.authInitialized.set(true); // Restore on error
+            throw error;
+        }
+    }
+
+    async loginWithGoogle(): Promise<boolean> {
+        this.checkRateLimit();
+        this.authInitialized.set(false);
+
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            // Check if user exists in DB
+            const dbRefNode = ref(database, 'users/' + user.uid);
+            const snapshot = await get(dbRefNode);
+
+            if (!snapshot.exists()) {
+                // First time login - Create user doc
+                await set(dbRefNode, {
+                    name: this.sanitizeName(user.displayName || 'User'),
+                    email: this.sanitizeEmail(user.email || ''),
+                    subscription: 'free',
+                    interviewsCount: 0,
+                    maxInterviews: 2
+                });
+            }
+            return true;
+        } catch (error) {
+            this.authInitialized.set(true);
             throw error;
         }
     }
