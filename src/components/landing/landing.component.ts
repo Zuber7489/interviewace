@@ -12,7 +12,7 @@ import { LegalFooterComponent } from '../legal/legal-footer.component';
       <!-- Navbar -->
       <nav class="glass sticky top-0 z-50 px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex justify-between items-center border-b border-black/10 backdrop-blur-md bg-white/80 supports-[backdrop-filter]:bg-white/40">
         <button class="flex items-center gap-1.5 sm:gap-2 group focus:outline-none" routerLink="/">
-           <i class="fas fa-brain text-black text-xl sm:text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+           <img src="assets/favicon.png" alt="ScoreMyInterview" class="w-6 h-6 sm:w-8 sm:h-8 object-contain group-hover:scale-110 transition-transform duration-300">
            <span class="text-lg sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600 tracking-tight">ScoreMyInterview</span>
         </button>
         <div class="flex items-center gap-2 sm:gap-4 md:gap-6">
