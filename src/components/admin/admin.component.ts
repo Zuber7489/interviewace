@@ -65,7 +65,7 @@ const database = getDatabase(app);
                 </tr>
               } @else {
                 @for (user of filteredUsers(); track user.id) {
-                  <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                  <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group cursor-pointer" (click)="viewDetails(user)">
                     <td class="p-3">
                       <div class="font-bold text-black flex items-center gap-1.5">
                         {{ user.name }}
@@ -76,7 +76,7 @@ const database = getDatabase(app);
                       <div class="text-xs text-gray-500">{{ user.email }}</div>
                       <div class="text-[10px] text-gray-400 font-mono mt-0.5" title="User ID">ID: {{ user.id }}</div>
                     </td>
-                    <td class="p-3">
+                    <td class="p-3" (click)="$event.stopPropagation()">
                       <select [ngModel]="user.subscription || 'free'" (ngModelChange)="updateTier(user, $event)"
                         class="bg-transparent border border-gray-200 rounded px-2 py-1 text-xs font-bold focus:outline-none focus:border-black cursor-pointer uppercase">
                         <option value="free">Free</option>
@@ -86,11 +86,11 @@ const database = getDatabase(app);
                     <td class="p-3 text-center font-bold">
                       {{ user.interviewsCount || 0 }}
                     </td>
-                    <td class="p-3 text-center">
+                    <td class="p-3 text-center" (click)="$event.stopPropagation()">
                       <input type="number" min="0" [ngModel]="user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(user, $event)"
                         class="w-16 text-center border border-gray-200 rounded px-1 py-1 text-xs font-bold focus:outline-none focus:border-black bg-transparent" />
                     </td>
-                    <td class="p-3 text-right">
+                    <td class="p-3 text-right" (click)="$event.stopPropagation()">
                        <!-- Extra optional actions -->
                        @if(!user.isAdmin) {
                           <button (click)="toggleAdmin(user)" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1 rounded transition-colors whitespace-nowrap">Make Admin</button>
@@ -116,6 +116,7 @@ export class AdminComponent {
   users = signal<User[]>([]);
   isLoading = signal(true);
   searchQuery = signal('');
+  selectedUser = signal<any>(null); // To view detailed user information
 
   constructor() {
     effect(() => {
