@@ -41,7 +41,70 @@ const database = getDatabase(app);
           </button>
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- Mobile View (Card-based) -->
+        <div class="block lg:hidden space-y-4">
+          @if (isLoading() && users().length === 0) {
+            <div class="p-8 text-center text-gray-500">
+              <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+              <p>Loading users...</p>
+            </div>
+          } @else if (filteredUsers().length === 0) {
+            <div class="p-8 text-center text-gray-500 font-medium bg-gray-50 rounded-xl">No users found.</div>
+          } @else {
+            @for (user of filteredUsers(); track user.id) {
+              <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-4" (click)="viewDetails(user)">
+                <div class="flex justify-between items-start gap-2 border-b border-gray-200 pb-3">
+                  <div class="min-w-0">
+                    <div class="font-bold text-black flex flex-wrap items-center gap-1.5 text-base truncate">
+                      {{ user.name }}
+                      @if(user.isAdmin) {
+                        <span class="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold shrink-0"><i class="fas fa-crown text-[8px] mr-1"></i>Admin</span>
+                      }
+                    </div>
+                    <div class="text-sm text-gray-500 truncate">{{ user.email }}</div>
+                    <div class="text-[10px] text-gray-400 font-mono mt-0.5 break-all">ID: {{ user.id }}</div>
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 text-sm" (click)="$event.stopPropagation()">
+                  <div>
+                    <div class="text-xs font-bold text-gray-400 uppercase mb-1">Plan</div>
+                    <select [ngModel]="user.subscription || 'free'" (ngModelChange)="updateTier(user, $event)"
+                      class="bg-white border border-gray-200 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-black cursor-pointer uppercase w-full">
+                      <option value="free">Free</option>
+                      <option value="pro">Pro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-gray-400 uppercase mb-1">Max Int.</div>
+                    <input type="number" min="0" [ngModel]="user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(user, $event)"
+                      class="w-full bg-white text-center border border-gray-200 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-black" />
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                  <div class="text-xs font-bold text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-lg">
+                    Used: <span class="text-black ml-1 text-sm">{{ user.interviewsCount || 0 }}</span>
+                  </div>
+                  
+                  <div class="flex gap-2 items-center" (click)="$event.stopPropagation()">
+                    @if(!user.isAdmin) {
+                      <button (click)="toggleAdmin(user)" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">Make Admin</button>
+                    } @else {
+                      <button (click)="toggleAdmin(user)" class="text-[10px] bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">Remove Admin</button>
+                    }
+                    <button (click)="deleteUser(user)" class="text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="Delete User">
+                      <i class="fas fa-trash-alt text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Desktop View (Table) -->
+        <div class="hidden lg:block overflow-x-auto">
           <table class="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr class="border-b-2 border-gray-100 text-xs uppercase tracking-wider text-gray-500">
