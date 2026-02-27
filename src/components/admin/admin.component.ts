@@ -105,97 +105,7 @@ const database = getDatabase(app);
             </tbody>
           </table>
         </div>
-        <!-- Detailed User View Overlay -->
-        @if (selectedUser()) {
-          <div class="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-in fade-in zoom-in duration-200">
-              
-              <!-- Header -->
-              <div class="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl z-10">
-                <div>
-                  <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    {{ selectedUser()?.name }}'s Profile
-                    @if(selectedUser()?.isAdmin) {
-                      <span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Admin</span>
-                    }
-                  </h2>
-                  <p class="text-sm text-gray-500 mt-1">{{ selectedUser()?.email }} | ID: <span class="font-mono text-gray-400">{{ selectedUser()?.id }}</span></p>
-                </div>
-                <button (click)="closeDetails()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-
-              <!-- Content Scrollable -->
-              <div class="p-6 overflow-y-auto flex-1 space-y-8 bg-gray-50/50">
-                
-                <!-- Setup & Resume Section -->
-                <section>
-                  <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-file-alt text-blue-500"></i> Resume & Profile Data
-                  </h3>
-                  <div class="bg-white border text-sm border-gray-100 rounded-xl p-5 shadow-sm space-y-4">
-                    @if(selectedUser()?.profile) {
-                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div><span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-1">Role</span> <div class="font-medium font-sans">{{ selectedUser()?.profile?.role || 'N/A' }}</div></div>
-                          <div><span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-1">Experience</span> <div class="font-medium font-sans">{{ selectedUser()?.profile?.experience }} Years</div></div>
-                          <div class="sm:col-span-2"><span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-1">Skills</span> <div class="font-medium font-sans bg-blue-50/50 p-2 rounded">{{ selectedUser()?.profile?.skills || 'N/A' }}</div></div>
-                       </div>
-                       @if(selectedUser()?.profile?.resumeText) {
-                         <div class="mt-4">
-                           <span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-2">Extracted Resume Text Preview</span>
-                           <div class="bg-gray-50 border border-gray-100 p-3 rounded-lg text-xs text-gray-600 h-32 overflow-y-auto whitespace-pre-wrap font-mono">{{ selectedUser()?.profile?.resumeText }}</div>
-                         </div>
-                       }
-                    } @else {
-                       <p class="text-gray-400 italic">No formal profile configuration or resume saved yet.</p>
-                    }
-                  </div>
-                </section>
-
-                <!-- Interview History Logs -->
-                <section>
-                  <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-history text-orange-500"></i> Past Interview Sessions
-                  </h3>
-                  
-                  <div class="space-y-3">
-                    @if (userHistory().length === 0) {
-                      <div class="bg-white border border-gray-100 rounded-xl p-8 text-center text-gray-500 shadow-sm">
-                        <i class="fas fa-microphone-slash text-3xl mb-3 text-gray-300"></i>
-                        <p>No interview history found for this user.</p>
-                      </div>
-                    } @else {
-                      @for(session of userHistory(); track session.id) {
-                        <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:border-gray-200 hover:shadow-md">
-                          <div>
-                            <div class="flex items-center gap-2 mb-1">
-                              <span class="font-bold text-gray-900">{{ session.config?.primaryTechnology }} Interview</span>
-                              @if(session.overallScore) {
-                                <span class="text-xs px-2 py-0.5 rounded-full font-bold" [class.bg-green-100]="session.overallScore >= 70" [class.text-green-700]="session.overallScore >= 70" [class.bg-orange-100]="session.overallScore < 70" [class.text-orange-700]="session.overallScore < 70">
-                                  Score: {{ session.overallScore }}%
-                                </span>
-                              }
-                            </div>
-                            <div class="text-xs text-gray-500 flex items-center gap-3">
-                              <span><i class="far fa-calendar-alt mr-1"></i> {{ session.startTime | date:'medium' }}</span>
-                              <span><i class="far fa-clock mr-1"></i> {{ session.config?.interviewDuration }} min</span>
-                            </div>
-                          </div>
-                           <!-- Admin view report functionality -->
-                           <button (click)="viewReport(session.id, selectedUser()?.id)" class="px-3 py-1.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap">
-                             <i class="fas fa-external-link-alt"></i> View Report
-                           </button>
-                        </div>
-                      }
-                    }
-                  </div>
-                </section>
-
-              </div>
-            </div>
-          </div>
-        }
+        <!-- Detailed User View Overlay Removed. Using separate route now. -->
       </div>
     </div>
   `
@@ -265,48 +175,7 @@ export class AdminComponent {
   stateService = inject(StateService);
 
   async viewDetails(user: User) {
-    this.selectedUser.set(user);
-    this.userHistory.set([]); // clear prev
-
-    // Fetch profile (which might be under `users/${user.id}/profile`)
-    try {
-      const dbRefNode = dbRef(database, `users/${user.id}`);
-      const snap = await get(dbRefNode);
-      if (snap.exists()) {
-        const fullData = snap.val();
-        this.selectedUser.set({ ...user, profile: fullData.profile });
-
-        // Map history
-        if (fullData.history) {
-          const hArray = Object.values(fullData.history).sort((a: any, b: any) => b.startTime - a.startTime);
-          this.userHistory.set(hArray);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to fetch detailed info", e);
-    }
-  }
-
-  closeDetails() {
-    this.selectedUser.set(null);
-    this.userHistory.set([]);
-  }
-
-  async viewReport(sessionId: string, userId: string) {
-    // Typically the report page reads from `stateService.activeSession()`
-    // So we fetch it specifically for that user, seed the state, and route
-    try {
-      const snap = await get(dbRef(database, `users/${userId}/history/${sessionId}`));
-      if (snap.exists()) {
-        import('../../services/state.service').then(m => {
-          const state = inject(m.StateService);
-          state.activeSession.set(snap.val()); // forcefully seat the session
-          this.router.navigate(['/report']);
-        });
-      }
-    } catch (e) {
-      this.toastService.error("Could not load report.");
-    }
+    this.router.navigate(['/dashboard/admin/user', user.id]);
   }
 
   async updateTier(user: User, newTier: string) {
