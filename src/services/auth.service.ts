@@ -73,7 +73,8 @@ export class AuthService {
                                 subscription: userData.subscription || 'free',
                                 interviewsCount: userData.interviewsCount || 0,
                                 maxInterviews: userData.maxInterviews || 2,
-                                isAdmin: userData.isAdmin || false
+                                isAdmin: userData.isAdmin || false,
+                                photoURL: userData.photoURL || firebaseUser.photoURL || undefined
                             });
                         } else {
                             // Fallback if DB record doesn't exist
@@ -85,7 +86,8 @@ export class AuthService {
                                 subscription: 'free',
                                 interviewsCount: 0,
                                 maxInterviews: 2,
-                                isAdmin: false
+                                isAdmin: false,
+                                photoURL: firebaseUser.photoURL || undefined
                             });
                         }
                     } catch (e) {
@@ -184,8 +186,15 @@ export class AuthService {
                     email: this.sanitizeEmail(user.email || ''),
                     subscription: 'free',
                     interviewsCount: 0,
-                    maxInterviews: 2
+                    maxInterviews: 2,
+                    photoURL: user.photoURL || null
                 });
+            } else {
+                // User already exists, Update their display photo if needed
+                const existingData = snapshot.val();
+                if (!existingData.photoURL && user.photoURL) {
+                    await set(child(dbRefNode, 'photoURL'), user.photoURL);
+                }
             }
             return true;
         } catch (error) {

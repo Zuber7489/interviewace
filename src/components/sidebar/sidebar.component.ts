@@ -40,8 +40,12 @@ import { StateService } from '../../services/state.service';
       <!-- User Profile -->
       <div class="p-4 sm:p-6 border-b border-black/10">
         <div class="flex items-center gap-2 sm:gap-3">
-          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-black/10 rounded-full flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-user text-black text-sm sm:text-lg"></i>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-black/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+            @if(currentUser()?.photoURL) {
+              <img [src]="currentUser()?.photoURL" alt="Profile" class="w-full h-full object-cover">
+            } @else {
+              <i class="fas fa-user text-black text-sm sm:text-lg"></i>
+            }
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-bold text-black text-xs sm:text-sm truncate flex items-center gap-1.5">
