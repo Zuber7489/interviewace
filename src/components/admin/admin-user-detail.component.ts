@@ -68,6 +68,21 @@ const database = getDatabase(app);
                        <div class="bg-gray-50 border border-gray-100 p-3 rounded-lg text-xs text-gray-600 h-32 overflow-y-auto whitespace-pre-wrap font-mono">{{ user()?.profile?.resumeText }}</div>
                      </div>
                    }
+                } @else if (userHistory().length > 0 && userHistory()[0].config) {
+                   <div class="mb-3 border-b pb-2"><span class="text-gray-800 font-bold flex items-center gap-1.5"><i class="fas fa-magic text-purple-500"></i> Auto-Extracted from Latest Session</span></div>
+                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div><span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-1">Target Tech</span> <div class="font-medium font-sans">{{ userHistory()[0].config.primaryTechnology || 'N/A' }}</div></div>
+                      <div><span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-1">Experience</span> <div class="font-medium font-sans">{{ userHistory()[0].config.yearsOfExperience }} Years</div></div>
+                      <div class="sm:col-span-2"><span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-1">Skills Configured</span> <div class="font-medium font-sans bg-blue-50/50 p-2 rounded">{{ userHistory()[0].config.secondarySkills || 'N/A' }}</div></div>
+                   </div>
+                   @if(userHistory()[0].config?.resumeText) {
+                     <div class="mt-4">
+                       <span class="text-gray-500 block text-xs uppercase font-bold tracking-wider mb-2">Resume Text (Session Context)</span>
+                       <div class="bg-gray-50 border border-gray-100 p-3 rounded-lg text-xs text-gray-600 h-32 overflow-y-auto whitespace-pre-wrap font-mono">{{ userHistory()[0].config.resumeText }}</div>
+                     </div>
+                   } @else {
+                       <p class="text-gray-400 italic text-xs mt-4">No physical PDF/resume attached in the latest session.</p>
+                   }
                 } @else {
                    <p class="text-gray-400 italic">No formal profile configuration or resume saved yet.</p>
                 }
