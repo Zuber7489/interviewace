@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-    selector: 'app-legal-footer',
-    imports: [RouterLink],
-    template: `
+  selector: 'app-legal-footer',
+  imports: [RouterLink],
+  template: `
     <footer class="border-t border-black/5 bg-white pt-10 pb-6 mt-8">
       <div class="max-w-6xl mx-auto px-4 sm:px-6">
         
@@ -50,7 +50,7 @@ import { RouterLink } from '@angular/router';
         </div>
         
         <div class="border-t border-black/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p class="text-xs text-gray-400">&copy; 2026 ScoreMyInterview. All rights reserved. Built with <span class="text-black font-medium">Gemini 2.0 Flash</span>.</p>
+          <p class="text-xs text-gray-400">&copy; 2026 ScoreMyInterview. All rights reserved. &nbsp;|&nbsp; Made with 🔥 by <span class="text-black font-bold">Zuber</span> &mdash; The OG Angular Developer.</p>
           <div class="flex items-center gap-3">
             <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
             <span class="text-xs text-gray-400">All systems operational</span>
