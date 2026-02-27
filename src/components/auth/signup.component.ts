@@ -52,6 +52,18 @@ import { ToastService } from '../../services/toast.service';
           </button>
         </form>
 
+        <div class="my-6 flex items-center">
+            <div class="flex-grow border-t border-black/10"></div>
+            <span class="flex-shrink-0 mx-4 text-gray-400 text-xs sm:text-sm">or</span>
+            <div class="flex-grow border-t border-black/10"></div>
+        </div>
+
+        <button type="button" (click)="onGoogleLogin()" [disabled]="isLoading()" 
+                class="w-full bg-white hover:bg-gray-50 border border-black/10 text-gray-700 font-bold py-2.5 sm:py-3 px-4 rounded-lg transition-colors shadow-sm duration-300 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] flex items-center justify-center gap-2 mb-4">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google Logo" />
+          Continue with Google
+        </button>
+
         <div class="mt-4 sm:mt-6 text-center space-y-3">
             <p class="text-gray-600 text-xs sm:text-sm">
                 Already have an account? 
@@ -99,6 +111,24 @@ export class SignupComponent {
     } catch (err: any) {
       this.error.set(err.message || 'Email already registered or another error occurred');
       this.toastService.error('Sign up failed.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async onGoogleLogin() {
+    this.isLoading.set(true);
+    this.error.set('');
+
+    try {
+      await this.authService.loginWithGoogle();
+      this.toastService.success('Successfully registered with Google!');
+      this.ngZone.run(() => {
+        this.router.navigate(['/dashboard']);
+      });
+    } catch (err: any) {
+      this.error.set(err.message || 'Google sign-in failed');
+      this.toastService.error('Google Sign-in failed.');
     } finally {
       this.isLoading.set(false);
     }
