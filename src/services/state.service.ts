@@ -141,6 +141,24 @@ export class StateService {
     }
   }
 
+  async deleteSession(sessionId: string): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) return;
+
+    try {
+      // Remove from Firebase
+      const { remove } = await import('firebase/database');
+      const sessionRef = ref(database, `users/${user.id}/history/${sessionId}`);
+      await remove(sessionRef);
+
+      // Remove from local signal immediately
+      this.historyList.update(list => list.filter(s => s.id !== sessionId));
+    } catch (err) {
+      console.error('Failed to delete session:', err);
+      throw err;
+    }
+  }
+
   loadActiveSession() {
     try {
       const data = localStorage.getItem(this.ACTIVE_SESSION_KEY);
