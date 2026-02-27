@@ -385,12 +385,9 @@ import { StateService } from '../../services/state.service';
     /* ── Content Grid ── */
     .content-grid {
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr;
       gap: 1.5rem;
       align-items: start;
-    }
-    @media (max-width: 1024px) {
-      .content-grid { grid-template-columns: 1fr; }
     }
 
     /* ── Activity Section ── */
