@@ -6,24 +6,7 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Security Headers -->
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Permissions-Policy"
-    content="camera=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=()">
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://next.esm.sh https://esm.sh https://cdn.jsdelivr.net;
-    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
-    connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://cdn.jsdelivr.net https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com;
-    img-src 'self' data: blob: https:;
-    media-src 'self' blob:;
-    worker-src 'self' blob:;
-    frame-ancestors 'none';
-  ">
-
+  <!-- Security headers are now correctly served via netlify.toml true HTTP headers -->
   <!-- Disable console in production -->
   <script>
     (function () {
