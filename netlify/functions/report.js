@@ -124,7 +124,7 @@ Output a single JSON object.`;
     };
 
     const response = await client.models.generateContent({
-      model: 'gemini-2.5-flash-8b',
+      model: 'gemini-2.5-flash',
       contents: [...sanitizedHistory, finalPrompt],
       config: {
         systemInstruction,
@@ -153,18 +153,28 @@ Output a single JSON object.`;
       },
     });
 
+    // Check if the output explicitly failed or returned empty
+    const rawText = response.text;
+    let validatedBody;
+    try {
+      validatedBody = JSON.parse(rawText);
+    } catch (e) {
+      console.error("JSON parsing error on model output", e);
+      throw new Error("Invalid format returned from AI model");
+    }
+
     return {
       statusCode: 200,
       headers,
-      body: response.text
+      body: JSON.stringify(validatedBody)
     };
 
   } catch (error) {
+    console.error("Report generation error:", error);
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ error: 'Failed to generate report' })
-      // Never expose error.message — may contain API key or internals
     };
   }
 };
