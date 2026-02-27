@@ -26,6 +26,11 @@
                 "glob": "pdf.worker.min.mjs",
                 "input": "node_modules/pdfjs-dist/build",
                 "output": "/assets"
+              },
+              {
+                "glob": "_redirects",
+                "input": "./",
+                "output": "/"
               }
             ]
           },
