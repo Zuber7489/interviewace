@@ -738,8 +738,8 @@ export class DashboardHomeComponent {
     return list.reduce((a, c) => a + (c.overallScore || 0), 0) / list.length;
   });
 
-  // stroke-dasharray = 2πr = 2*π*50 ≈ 314
-  scoreOffset = computed(() => 314 - (314 * this.averageScore()) / 100);
+  // stroke-dasharray = 2πr = 2*π*40 ≈ 251.2
+  scoreOffset = computed(() => 251.2 - (251.2 * this.averageScore()) / 100);
 
   usagePercentage = computed(() => {
     const user = this.auth.currentUser();
