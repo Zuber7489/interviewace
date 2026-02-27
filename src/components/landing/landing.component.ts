@@ -58,11 +58,10 @@ import { PublicNavbarComponent } from './public-navbar.component';
                         <div class="relative rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden aspect-video bg-black/5 shadow-inner">
                             <video 
                                 class="w-full h-full object-cover"
-                                autoplay 
-                                muted 
                                 loop 
                                 playsinline
                                 controls
+                                preload="metadata"
                             >
                                 <source src="assets/grok-video-a3c63fec-d284-4d08-8d02-e1fbad244abf (1).mp4" type="video/mp4">
                                 Your browser does not support the video tag.
