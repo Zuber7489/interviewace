@@ -70,7 +70,8 @@ export class AuthService {
                                 name: userData.name || firebaseUser.displayName || 'User',
                                 subscription: userData.subscription || 'free',
                                 interviewsCount: userData.interviewsCount || 0,
-                                maxInterviews: userData.maxInterviews || 2
+                                maxInterviews: userData.maxInterviews || 2,
+                                isAdmin: userData.isAdmin || false
                             });
                         } else {
                             // Fallback if DB record doesn't exist
@@ -81,7 +82,8 @@ export class AuthService {
                                 name: firebaseUser.displayName || 'User',
                                 subscription: 'free',
                                 interviewsCount: 0,
-                                maxInterviews: 2
+                                maxInterviews: 2,
+                                isAdmin: false
                             });
                         }
                     } catch (e) {
