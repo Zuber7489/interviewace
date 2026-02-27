@@ -658,6 +658,14 @@ import { StateService } from '../../services/state.service';
       .activity-section { padding: 1.25rem; }
       .content-grid { gap: 1.25rem; }
     }
+    @media (max-width: 576px) {
+      .activity-row { flex-wrap: wrap; position: relative; padding: 1rem; }
+      .activity-score-wrap { width: 100%; display: flex; align-items: center; justify-content: space-between; text-align: left; margin-top: 0.5rem; order: 3; padding-top: 0.75rem; border-top: 1px solid #f0f0f0; }
+      .score-mini-bar { margin: 0; flex: 1; max-width: 120px; margin-left: 10px; }
+      .activity-score { margin-bottom: 0; }
+      .report-btn { width: 100%; justify-content: center; margin-top: 0.25rem; padding: 10px; order: 4; }
+      .activity-meta { min-width: calc(100% - 90px); }
+    }
     @media (max-width: 480px) {
       .stats-grid { grid-template-columns: 1fr; }
     }
