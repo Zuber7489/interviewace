@@ -67,7 +67,7 @@ const database = getDatabase(app);
               <div class="flex flex-col sm:items-end">
                 <div class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 text-center">Interviews Used</div>
                 <div class="text-sm sm:text-base font-medium text-black text-center">
-                  {{ currentUser()?.interviewsCount || 0 }} / {{ currentUser()?.subscription === 'pro' ? 10 : (currentUser()?.maxInterviews || 2) }}
+                  {{ currentUser()?.interviewsCount || 0 }} / {{ currentUser()?.maxInterviews ?? (currentUser()?.subscription === 'pro' ? 10 : 2) }}
                 </div>
               </div>
             </div>

@@ -67,7 +67,7 @@ import { StateService } from '../../services/state.service';
             <p class="stat-title">Interviews Used</p>
             <div class="big-num">
               {{ auth.currentUser()?.interviewsCount || 0 }}
-              <span class="big-num-sub">/ {{ auth.currentUser()?.subscription === 'pro' ? 10 : (auth.currentUser()?.maxInterviews || 2) }}</span>
+              <span class="big-num-sub">/ {{ auth.currentUser()?.maxInterviews ?? (auth.currentUser()?.subscription === 'pro' ? 10 : 2) }}</span>
             </div>
             <div class="usage-bar-track">
               <div class="usage-bar-fill" [style.width]="usagePercentage() + '%'"
@@ -691,8 +691,9 @@ export class DashboardHomeComponent {
 
   usagePercentage = computed(() => {
     const user = this.auth.currentUser();
-    if (!user || user.subscription === 'pro') return 100;
-    return Math.min(((user.interviewsCount || 0) / (user.maxInterviews || 2)) * 100, 100);
+    if (!user) return 0;
+    const max = user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2);
+    return Math.min(((user.interviewsCount || 0) / max) * 100, 100);
   });
 
   lastInterviewDate = computed(() => {

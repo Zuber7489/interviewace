@@ -87,8 +87,8 @@ const database = getDatabase(app);
                       {{ user.interviewsCount || 0 }}
                     </td>
                     <td class="p-3 text-center">
-                      <input type="number" min="0" [ngModel]="user.subscription === 'pro' ? 10 : (user.maxInterviews || 2)" (change)="updateMaxInterviews(user, $event)"
-                        class="w-16 text-center border border-gray-200 rounded px-1 py-1 text-xs font-bold focus:outline-none focus:border-black bg-transparent">
+                      <input type="number" min="0" [ngModel]="user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(user, $event)"
+                        class="w-16 text-center border border-gray-200 rounded px-1 py-1 text-xs font-bold focus:outline-none focus:border-black bg-transparent" />
                     </td>
                     <td class="p-3 text-right">
                        <!-- Extra optional actions -->
