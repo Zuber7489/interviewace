@@ -15,6 +15,12 @@ import { StateService } from '../../services/state.service';
           <h1 class="history-title">Past Interviews</h1>
           <p class="history-sub">{{ history().length }} session{{ history().length !== 1 ? 's' : '' }} recorded</p>
         </div>
+        @if(history().length > 0) {
+          <button (click)="confirmDeleteAll()" class="btn-delete-all" [disabled]="deletingAll()">
+            <i class="fa-solid" [class.fa-trash-can]="!deletingAll()" [class.fa-spinner]="deletingAll()" [class.fa-spin]="deletingAll()"></i>
+            {{ deletingAll() ? 'Deleting...' : 'Delete All' }}
+          </button>
+        }
       </div>
 
       <!-- Empty State -->
@@ -87,7 +93,27 @@ import { StateService } from '../../services/state.service';
         </div>
       }
 
-      <!-- ── Delete Confirm Modal ── -->
+      <!-- ── Delete All Confirm Modal ── -->
+      @if(showDeleteAllModal()) {
+        <div class="modal-overlay" (click)="cancelDeleteAll()">
+          <div class="modal-box" (click)="$event.stopPropagation()">
+            <div class="modal-icon modal-icon-red">
+              <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3 class="modal-title">Delete All Interviews?</h3>
+            <p class="modal-desc">All <strong>{{ history().length }} sessions</strong> and their reports will be permanently deleted. This cannot be undone.</p>
+            <div class="modal-actions">
+              <button (click)="cancelDeleteAll()" class="modal-cancel">Cancel</button>
+              <button (click)="executeDeleteAll()" class="modal-confirm">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+                Delete All
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ── Delete Single Confirm Modal ── -->
       @if(showModal()) {
         <div class="modal-overlay" (click)="cancelDelete()">
           <div class="modal-box" (click)="$event.stopPropagation()">
@@ -305,12 +331,31 @@ import { StateService } from '../../services/state.service';
       box-shadow: 0 4px 14px rgba(239,68,68,0.35);
     }
 
+    /* Delete All Button */
+    .btn-delete-all {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 12px;
+      background: #fff5f5; color: #ef4444;
+      border: 1.5px solid #fee2e2;
+      font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-delete-all:hover {
+      background: #ef4444; color: #fff;
+      border-color: #ef4444;
+      box-shadow: 0 4px 16px rgba(239,68,68,0.3);
+    }
+    .btn-delete-all:disabled { opacity: 0.6; cursor: not-allowed; }
+    .modal-icon-red { background: #fff5f5; color: #ef4444; }
+
     /* Responsive */
     @media (max-width: 640px) {
       .history-wrapper { padding: 1.25rem 1rem 3rem; }
       .card-top { flex-direction: column; align-items: flex-start; }
       .card-right { width: 100%; justify-content: space-between; }
       .history-title { font-size: 1.4rem; }
+      .btn-delete-all { font-size: 0.7rem; padding: 8px 12px; }
     }
   `]
 })
@@ -322,6 +367,8 @@ export class DashboardHistoryComponent {
   deletingId = signal<string | null>(null);
   showModal = signal(false);
   pendingId = signal<string | null>(null);
+  showDeleteAllModal = signal(false);
+  deletingAll = signal(false);
 
   viewReport(sessionId: string) {
     this.stateService.loadSession(sessionId);
@@ -332,26 +379,25 @@ export class DashboardHistoryComponent {
     this.pendingId.set(sessionId);
     this.showModal.set(true);
   }
-
   cancelDelete() {
     this.showModal.set(false);
     this.pendingId.set(null);
   }
-
   async executeDelete() {
     const id = this.pendingId();
     if (!id) return;
-
     this.showModal.set(false);
     this.deletingId.set(id);
+    try { await this.stateService.deleteSession(id); } catch { }
+    finally { this.deletingId.set(null); this.pendingId.set(null); }
+  }
 
-    try {
-      await this.stateService.deleteSession(id);
-    } catch {
-      // silently handled in service
-    } finally {
-      this.deletingId.set(null);
-      this.pendingId.set(null);
-    }
+  confirmDeleteAll() { this.showDeleteAllModal.set(true); }
+  cancelDeleteAll() { this.showDeleteAllModal.set(false); }
+  async executeDeleteAll() {
+    this.showDeleteAllModal.set(false);
+    this.deletingAll.set(true);
+    try { await this.stateService.deleteAllSessions(); } catch { }
+    finally { this.deletingAll.set(false); }
   }
 }

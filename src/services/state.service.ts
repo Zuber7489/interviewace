@@ -159,6 +159,20 @@ export class StateService {
     }
   }
 
+  async deleteAllSessions(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    try {
+      const { remove } = await import('firebase/database');
+      const historyRef = ref(database, `users/${user.id}/history`);
+      await remove(historyRef);
+      this.historyList.set([]);
+    } catch (err) {
+      console.error('Failed to delete all sessions:', err);
+      throw err;
+    }
+  }
+
   loadActiveSession() {
     try {
       const data = localStorage.getItem(this.ACTIVE_SESSION_KEY);
