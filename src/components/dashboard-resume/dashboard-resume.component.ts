@@ -174,7 +174,6 @@ export class DashboardResumeComponent {
       this.uploadProgress.set(100);
       this.toastService.success('PDF parsed gracefully!');
     } catch (e: any) {
-      console.error("PDF Parsing failed", e);
       this.error.set("Failed to parse PDF.");
       this.toastService.error('Failed to read PDF file.');
       this.removeFile();
@@ -225,7 +224,6 @@ export class DashboardResumeComponent {
       this.successMessage.set('Profile saved successfully!');
       this.toastService.success('Profile saved successfully!');
     } catch (err) {
-      console.error("Save failed", err);
       this.toastService.error('Failed to save profile!');
     } finally {
       this.saving.set(false);

@@ -151,7 +151,7 @@ export class DashboardSettingsComponent {
         if (prefs.language) this.preferredLanguage.set(prefs.language);
       }
     } catch (e) {
-      console.error("Failed to load prefs", e);
+      // silently ignore preference load errors
     }
   }
 
@@ -171,7 +171,6 @@ export class DashboardSettingsComponent {
       this.profileSuccess.set('Profile updated successfully!');
       setTimeout(() => this.profileSuccess.set(''), 3000);
     } catch (err) {
-      console.error(err);
       this.toastService.error('Failed to update profile.');
     } finally {
       this.savingProfile.set(false);
@@ -195,7 +194,6 @@ export class DashboardSettingsComponent {
       this.prefSuccess.set('Preferences saved successfully!');
       setTimeout(() => this.prefSuccess.set(''), 3000);
     } catch (e) {
-      console.error(e);
       this.toastService.error('Failed to save preferences.');
     } finally {
       this.savingPref.set(false);
@@ -222,7 +220,6 @@ export class DashboardSettingsComponent {
 
       this.toastService.success('Pro Pack activated! You now have 10 interviews.');
     } catch (e) {
-      console.error(e);
       this.toastService.error('Upgrade failed. Please try again.');
     } finally {
       this.upgrading.set(false);
@@ -236,7 +233,7 @@ export class DashboardSettingsComponent {
         this.router.navigate(['/login']);
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      // logout errors are handled silently
     }
   }
 }

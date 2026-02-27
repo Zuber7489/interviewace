@@ -59,7 +59,6 @@ export class InterviewComponent implements OnInit, OnDestroy {
       this.isLoading.set(false);
     } else {
       // Handle error case where session is null
-      console.error("Interview session not found!");
       this.router.navigate(['/dashboard']);
     }
   }
@@ -93,7 +92,6 @@ export class InterviewComponent implements OnInit, OnDestroy {
 
       // Stop the live session and get the history
       const history = this.liveAudioService.getChatHistory();
-      console.log('Final Interview History:', history);
       await this.liveAudioService.stopSession();
 
       // Check if report generation is enabled
@@ -132,7 +130,6 @@ export class InterviewComponent implements OnInit, OnDestroy {
       this.stateService.finishInterview();
       this.toastService.success('Interview completed!');
     } catch (e) {
-      console.error("Error during interview finishing:", e);
       this.toastService.error('Failed to save interview session.');
       this.stateService.finishInterview();
     } finally {

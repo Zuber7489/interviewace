@@ -16,7 +16,6 @@ export class GeminiService {
 
   async generateFinalFeedback(history: Content[]): Promise<{ overallFeedback: string; overallScore: number; evaluatedQuestions: Omit<EvaluatedQuestion, 'type'>[] }> {
     try {
-      console.log('Requesting report generation from backend...');
       const response = await fetch(`${environment.backendUrl}/api/report`, {
         method: 'POST',
         headers: {
@@ -33,7 +32,6 @@ export class GeminiService {
       return result;
 
     } catch (error: any) {
-      console.error('Report generation failed:', error);
       return {
         overallFeedback: 'Review generation failed. Please try again later.',
         overallScore: 0,

@@ -5,6 +5,37 @@
   <meta charset="UTF-8">
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Security Headers -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Permissions-Policy"
+    content="camera=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=()">
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://next.esm.sh https://esm.sh https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+    connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://cdn.jsdelivr.net https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com;
+    img-src 'self' data: blob: https:;
+    media-src 'self' blob:;
+    worker-src 'self' blob:;
+    frame-ancestors 'none';
+  ">
+
+  <!-- Disable console in production -->
+  <script>
+    (function () {
+      if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        var noop = function () { };
+        ['log', 'debug', 'info', 'warn', 'error', 'trace', 'dir', 'group', 'groupEnd', 'time', 'timeEnd', 'table'].forEach(function (method) {
+          console[method] = noop;
+        });
+      }
+    })();
+  </script>
+
   <title>ScoreMyInterview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">

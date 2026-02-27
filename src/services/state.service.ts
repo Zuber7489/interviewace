@@ -48,7 +48,6 @@ export class StateService {
       const value = localStorage.getItem(this.REPORT_GENERATION_KEY);
       return value === 'true';
     } catch (e) {
-      console.error('Failed to load report generation preference:', e);
       return false;
     }
   }
@@ -59,7 +58,7 @@ export class StateService {
     try {
       localStorage.setItem(this.REPORT_GENERATION_KEY, newValue.toString());
     } catch (e) {
-      console.error('Failed to save report generation preference:', e);
+      // silently ignore storage errors in production
     }
   }
 
@@ -77,7 +76,7 @@ export class StateService {
         this.historyList.set([]);
       }
     } catch (err) {
-      console.error("Failed fetching history from FB", err);
+      // silently ignore fetch errors in production
     }
   }
 
@@ -124,12 +123,12 @@ export class StateService {
           // Update local signal to reflect immediately
           this.authService.currentUser.update(u => u ? ({ ...u, interviewsCount: newCount }) : null);
         } catch (saasErr) {
-          console.error("Failed to update SaaS usage count", saasErr);
+          // silently ignore SaaS count update errors
         }
         // ----------------------------------------
 
       } catch (e) {
-        console.error('Failed to save interview to history:', e);
+        // silently ignore save errors in production
       }
     }
   }
@@ -154,7 +153,6 @@ export class StateService {
       // Remove from local signal immediately
       this.historyList.update(list => list.filter(s => s.id !== sessionId));
     } catch (err) {
-      console.error('Failed to delete session:', err);
       throw err;
     }
   }
@@ -168,7 +166,6 @@ export class StateService {
       await remove(historyRef);
       this.historyList.set([]);
     } catch (err) {
-      console.error('Failed to delete all sessions:', err);
       throw err;
     }
   }
@@ -186,7 +183,7 @@ export class StateService {
         }
       }
     } catch (e) {
-      console.error('Failed to load active session:', e);
+      // silently ignore session restore errors in production
     }
     return false;
   }
@@ -195,7 +192,7 @@ export class StateService {
     try {
       localStorage.setItem(this.ACTIVE_SESSION_KEY, JSON.stringify(session));
     } catch (e) {
-      console.error('Failed to save active session:', e);
+      // silently ignore storage errors in production
     }
   }
 }

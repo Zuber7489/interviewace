@@ -185,7 +185,7 @@ export class SidebarComponent {
         this.router.navigate(['/login']);
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      // logout errors are handled silently
     }
   }
 

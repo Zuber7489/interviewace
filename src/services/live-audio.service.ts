@@ -73,7 +73,7 @@ export class LiveAudioService {
     try {
       localStorage.setItem(this.CHAT_HISTORY_KEY, JSON.stringify(history));
     } catch (e) {
-      console.error('Failed to save chat history to localStorage:', e);
+      // silently ignore storage errors in production
     }
   }
 
@@ -82,7 +82,6 @@ export class LiveAudioService {
       const data = localStorage.getItem(this.CHAT_HISTORY_KEY);
       return data ? JSON.parse(data) : [];
     } catch (e) {
-      console.error('Failed to load chat history from localStorage:', e);
       return [];
     }
   }
@@ -91,22 +90,29 @@ export class LiveAudioService {
     try {
       localStorage.removeItem(this.CHAT_HISTORY_KEY);
     } catch (e) {
-      console.error('Failed to clear chat history from localStorage:', e);
+      // silently ignore storage errors in production
     }
   }
 
   constructor(private zone: NgZone) { }
 
   private async getEphemeralToken(): Promise<string> {
+    // Enforce a strict timeout so a slow/malicious backend can't stall the app
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     try {
-      const response = await fetch(`${environment.backendUrl}/api/token`);
+      const response = await fetch(`${environment.backendUrl}/api/token`, {
+        signal: controller.signal,
+        credentials: 'omit', // Never send cookies to the token server
+        headers: { 'Accept': 'application/json' }
+      });
+      clearTimeout(timeoutId);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
       return data.token;
     } catch (error) {
-      console.error('Failed to get token from backend:', error);
       throw new Error('Authentication failed: Could not retrieve secure token from backend.');
     }
   }
@@ -124,7 +130,6 @@ export class LiveAudioService {
     this.sessionId = `session_${Date.now()}`;
 
     // --- FRESH START HARD RESET ---
-    console.log('🔄 LiveAudioService: Hard resetting all internal state for a fresh session.');
     this.nextStartTime = 0; // Reset scheduling timer
     this.audioQueue = [];
     this.isPlaying = false;
@@ -188,15 +193,15 @@ export class LiveAudioService {
     // 3. Perform cleanup
     try {
       sessionToClose?.close();
-    } catch (e) { console.warn('Error closing session:', e); }
+    } catch (e) { /* silently ignore cleanup errors */ }
 
     try {
       stream?.getTracks().forEach(track => track.stop());
-    } catch (e) { console.warn('Error stopping tracks:', e); }
+    } catch (e) { /* silently ignore cleanup errors */ }
 
     try {
       processor?.disconnect();
-    } catch (e) { console.warn('Error disconnecting processor:', e); }
+    } catch (e) { /* silently ignore cleanup errors */ }
 
     // Close contexts in background but ensure they are cleaned up
     if (inputCtx && inputCtx.state !== 'closed') {
@@ -229,10 +234,7 @@ export class LiveAudioService {
 
     try {
       this.microphoneStream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('🎤 Microphone access granted, sample rate:', this.inputAudioContext.sampleRate);
-      console.log('🎤 Audio tracks:', this.microphoneStream.getAudioTracks().length);
     } catch (error) {
-      console.error('❌ Failed to get microphone access:', error);
       throw new Error('Microphone access denied or not available');
     }
 
@@ -242,12 +244,9 @@ export class LiveAudioService {
 
     try {
       const workletUrl = this.createWorklet();
-      console.log('🎵 Loading AudioWorklet...');
       await this.inputAudioContext.audioWorklet.addModule(workletUrl);
-      console.log('🎵 AudioWorklet loaded successfully');
       URL.revokeObjectURL(workletUrl);
     } catch (e) {
-      console.error('❌ Failed to load AudioWorklet:', e);
       throw new Error('AudioWorklet loading failed');
     }
 
@@ -257,7 +256,6 @@ export class LiveAudioService {
       const microphoneSource = this.inputAudioContext.createMediaStreamSource(this.microphoneStream);
       this.processorNode = new AudioWorkletNode(this.inputAudioContext, 'pcm-processor');
       microphoneSource.connect(this.processorNode);
-      console.log('🎵 Audio pipeline connected: microphone → processor');
 
       this.processorNode.port.onmessage = (event) => {
         if (!this.isConnected() || !this.session || this.currentSessionId !== sessionId) return;
@@ -272,17 +270,11 @@ export class LiveAudioService {
               data: base64Data,
             }
           });
-          // Log occasionally to avoid spam
-          if (Math.random() < 0.01) {
-            console.log('🎵 Sending audio chunk:', pcmData.length, 'samples at', sampleRate, 'Hz');
-          }
         } catch (e) {
-          console.error('❌ Error sending audio to Live API:', e);
+          // silently ignore audio send errors
         }
       };
-      console.log('🎵 Audio processor ready, sending to Live API');
     } catch (e) {
-      console.error('❌ Failed to setup audio pipeline:', e);
       throw new Error('Audio pipeline setup failed');
     }
   }
@@ -310,7 +302,7 @@ export class LiveAudioService {
           }
         },
         onerror: (e: any) => {
-          console.error('WebSocket error:', e);
+          // WebSocket errors are handled silently in production
         },
         onclose: (e: any) => {
           if (this.currentSessionId === sessionId) {
@@ -336,14 +328,10 @@ export class LiveAudioService {
 
   private handleGeminiMessage(message: any) {
     this.zone.run(() => {
-      // Debug: Log message structure
-      console.log('📨 Received message from Live API:', JSON.stringify(message, null, 2));
-
       // 1. Handle User Transcription from Live API
       if (message.serverContent?.inputTranscription?.text) {
         const userText = message.serverContent.inputTranscription.text.trim();
         if (userText && userText.length > 0) {
-          console.log('💾 Saving User Answer (Live API Transcription):', userText);
           // Update userTranscript for display in UI
           this.userTranscript.update(prev => prev + ' ' + userText);
           // Don't save word-by-word to chat history - accumulate instead
@@ -355,7 +343,6 @@ export class LiveAudioService {
       if (message.serverContent?.turnComplete) {
         const totalUserText = this.userTranscript().trim();
         if (totalUserText.length > 0) {
-          console.log('💾 Saving complete user answer:', totalUserText);
           // Save to chat history
           const newHistory = [...this.chatHistory(), { role: 'user', parts: [{ text: totalUserText }] }];
           this.chatHistory.set(newHistory);

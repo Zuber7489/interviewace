@@ -1,7 +1,6 @@
 import { Injectable, signal, computed, inject, NgZone } from '@angular/core';
 import { User } from '../models';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-// ... existing imports ...
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -29,6 +28,31 @@ export class AuthService {
     authInitialized = signal<boolean>(false);
     private ngZone = inject(NgZone);
 
+    // --- Client-Side Rate Limiting ---
+    private readonly MAX_AUTH_ATTEMPTS = 5;
+    private readonly RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+    private authAttempts: number[] = [];
+
+    private checkRateLimit(): void {
+        const now = Date.now();
+        // Remove attempts that are outside the time window
+        this.authAttempts = this.authAttempts.filter(t => now - t < this.RATE_LIMIT_WINDOW_MS);
+        if (this.authAttempts.length >= this.MAX_AUTH_ATTEMPTS) {
+            throw new Error('Too many attempts. Please wait 15 minutes before trying again.');
+        }
+        this.authAttempts.push(now);
+    }
+
+    // --- Input Sanitization ---
+    private sanitizeEmail(email: string): string {
+        return email.trim().toLowerCase();
+    }
+
+    private sanitizeName(name: string): string {
+        // Strip HTML tags to prevent XSS if name is ever rendered as HTML
+        return name.replace(/<[^>]*>/g, '').trim().substring(0, 100);
+    }
+
     constructor() {
         onAuthStateChanged(auth, async (firebaseUser) => {
             this.ngZone.run(async () => {
@@ -42,7 +66,7 @@ export class AuthService {
                             this.currentUser.set({
                                 id: firebaseUser.uid,
                                 email: firebaseUser.email || '',
-                                password: '', // Don't store or retrieve password
+                                password: '', // Never store passwords in memory
                                 name: userData.name || firebaseUser.displayName || 'User',
                                 subscription: userData.subscription || 'free',
                                 interviewsCount: userData.interviewsCount || 0,
@@ -61,7 +85,7 @@ export class AuthService {
                             });
                         }
                     } catch (e) {
-                        console.error("Error fetching user data", e);
+                        // silently ignore fetch errors in production
                     }
                 } else {
                     this.currentUser.set(null);
@@ -73,21 +97,14 @@ export class AuthService {
 
     waitForAuth(): Promise<void> {
         return new Promise((resolve) => {
-            // If already initialized, resolve immediately
             if (this.authInitialized()) {
                 resolve();
                 return;
             }
-
-            // Watch the signal for changes
             const checkInit = () => {
                 if (this.authInitialized()) {
                     resolve();
                 } else {
-                    // Check again in the next microtask or after a short delay
-                    // Since we are in a Promise, we can use a polling approach or better yet,
-                    // just rely on the fact that any change to authInitialized will be caught by anyone watching it.
-                    // However, to make this specific promise work:
                     setTimeout(checkInit, 50);
                 }
             };
@@ -96,19 +113,25 @@ export class AuthService {
     }
 
     async signup(user: Omit<User, 'id'>): Promise<boolean> {
-        this.authInitialized.set(false); // Reset to wait for the new state
+        // Rate limiting check before any auth call
+        this.checkRateLimit();
+        this.authInitialized.set(false);
+
+        const sanitizedEmail = this.sanitizeEmail(user.email);
+        const sanitizedName = this.sanitizeName(user.name);
+
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
+            const userCredential = await createUserWithEmailAndPassword(auth, sanitizedEmail, user.password);
 
             // Set display name in Auth
             await updateProfile(userCredential.user, {
-                displayName: user.name
+                displayName: sanitizedName
             });
 
             // Store user in Realtime Database with SaaS defaults
             await set(ref(database, 'users/' + userCredential.user.uid), {
-                name: user.name,
-                email: user.email,
+                name: sanitizedName,
+                email: sanitizedEmail,
                 subscription: 'free',
                 interviewsCount: 0,
                 maxInterviews: 2
@@ -116,31 +139,40 @@ export class AuthService {
 
             return true;
         } catch (error) {
-            console.error(error);
             this.authInitialized.set(true); // Restore on error
             throw error;
         }
     }
 
     async login(email: string, pass: string): Promise<boolean> {
-        this.authInitialized.set(false); // Reset to wait for the new state
+        // Rate limiting check before any auth call
+        this.checkRateLimit();
+        this.authInitialized.set(false);
+
+        const sanitizedEmail = this.sanitizeEmail(email);
+
         try {
-            await signInWithEmailAndPassword(auth, email, pass);
+            await signInWithEmailAndPassword(auth, sanitizedEmail, pass);
             return true;
         } catch (error) {
-            console.error(error);
             this.authInitialized.set(true); // Restore on error
             throw error;
         }
     }
 
     async logout(): Promise<void> {
-        this.authInitialized.set(false); // Reset to catch the state change
+        this.authInitialized.set(false);
         await signOut(auth);
         this.currentUser.set(null);
+        // Securely wipe all localStorage data on logout to prevent
+        // session data leakage on shared/public devices
+        try {
+            localStorage.clear();
+        } catch (e) { /* ignore */ }
     }
 
     async resetPassword(email: string): Promise<void> {
-        await sendPasswordResetEmail(auth, email);
+        const sanitizedEmail = this.sanitizeEmail(email);
+        await sendPasswordResetEmail(auth, sanitizedEmail);
     }
 }
