@@ -83,12 +83,8 @@ const database = getDatabase(app);
                         <option value="pro">Pro</option>
                       </select>
                     </td>
-                    <td class="p-3 text-center">
-                      <div class="flex items-center justify-center gap-2">
-                         <button (click)="adjustInterviews(user, -1)" class="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-xs"><i class="fas fa-minus text-gray-600"></i></button>
-                         <span class="font-bold w-6 text-center">{{ user.interviewsCount || 0 }}</span>
-                         <button (click)="adjustInterviews(user, 1)" class="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-xs"><i class="fas fa-plus text-gray-600"></i></button>
-                      </div>
+                    <td class="p-3 text-center font-bold">
+                      {{ user.interviewsCount || 0 }}
                     </td>
                     <td class="p-3 text-center">
                       <input type="number" min="0" [ngModel]="user.subscription === 'pro' ? 10 : (user.maxInterviews || 2)" (change)="updateMaxInterviews(user, $event)"
