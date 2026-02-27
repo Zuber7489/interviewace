@@ -21,9 +21,9 @@ import { PublicNavbarComponent } from '../landing/public-navbar.component';
           <p class="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">Have a question, feedback, or need enterprise pricing? We'd love to hear from you.</p>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-8 sm:gap-12">
+        <div class="max-w-2xl mx-auto space-y-8">
           <!-- Contact Form -->
-          <div class="glass-card p-6 sm:p-8 rounded-2xl border border-black/5">
+          <div class="glass-card p-6 sm:p-8 rounded-2xl border border-black/5 shadow-sm">
             <h2 class="text-lg sm:text-xl font-bold text-black mb-6">Send a Message</h2>
             
             @if(submitted()) {
@@ -50,8 +50,6 @@ import { PublicNavbarComponent } from '../landing/public-navbar.component';
                     class="w-full border border-black/10 rounded-xl px-4 py-3 text-black text-sm focus:outline-none focus:ring-2 focus:ring-black/20 transition-all">
                     <option value="">Select a topic...</option>
                     <option>General Inquiry</option>
-                    <option>Billing & Subscription</option>
-                    <option>Enterprise Plan</option>
                     <option>Bug / Technical Issue</option>
                     <option>Feature Request</option>
                     <option>Partnership</option>
@@ -74,53 +72,15 @@ import { PublicNavbarComponent } from '../landing/public-navbar.component';
             }
           </div>
 
-          <!-- Contact Info -->
-          <div class="space-y-6">
-            <div class="p-5 sm:p-6 rounded-2xl border border-black/5 hover:border-black/20 hover:shadow-lg transition-all">
-              <div class="flex items-start gap-4">
-                <div class="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-envelope text-black"></i>
-                </div>
-                <div>
-                  <h3 class="font-bold text-black mb-1">General Support</h3>
-                  <p class="text-gray-600 text-sm mb-1">For questions about the platform and features.</p>
-                  <a href="mailto:support@scoremyinterview.com" class="text-black font-medium text-sm underline">support@scoremyinterview.com</a>
-                </div>
-              </div>
-            </div>
-            <div class="p-5 sm:p-6 rounded-2xl border border-black/5 hover:border-black/20 hover:shadow-lg transition-all">
-              <div class="flex items-start gap-4">
-                <div class="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-credit-card text-black"></i>
-                </div>
-                <div>
-                  <h3 class="font-bold text-black mb-1">Billing & Refunds</h3>
-                  <p class="text-gray-600 text-sm mb-1">For subscription and payment related issues.</p>
-                  <a href="mailto:billing@scoremyinterview.com" class="text-black font-medium text-sm underline">billing@scoremyinterview.com</a>
-                </div>
-              </div>
-            </div>
-            <div class="p-5 sm:p-6 rounded-2xl border border-black/5 hover:border-black/20 hover:shadow-lg transition-all">
-              <div class="flex items-start gap-4">
-                <div class="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-building text-black"></i>
-                </div>
-                <div>
-                  <h3 class="font-bold text-black mb-1">Enterprise Sales</h3>
-                  <p class="text-gray-600 text-sm mb-1">For institutes, bootcamps, and bulk licensing.</p>
-                  <a href="mailto:enterprise@scoremyinterview.com" class="text-black font-medium text-sm underline">enterprise@scoremyinterview.com</a>
-                </div>
-              </div>
-            </div>
-            <div class="p-5 sm:p-6 rounded-2xl border border-black/5 hover:border-black/20 hover:shadow-lg transition-all">
-              <div class="flex items-start gap-4">
-                <div class="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-clock text-black"></i>
-                </div>
-                <div>
-                  <h3 class="font-bold text-black mb-1">Response Time</h3>
-                  <p class="text-gray-600 text-sm">We typically respond within <strong class="text-black">1–2 business days</strong>. For urgent issues, mention "URGENT" in your subject line.</p>
-                </div>
+          <!-- Response Time -->
+          <div class="p-5 sm:p-6 rounded-2xl border border-black/[0.03] bg-black/[0.01] transition-all">
+            <div class="flex items-center justify-center gap-4 text-center">
+              <div>
+                <h3 class="font-bold text-black text-sm mb-1 uppercase tracking-tight">Response Time</h3>
+                <p class="text-gray-500 text-xs sm:text-sm">
+                  We typically respond within <strong class="text-black">1–2 business days</strong>. 
+                  For urgent issues, mention <span class="font-bold text-black">"URGENT"</span> in your subject line.
+                </p>
               </div>
             </div>
           </div>
@@ -142,9 +102,31 @@ export class ContactComponent {
   async submitForm() {
     if (!this.name || !this.email || !this.message) return;
     this.sending.set(true);
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    this.sending.set(false);
-    this.submitted.set(true);
+
+    try {
+      const response = await fetch('https://formspree.io/f/mqakppov', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: this.name,
+          email: this.email,
+          subject: this.subject,
+          message: this.message
+        })
+      });
+
+      if (response.ok) {
+        this.submitted.set(true);
+      } else {
+        alert('Something went wrong. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Contact error:', error);
+      alert('Network error. Please try again.');
+    } finally {
+      this.sending.set(false);
+    }
   }
 }
