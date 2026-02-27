@@ -97,6 +97,13 @@ export class LiveAudioService {
   constructor(private zone: NgZone) { }
 
   private async getEphemeralToken(): Promise<string> {
+    // 1. Get Firebase Auth Token
+    const auth = (await import('firebase/auth')).getAuth();
+    if (!auth.currentUser) {
+      throw new Error('Authentication required');
+    }
+    const idToken = await auth.currentUser.getIdToken();
+
     // Enforce a strict timeout so a slow/malicious backend can't stall the app
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
@@ -104,7 +111,10 @@ export class LiveAudioService {
       const response = await fetch(`${environment.backendUrl}/api/token`, {
         signal: controller.signal,
         credentials: 'omit', // Never send cookies to the token server
-        headers: { 'Accept': 'application/json' }
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        }
       });
       clearTimeout(timeoutId);
       if (!response.ok) {

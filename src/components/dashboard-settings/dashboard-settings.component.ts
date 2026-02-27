@@ -207,20 +207,51 @@ export class DashboardSettingsComponent {
     this.upgrading.set(true);
 
     try {
-      // Simulate Payment Gateway Delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // 1. Get Firebase auth token to authenticate with our backend
+      const auth = (await import('firebase/auth')).getAuth();
+      if (!auth.currentUser) throw new Error('Not authenticated');
+      const idToken = await auth.currentUser.getIdToken();
 
-      // Update to Pro in Firebase
-      await update(dbRef(database, `users/${user.id}`), {
-        subscription: 'pro'
+      // 2. Here you would normally integrate Razorpay Checkout
+      // const options = { key: 'YOUR_KEY_ID', amount: 20000, ... }
+      // const rzp1 = new Razorpay(options);
+      // rzp1.open();
+
+      // Simulate successful Razorpay checkout for demo purposes:
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const mockPaymentDetails = {
+        razorpay_order_id: 'order_' + Math.random().toString(36).substr(2, 9),
+        razorpay_payment_id: 'pay_' + Math.random().toString(36).substr(2, 9),
+        razorpay_signature: 'mock_signature_for_demo'
+      };
+
+      // 3. Send payment details to backend for verification
+      const response = await fetch('/api/upgrade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify(mockPaymentDetails)
       });
 
-      // Update local signal
-      this.authService.currentUser.update(u => u ? ({ ...u, subscription: 'pro' }) : u);
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Payment verification failed');
+      }
+
+      // 4. Update local signal ONLY after backend confirms via API success
+      // The backend actually writes to Firebase. We just show it immediately locally.
+      this.authService.currentUser.update(u => u ? ({
+        ...u,
+        subscription: 'pro',
+        interviewsCount: 0,
+        maxInterviews: 10
+      }) : u);
 
       this.toastService.success('Pro Pack activated! You now have 10 interviews.');
-    } catch (e) {
-      this.toastService.error('Upgrade failed. Please try again.');
+    } catch (e: any) {
+      this.toastService.error(e.message || 'Upgrade failed. Please try again.');
     } finally {
       this.upgrading.set(false);
     }

@@ -15,6 +15,17 @@ export class GeminiService {
   }
 
   async generateFinalFeedback(history: Content[]): Promise<{ overallFeedback: string; overallScore: number; evaluatedQuestions: Omit<EvaluatedQuestion, 'type'>[] }> {
+    // 1. Get Firebase Auth Token
+    let idToken = '';
+    try {
+      const auth = (await import('firebase/auth')).getAuth();
+      if (auth.currentUser) {
+        idToken = await auth.currentUser.getIdToken();
+      }
+    } catch (e) {
+      // Failed to get token
+    }
+
     // Enforce a 30-second timeout to prevent hanging requests
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -23,7 +34,8 @@ export class GeminiService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
         },
         credentials: 'omit', // Never send cookies to backend
         signal: controller.signal,

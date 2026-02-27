@@ -1,0 +1,89 @@
+{
+    "rules": {
+        "users": {
+            "$uid": {
+                ".read": "auth != null && auth.uid === $uid",
+                ".write": "auth != null && auth.uid === $uid",
+                "name": {
+                    ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+                },
+                "email": {
+                    ".write": false
+                },
+                "subscription": {
+                    ".write": false,
+                    ".validate": "newData.isString() && (newData.val() === 'free' || newData.val() === 'pro' || newData.val() === 'enterprise')"
+                },
+                "maxInterviews": {
+                    ".write": false,
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+                },
+                "interviewsCount": {
+                    ".write": false,
+                    ".validate": "newData.isNumber() && newData.val() >= 0"
+                },
+                "lastUpgradedAt": {
+                    ".write": false
+                },
+                "preferences": {
+                    ".write": "auth != null && auth.uid === $uid",
+                    "duration": {
+                        ".validate": "newData.isNumber() && newData.val() >= 5 && newData.val() <= 120"
+                    },
+                    "language": {
+                        ".validate": "newData.isString() && (newData.val() === 'English' || newData.val() === 'Hindi' || newData.val() === 'Hinglish')"
+                    }
+                },
+                "profile": {
+                    ".write": "auth != null && auth.uid === $uid",
+                    "name": {
+                        ".validate": "newData.isString() && newData.val().length <= 100"
+                    },
+                    "email": {
+                        ".validate": "newData.isString() && newData.val().length <= 200"
+                    },
+                    "experience": {
+                        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 50"
+                    },
+                    "role": {
+                        ".validate": "newData.isString() && newData.val().length <= 100"
+                    },
+                    "skills": {
+                        ".validate": "newData.isString() && newData.val().length <= 1000"
+                    },
+                    "resumeText": {
+                        ".validate": "newData.isString() && newData.val().length <= 50000"
+                    }
+                },
+                "history": {
+                    "$sessionId": {
+                        ".write": "auth != null && auth.uid === $uid",
+                        "id": {
+                            ".validate": "newData.isString()"
+                        },
+                        "userId": {
+                            ".validate": "newData.isString() && newData.val() === auth.uid"
+                        },
+                        "startTime": {
+                            ".validate": "newData.isNumber()"
+                        },
+                        "date": {
+                            ".validate": "newData.isString()"
+                        },
+                        "overallScore": {
+                            ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 10)"
+                        }
+                    }
+                }
+            }
+        },
+        "processedPayments": {
+            ".read": false,
+            ".write": false
+        },
+        "$other": {
+            ".read": false,
+            ".write": false
+        }
+    }
+}
