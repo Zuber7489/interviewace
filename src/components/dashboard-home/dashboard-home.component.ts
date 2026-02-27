@@ -168,63 +168,6 @@ import { StateService } from '../../services/state.service';
             </button>
           </div>
         </div>
-
-        <!-- Right Column -->
-        <div class="right-col">
-
-          <!-- Quick Tips -->
-          <div class="tip-card">
-            <div class="tip-bg-glow"></div>
-            <div class="tip-header">
-              <div class="tip-icon-wrap">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-              </div>
-              <div>
-                <h4 class="tip-title">Sophia's Tip</h4>
-                <p class="tip-sub">AI Interview Coach</p>
-              </div>
-            </div>
-            <blockquote class="tip-quote">
-              "Talk through your thought process out loud — even when stuck. Sophia rewards reasoning over just correct answers."
-            </blockquote>
-            <div class="tip-tags">
-              <span class="tip-tag">#ThinkAloud</span>
-              <span class="tip-tag">#Reasoning</span>
-              <span class="tip-tag">#Strategy</span>
-            </div>
-          </div>
-
-          <!-- Upgrade Card (only for free) -->
-          <div class="upgrade-card" *ngIf="auth.currentUser()?.subscription !== 'pro'" routerLink="/dashboard/settings">
-            <div class="upgrade-shimmer"></div>
-            <div class="upgrade-crown">
-              <i class="fa-solid fa-crown"></i>
-            </div>
-            <h4 class="upgrade-title">Unlock Pro Access</h4>
-            <ul class="upgrade-list">
-              <li><i class="fa-solid fa-check text-yellow-500"></i> Unlimited interviews</li>
-              <li><i class="fa-solid fa-check text-yellow-500"></i> Advanced behavioral scoring</li>
-              <li><i class="fa-solid fa-check text-yellow-500"></i> All tech roles & stacks</li>
-            </ul>
-            <button class="upgrade-btn">
-              Upgrade Now <i class="fa-solid fa-arrow-right ml-1"></i>
-            </button>
-          </div>
-
-          <!-- Pro Badge (for pro users) -->
-          <div class="pro-card" *ngIf="auth.currentUser()?.subscription === 'pro'">
-            <div class="pro-glow"></div>
-            <div class="pro-badge-icon"><i class="fa-solid fa-crown"></i></div>
-            <h4 class="pro-title">You're a Pro!</h4>
-            <p class="pro-sub">Full access unlocked. Keep practicing to stay ahead.</p>
-            <div class="pro-perks">
-              <span><i class="fa-solid fa-infinity"></i> Unlimited</span>
-              <span><i class="fa-solid fa-star"></i> Priority</span>
-              <span><i class="fa-solid fa-zap"></i> Instant AI</span>
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
   `,
