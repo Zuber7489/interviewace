@@ -261,7 +261,7 @@ export class DashboardSettingsComponent {
     try {
       await this.authService.logout();
       this.ngZone.run(() => {
-        this.router.navigate(['/login']);
+        this.router.navigate(['/']);
       });
     } catch (error) {
       // logout errors are handled silently
