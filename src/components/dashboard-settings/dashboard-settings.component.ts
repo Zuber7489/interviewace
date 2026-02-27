@@ -47,41 +47,6 @@ const database = getDatabase(app);
           </form>
         </div>
 
-        <!-- Interview Preferences -->
-        <div class="glass-card p-3 sm:p-4 md:p-6 rounded-2xl border border-black/5">
-          <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4 md:mb-6">Interview Preferences</h2>
-          
-          <form (submit)="savePreferences($event)" class="space-y-2 sm:space-y-3 md:space-y-4">
-            <div>
-              <label class="block text-[10px] sm:text-xs md:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Default Interview Duration</label>
-              <select [(ngModel)]="defaultDuration" name="duration"
-                class="w-full glass-card border border-black/10 rounded-lg px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-black focus:outline-none focus:ring-2 focus:ring-black/20 text-xs sm:text-sm md:text-base">
-                <option [value]="10">10 minutes</option>
-                <option [value]="20">20 minutes</option>
-                <option [value]="30">30 minutes</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-[10px] sm:text-xs md:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Preferred Language</label>
-              <select [(ngModel)]="preferredLanguage" name="language"
-                class="w-full glass-card border border-black/10 rounded-lg px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-black focus:outline-none focus:ring-2 focus:ring-black/20 text-xs sm:text-sm md:text-base">
-                <option value="English">English</option>
-                <option value="Hindi">Hindi</option>
-                <option value="Hinglish">Hinglish</option>
-              </select>
-            </div>
-
-            @if(prefSuccess()) {
-                <div class="text-green-600 text-sm py-1 font-medium">{{ prefSuccess() }}</div>
-            }
-
-            <button type="submit" [disabled]="savingPref()"
-              class="px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-xs sm:text-sm md:text-base min-h-[40px] sm:min-h-[44px] disabled:opacity-50">
-              {{ savingPref() ? 'Saving...' : 'Save Preferences' }}
-            </button>
-          </form>
-        </div>
 
         <!-- Subscription & Billing -->
         <div class="glass-card p-3 sm:p-4 md:p-6 rounded-2xl border border-black/5">
