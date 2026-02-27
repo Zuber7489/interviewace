@@ -61,8 +61,8 @@ import { LegalFooterComponent } from './legal-footer.component';
                 <p class="text-sm text-gray-600">Provides unlimited mock interviews, advanced AI analysis, resume tailoring tips, and priority support. Billed monthly. Cancel anytime.</p>
               </div>
               <div class="p-4 rounded-xl bg-gray-50 border border-black/5">
-                <h3 class="font-bold text-black mb-2">Enterprise Plan</h3>
-                <p class="text-sm text-gray-600">Custom pricing for institutions. Contact sales for details. Subject to a separate enterprise agreement.</p>
+                <h3 class="font-bold text-black mb-2">Pro Pack</h3>
+                <p class="text-sm text-gray-600">₹200 for 10 mock interviews. No monthly subscription. You may purchase additional packs at any time. Each pack is valid until all interviews are used.</p>
               </div>
             </div>
           </section>

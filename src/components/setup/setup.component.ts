@@ -113,7 +113,7 @@ export class SetupComponent implements OnInit {
 
     // SaaS Gating logic: Free users have a 2-interview limit per month/total (depending on business logic)
     if (user.subscription === 'free' && (user.interviewsCount || 0) >= (user.maxInterviews || 2)) {
-      this.error.set("You have reached your limit of 2 interviews for the Free plan. Please upgrade to Pro for unlimited access!");
+      this.error.set("You've used your 2 free interviews. Buy a Pro Pack (₹200 for 10 interviews) to continue!");
       this.isLoading.set(false);
       return;
     }
