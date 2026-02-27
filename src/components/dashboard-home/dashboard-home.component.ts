@@ -67,7 +67,7 @@ import { StateService } from '../../services/state.service';
             <p class="stat-title">Interviews Used</p>
             <div class="big-num">
               {{ auth.currentUser()?.interviewsCount || 0 }}
-              <span class="big-num-sub">/ {{ auth.currentUser()?.subscription === 'pro' ? '∞' : (auth.currentUser()?.maxInterviews || 2) }}</span>
+              <span class="big-num-sub">/ {{ auth.currentUser()?.subscription === 'pro' ? 10 : (auth.currentUser()?.maxInterviews || 2) }}</span>
             </div>
             <div class="usage-bar-track">
               <div class="usage-bar-fill" [style.width]="usagePercentage() + '%'"
