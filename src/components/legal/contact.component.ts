@@ -1,5 +1,4 @@
 import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LegalFooterComponent } from './legal-footer.component';
@@ -7,7 +6,7 @@ import { PublicNavbarComponent } from '../landing/public-navbar.component';
 
 @Component({
   selector: 'app-contact',
-  imports: [RouterLink, FormsModule, CommonModule, LegalFooterComponent, PublicNavbarComponent],
+  imports: [FormsModule, CommonModule, LegalFooterComponent, PublicNavbarComponent],
   template: `
     <div class="min-h-screen flex flex-col font-sans bg-white">
       <app-public-navbar />

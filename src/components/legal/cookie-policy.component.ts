@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { LegalFooterComponent } from './legal-footer.component';
 import { PublicNavbarComponent } from '../landing/public-navbar.component';
 
 @Component({
   selector: 'app-cookie-policy',
-  imports: [RouterLink, LegalFooterComponent, PublicNavbarComponent],
+  imports: [LegalFooterComponent, PublicNavbarComponent],
   template: `
     <div class="min-h-screen flex flex-col font-sans bg-white">
       <app-public-navbar />
