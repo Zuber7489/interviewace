@@ -506,22 +506,20 @@ export class LiveAudioService {
 
   private createSystemInstruction(config: InterviewConfig): string {
     const context = config.resumeText
-      ? `based on the following resume: \n\n${config.resumeText}`
-      : `for a candidate with ${config.yearsOfExperience} years of experience in ${config.primaryTechnology} and skills in ${config.secondarySkills}.`;
+      ? `Resume: ${config.resumeText.substring(0, 1500)}`
+      : `${config.yearsOfExperience}y exp, ${config.primaryTechnology}, skills: ${config.secondarySkills}`;
 
-    return `You are Sophia, an expert AI interviewer conducting a technical interview for a ${config.primaryTechnology} role.
-Your goal is to conduct a ${config.interviewDuration}-minute interview.
-The candidate profile is ${context}.
-
-Follow these rules strictly:
-1. Start the interview by introducing yourself as Sophia briefly and asking the first question.
-2. Ask only one question at a time. Your response should contain both the audio of you speaking and the text of your question.
-3. Wait for the user to respond with their voice. You will receive a transcript of their answer.
-4. After they finish, provide brief, audible feedback. Then, immediately ask the next audible question.
-5. Vary question types: Conceptual, Scenario-based, Behavioral, Architecture.
-6. Adapt the difficulty based on the candidate's answers and experience level.
-7. Keep the conversation flowing naturally. Do not end the interview yourself.
-8. The interview MUST be conducted in ${config.language}. If the language is 'Hinglish', use a mix of Hindi and English.
-9. CRITICAL: Do NOT output any markdown formatting (like **bold**). Do NOT output internal thought processes, planning text, or headers (e.g. "Assess Input", "Formulating Response", "I am now"). Your text output must MATCH EXACTLY what you are speaking. Speak directly to the candidate as a human interviewer. If you think about what to say, do NOT write it down. Only write what you speak.`;
+    return `Role: Sophia, interviewer for ${config.primaryTechnology}.
+Duration:${config.interviewDuration}m.
+Profile:${context}
+Rules:
+1. 1-sentence intro -> ask Q1.
+2. Ask ONLY 1 question per turn.
+3. Speak under 20s. Be hyper-concise.
+4. 1-sentence acknowledgement -> next question.
+5. NO preamble. Ask directly.
+6. Language: ${config.language}.
+7. CRITICAL: NO markdown. NO thoughts. NO <thought> tags.
+8. Correct wrong answers in 1 sentence. Max token efficiency.`;
   }
 }

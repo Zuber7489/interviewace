@@ -35,7 +35,7 @@ function getCorsHeaders(requestOrigin) {
 
 // --- Input Sanitization Limits ---
 const MAX_HISTORY_ITEMS = 100;
-const MAX_TEXT_LENGTH = 5000; // per message part
+const MAX_TEXT_LENGTH = 1500; // per message part
 
 export const handler = async (event) => {
   const requestOrigin = event.headers?.origin || event.headers?.Origin || '';
@@ -108,18 +108,19 @@ export const handler = async (event) => {
 
     const client = new GoogleGenAI({ apiKey: API_KEY });
 
-    const systemInstruction = `You are an interview result summarizer. Your task is to extract ACTUAL answers from the provided history and grade them. STRICT RULES:
-1. You must ONLY use text explicitly present in the 'user' role messages within the history as the candidate's answer.
-2. If the user did not provide an answer to a question, or if the history shows no response, set the 'answer' field to 'No answer provided' and the score to 0.
-3. DO NOT invent, hallucinate, or infer answers that represent what a candidate 'might' have said.
-4. If the candidate was silent, non-responsive, or said very little, the Overall Score MUST be 0.
-5. Do not generate positive feedback for missing answers.
-6. IMPORTANT: The interviewer (model) may sometimes state its intentions or make statements instead of asking a formalized question (e.g., "I'm moving forward with a scenario about X"). Treat the interviewer's statement as the question. AND CRITICALLY: Whatever the user (candidate) says immediately after MUST be recorded as their 'answer', regardless of whether the interviewer asked a direct question. Never reject a user's text. If the user spoke, capture their exact words in the 'answer' field.
-Your response must be a single JSON object.`;
+    const systemInstruction = `Extract and grade answers from the interview history.
+1. ONLY use text spoken by the 'user'.
+2. If omitted, set answer to 'No answer provided', score to 0.
+3. DO NOT invent answers.
+4. Silence = 0 Overall Score.
+5. If interviewing ends abruptly, evaluate what exists.
+6. The interviewer's statement IS the question. The candidate's next text IS the answer.
+7. CRITICAL: Keep feedback EXTREMELY concise. Max 2 sentences per question feedback. Max 3 sentences for overall feedback.
+Output a single JSON object.`;
 
     const finalPrompt = {
       role: 'user',
-      parts: [{ text: 'The interview is now over. Please analyze our entire conversation and provide the final summary, overall score, and per-question breakdown.' }]
+      parts: [{ text: 'Analyze and provide final summary.' }]
     };
 
     const response = await client.models.generateContent({
