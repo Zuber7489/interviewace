@@ -43,6 +43,47 @@ import { PublicNavbarComponent } from './public-navbar.component';
                     Log In
                 </a>
             </div>
+
+            <!-- Video Section -->
+            <div class="pt-16 sm:pt-20 md:pt-24 w-full">
+                <div class="inline-block px-4 py-1.5 rounded-full bg-black/5 border border-black/5 mb-8">
+                    <span class="text-black text-[10px] sm:text-xs font-bold tracking-widest uppercase">Experience ScoreMyInterview in Action</span>
+                </div>
+                
+                <div class="relative max-w-5xl mx-auto">
+                    <!-- Decorative background glow -->
+                    <div class="absolute -inset-4 bg-gradient-to-r from-gray-100 to-gray-200 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-75 transition duration-1000"></div>
+                    
+                    <div class="relative glass p-2 sm:p-4 rounded-[2.5rem] border border-black/10 shadow-2xl">
+                        <div class="relative rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden aspect-video bg-black/5 shadow-inner">
+                            <video 
+                                class="w-full h-full object-cover"
+                                autoplay 
+                                muted 
+                                loop 
+                                playsinline
+                                controls
+                            >
+                                <source src="assets/grok-video-a3c63fec-d284-4d08-8d02-e1fbad244abf (1).mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+
+                    <!-- Floating Badge -->
+                    <div class="absolute -bottom-6 -right-6 hidden md:block animate-float">
+                        <div class="glass py-4 px-6 rounded-2xl border border-black/10 shadow-xl flex items-center gap-4">
+                            <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white">
+                                <i class="fas fa-play text-xs"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Demo</p>
+                                <p class="text-xs font-bold text-black">Watch AI Interview</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Features Grid -->
             <div class="grid md:grid-cols-3 gap-4 sm:gap-6 mt-12 sm:mt-16 md:mt-20 text-left w-full">
