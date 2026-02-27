@@ -39,14 +39,13 @@ import { StateService } from '../../services/state.service';
         <!-- Score Ring -->
         <div class="stat-card score-card">
           <div class="score-ring-wrap">
-            <svg class="score-ring" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="50" class="ring-track"/>
-              <circle cx="60" cy="60" r="50" class="ring-fill"
+            <svg class="score-ring" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" class="ring-track"/>
+              <circle cx="50" cy="50" r="40" class="ring-fill"
                 [style.stroke-dashoffset]="scoreOffset()"/>
             </svg>
             <div class="score-inner">
-              <span class="score-val">{{ averageScore() | number:'1.0-0' }}</span>
-              <span class="score-label">%</span>
+              <span class="score-val">{{ averageScore() | number:'1.0-0' }}<span class="score-pct">%</span></span>
             </div>
           </div>
           <div class="stat-info">
@@ -331,7 +330,10 @@ import { StateService } from '../../services/state.service';
       border: 1.5px solid #f0f0f0;
       border-radius: 20px;
       padding: 1.5rem;
-      display: flex; align-items: center; gap: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.85rem;
       transition: all 0.25s ease;
       cursor: default;
     }
@@ -343,29 +345,42 @@ import { StateService } from '../../services/state.service';
     .plan-card { cursor: pointer; }
 
     /* Score ring card */
-    .score-card { gap: 1rem; }
+    .score-card {
+      flex-direction: row;
+      align-items: center;
+      gap: 1.25rem;
+    }
     .score-ring-wrap {
-      position: relative; width: 90px; height: 90px; flex-shrink: 0;
+      position: relative;
+      width: 88px; height: 88px;
+      flex-shrink: 0;
     }
     .score-ring {
       width: 100%; height: 100%;
       transform: rotate(-90deg);
+      overflow: visible;
     }
     .ring-track {
-      fill: none; stroke: #f0f0f0; stroke-width: 10;
+      fill: none; stroke: #f0f0f0; stroke-width: 9;
     }
     .ring-fill {
-      fill: none; stroke: #000; stroke-width: 10;
+      fill: none; stroke: #111; stroke-width: 9;
       stroke-linecap: round;
-      stroke-dasharray: 314;
+      stroke-dasharray: 251.2;
       transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .score-inner {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; font-weight: 800; color: #000;
+      font-size: 1.25rem; font-weight: 800; color: #000;
+      line-height: 1;
     }
-    .score-label { font-size: 0.7rem; font-weight: 600; color: #999; align-self: flex-end; margin-bottom: 6px; }
+    .score-val {
+      display: inline-flex; align-items: baseline; gap: 1px;
+    }
+    .score-pct {
+      font-size: 0.65rem; font-weight: 700; color: #888;
+    }
 
     /* Icon wraps */
     .stat-icon-wrap {
