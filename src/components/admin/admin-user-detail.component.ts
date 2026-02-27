@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
+import { StateService } from '../../services/state.service';
 import { getDatabase, ref as dbRef, get } from 'firebase/database';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { firebaseConfig } from '../../firebase.config';
@@ -11,9 +12,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const database = getDatabase(app);
 
 @Component({
-    selector: 'app-admin-user-detail',
-    imports: [CommonModule],
-    template: `
+  selector: 'app-admin-user-detail',
+  imports: [CommonModule],
+  template: `
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-16">
       
       <!-- Header / Back Button -->
@@ -119,74 +120,72 @@ const database = getDatabase(app);
   `
 })
 export class AdminUserDetailComponent {
-    route = inject(ActivatedRoute);
-    router = inject(Router);
-    authService = inject(AuthService);
-    toastService = inject(ToastService);
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  authService = inject(AuthService);
+  toastService = inject(ToastService);
+  stateService = inject(StateService);
 
-    userId = signal<string | null>(null);
-    user = signal<any>(null);
-    userHistory = signal<any[]>([]);
-    isLoading = signal(true);
+  userId = signal<string | null>(null);
+  user = signal<any>(null);
+  userHistory = signal<any[]>([]);
+  isLoading = signal(true);
 
-    constructor() {
-        effect(() => {
-            const currentUser = this.authService.currentUser();
-            if (currentUser && !currentUser.isAdmin) {
-                this.router.navigate(['/dashboard']);
-                this.toastService.error("Unauthorized access.");
-            }
-        });
+  constructor() {
+    effect(() => {
+      const currentUser = this.authService.currentUser();
+      if (currentUser && !currentUser.isAdmin) {
+        this.router.navigate(['/dashboard']);
+        this.toastService.error("Unauthorized access.");
+      }
+    });
 
-        this.route.paramMap.subscribe(params => {
-            const id = params.get('id');
-            if (id) {
-                this.userId.set(id);
-                this.loadUserDetails(id);
-            } else {
-                this.isLoading.set(false);
-            }
-        });
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.userId.set(id);
+        this.loadUserDetails(id);
+      } else {
+        this.isLoading.set(false);
+      }
+    });
+  }
 
-    async loadUserDetails(userId: string) {
-        this.isLoading.set(true);
-        try {
-            const dbRefNode = dbRef(database, `users/${userId}`);
-            const snap = await get(dbRefNode);
-            if (snap.exists()) {
-                const fullData = snap.val();
-                this.user.set({ ...fullData, id: userId });
+  async loadUserDetails(userId: string) {
+    this.isLoading.set(true);
+    try {
+      const dbRefNode = dbRef(database, `users/${userId}`);
+      const snap = await get(dbRefNode);
+      if (snap.exists()) {
+        const fullData = snap.val();
+        this.user.set({ ...fullData, id: userId });
 
-                if (fullData.history) {
-                    const hArray = Object.values(fullData.history).sort((a: any, b: any) => b.startTime - a.startTime);
-                    this.userHistory.set(hArray);
-                }
-            }
-        } catch (e) {
-            console.error("Failed to fetch detailed info", e);
-            this.toastService.error("Failed to load user details.");
-        } finally {
-            this.isLoading.set(false);
+        if (fullData.history) {
+          const hArray = Object.values(fullData.history).sort((a: any, b: any) => b.startTime - a.startTime);
+          this.userHistory.set(hArray);
         }
+      }
+    } catch (e) {
+      console.error("Failed to fetch detailed info", e);
+      this.toastService.error("Failed to load user details.");
+    } finally {
+      this.isLoading.set(false);
     }
+  }
 
-    goBack() {
-        this.router.navigate(['/dashboard/admin']);
-    }
+  goBack() {
+    this.router.navigate(['/dashboard/admin']);
+  }
 
-    async viewReport(sessionId: string, uId: string) {
-        try {
-            const snap = await get(dbRef(database, `users/${uId}/history/${sessionId}`));
-            if (snap.exists()) {
-                import('../../services/state.service').then(m => {
-                    const state = inject(m.StateService);
-                    state.activeSession.set(snap.val());
-                    this.router.navigate(['/report']);
-                });
-            }
-        } catch (e) {
-            this.toastService.error("Could not load report.");
-        }
+  async viewReport(sessionId: string, uId: string) {
+    try {
+      const snap = await get(dbRef(database, `users/${uId}/history/${sessionId}`));
+      if (snap.exists()) {
+        this.stateService.activeSession.set(snap.val());
+        this.router.navigate(['/report']);
+      }
+    } catch (e) {
+      this.toastService.error("Could not load report.");
     }
+  }
 }
