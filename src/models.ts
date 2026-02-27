@@ -38,6 +38,7 @@ export interface User {
   interviewsCount?: number;
   maxInterviews?: number;
   isAdmin?: boolean;
+  photoURL?: string;
 }
 
 export interface InterviewSession {
