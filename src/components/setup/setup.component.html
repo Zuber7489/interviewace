@@ -101,13 +101,13 @@
           <div>
             <label
               class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 md:mb-2">Duration</label>
-            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3">
-              @for (d of [10, 20, 30]; track d) {
+            <div class="grid grid-cols-1 gap-1.5 sm:gap-2 md:gap-3">
+              @for (d of [10]; track d) {
               <button (click)="interviewDuration.set(d)" [class.bg-black]="interviewDuration() === d"
                 [class.text-white]="interviewDuration() === d" [class.shadow-lg]="interviewDuration() === d"
                 [class.shadow-black/25]="interviewDuration() === d"
                 [class.border-transparent]="interviewDuration() === d"
-                class="border border-black/5 bg-white text-gray-600 text-[10px] sm:text-xs md:text-sm font-medium py-1.5 sm:py-2 md:py-2.5 rounded-lg hover:bg-black/5 hover:text-black transition-all duration-200">
+                class="border border-black/5 bg-white text-gray-600 text-[10px] sm:text-xs md:text-sm font-medium py-1.5 sm:py-2 md:py-2.5 rounded-lg hover:bg-black/5 hover:text-black transition-all duration-200 cursor-default">
                 {{ d }} min
               </button>
               }

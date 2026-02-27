@@ -120,7 +120,7 @@ export class DashboardSettingsComponent {
 
   name = signal('');
   email = signal('');
-  defaultDuration = signal(20);
+  defaultDuration = signal(10);
   preferredLanguage = signal('English');
 
   savingProfile = signal(false);
