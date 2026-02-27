@@ -13,9 +13,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const database = getDatabase(app);
 
 @Component({
-    selector: 'app-admin',
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-admin',
+  imports: [CommonModule, FormsModule],
+  template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-16">
       <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl sm:text-3xl font-bold text-red-600 flex items-center gap-2">
@@ -113,131 +113,138 @@ const database = getDatabase(app);
   `
 })
 export class AdminComponent {
-    authService = inject(AuthService);
-    router = inject(Router);
-    toastService = inject(ToastService);
+  authService = inject(AuthService);
+  router = inject(Router);
+  toastService = inject(ToastService);
 
-    users = signal<User[]>([]);
-    isLoading = signal(true);
-    searchQuery = signal('');
+  users = signal<User[]>([]);
+  isLoading = signal(true);
+  searchQuery = signal('');
 
-    constructor() {
-        effect(() => {
-            const user = this.authService.currentUser();
-            if (user && !user.isAdmin) {
-                // Additional protection at component level
-                this.router.navigate(['/dashboard']);
-                this.toastService.error("Unauthorized access.");
-            } else if (user?.isAdmin) {
-                this.loadUsers();
-            }
-        });
-    }
+  constructor() {
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user && !user.isAdmin) {
+        // Additional protection at component level
+        this.router.navigate(['/dashboard']);
+        this.toastService.error("Unauthorized access.");
+      } else if (user?.isAdmin) {
+        this.loadUsers();
+      }
+    });
+  }
 
-    async loadUsers() {
-        this.isLoading.set(true);
-        try {
-            const dbRefNode = dbRef(database, 'users');
-            const snap = await get(dbRefNode);
-            if (snap.exists()) {
-                const usersData = snap.val();
-                const usersArray: User[] = Object.values(usersData);
-                // exclude specific sensitive data if necessary, mapped straight to model
-                this.users.set(usersArray);
-            } else {
-                this.users.set([]);
-            }
-        } catch (error) {
-            this.toastService.error("Failed to load users list.");
-            console.error(error);
-        } finally {
-            this.isLoading.set(false);
-        }
-    }
-
-    filteredUsers() {
-        const query = this.searchQuery().toLowerCase().trim();
-        if (!query) return this.users();
-        return this.users().filter(u =>
-            (u.name && u.name.toLowerCase().includes(query)) ||
-            (u.email && u.email.toLowerCase().includes(query)) ||
-            (u.id && u.id.toLowerCase().includes(query))
-        );
-    }
-
-    async updateTier(user: User, newTier: string) {
-        if (user.subscription === newTier) return;
-        try {
-            await update(dbRef(database, `users/${user.id}`), {
-                subscription: newTier,
-                // usually resetting usages when tier changes
-                interviewsCount: 0,
-                maxInterviews: newTier === 'pro' ? 10 : 2
+  async loadUsers() {
+    this.isLoading.set(true);
+    try {
+      const dbRefNode = dbRef(database, 'users');
+      const snap = await get(dbRefNode);
+      if (snap.exists()) {
+        const usersData = snap.val();
+        const usersArray: User[] = [];
+        for (let uid in usersData) {
+          if (usersData.hasOwnProperty(uid)) {
+            usersArray.push({
+              ...usersData[uid],
+              id: uid // Must map the unique Firebase key into the data structure 
             });
-            this.toastService.success(`Updated ${user.name} to ${newTier.toUpperCase()} successfully.`);
-            this.loadUsers(); // Refresh
-        } catch (err) {
-            this.toastService.error("Failed to update user subscription.");
+          }
         }
+        this.users.set(usersArray);
+      } else {
+        this.users.set([]);
+      }
+    } catch (error) {
+      this.toastService.error("Failed to load users list.");
+      console.error(error);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  filteredUsers() {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.users();
+    return this.users().filter(u =>
+      (u.name && u.name.toLowerCase().includes(query)) ||
+      (u.email && u.email.toLowerCase().includes(query)) ||
+      (u.id && u.id.toLowerCase().includes(query))
+    );
+  }
+
+  async updateTier(user: User, newTier: string) {
+    if (user.subscription === newTier) return;
+    try {
+      await update(dbRef(database, `users/${user.id}`), {
+        subscription: newTier,
+        // usually resetting usages when tier changes
+        interviewsCount: 0,
+        maxInterviews: newTier === 'pro' ? 10 : 2
+      });
+      this.toastService.success(`Updated ${user.name} to ${newTier.toUpperCase()} successfully.`);
+      this.loadUsers(); // Refresh
+    } catch (err) {
+      this.toastService.error("Failed to update user subscription.");
+    }
+  }
+
+  async adjustInterviews(user: User, delta: number) {
+    const current = user.interviewsCount || 0;
+    const next = current + delta;
+    if (next < 0) return;
+
+    try {
+      await update(dbRef(database, `users/${user.id}`), {
+        interviewsCount: next
+      });
+      // Just update local signal manually to save DB reads
+      this.users.update(list => list.map(u => u.id === user.id ? { ...u, interviewsCount: next } : u));
+    } catch (err) {
+      this.toastService.error("Failed to update interview count.");
+    }
+  }
+
+  async updateMaxInterviews(user: User, event: any) {
+    const newVal = parseInt(event.target.value, 10);
+    if (isNaN(newVal) || newVal < 0) return;
+
+    try {
+      await update(dbRef(database, `users/${user.id}`), {
+        maxInterviews: newVal
+      });
+      this.users.update(list => list.map(u => u.id === user.id ? { ...u, maxInterviews: newVal } : u));
+      this.toastService.success("Max interviews updated.");
+    } catch (err) {
+      this.toastService.error("Failed to update max interviews.");
+    }
+  }
+
+  async toggleAdmin(user: User) {
+    const isNowAdmin = !user.isAdmin;
+
+    if (isNowAdmin && !confirm(`Are you sure you want to make ${user.name} an Admin? They will have full access.`)) {
+      return;
     }
 
-    async adjustInterviews(user: User, delta: number) {
-        const current = user.interviewsCount || 0;
-        const next = current + delta;
-        if (next < 0) return;
-
-        try {
-            await update(dbRef(database, `users/${user.id}`), {
-                interviewsCount: next
-            });
-            // Just update local signal manually to save DB reads
-            this.users.update(list => list.map(u => u.id === user.id ? { ...u, interviewsCount: next } : u));
-        } catch (err) {
-            this.toastService.error("Failed to update interview count.");
-        }
+    if (!isNowAdmin && user.id === this.authService.currentUser()?.id) {
+      if (!confirm(`Warning: You are stripping YOUR OWN Admin rights. You will lose access immediately. Proceed?`)) {
+        return;
+      }
     }
 
-    async updateMaxInterviews(user: User, event: any) {
-        const newVal = parseInt(event.target.value, 10);
-        if (isNaN(newVal) || newVal < 0) return;
+    try {
+      await update(dbRef(database, `users/${user.id}`), {
+        isAdmin: isNowAdmin
+      });
+      this.users.update(list => list.map(u => u.id === user.id ? { ...u, isAdmin: isNowAdmin } : u));
+      this.toastService.success(`${user.name} is ${isNowAdmin ? 'now an Admin' : 'no longer an Admin'}.`);
 
-        try {
-            await update(dbRef(database, `users/${user.id}`), {
-                maxInterviews: newVal
-            });
-            this.users.update(list => list.map(u => u.id === user.id ? { ...u, maxInterviews: newVal } : u));
-            this.toastService.success("Max interviews updated.");
-        } catch (err) {
-            this.toastService.error("Failed to update max interviews.");
-        }
+      if (!isNowAdmin && user.id === this.authService.currentUser()?.id) {
+        this.authService.currentUser.update(u => u ? { ...u, isAdmin: false } : u); // will trigger effect to boot us out
+      }
+
+    } catch (err) {
+      this.toastService.error("Failed to update admin rights.");
     }
-
-    async toggleAdmin(user: User) {
-        const isNowAdmin = !user.isAdmin;
-
-        if (isNowAdmin && !confirm(`Are you sure you want to make ${user.name} an Admin? They will have full access.`)) {
-            return;
-        }
-
-        if (!isNowAdmin && user.id === this.authService.currentUser()?.id) {
-            if (!confirm(`Warning: You are stripping YOUR OWN Admin rights. You will lose access immediately. Proceed?`)) {
-                return;
-            }
-        }
-
-        try {
-            await update(dbRef(database, `users/${user.id}`), {
-                isAdmin: isNowAdmin
-            });
-            this.users.update(list => list.map(u => u.id === user.id ? { ...u, isAdmin: isNowAdmin } : u));
-            this.toastService.success(`${user.name} is ${isNowAdmin ? 'now an Admin' : 'no longer an Admin'}.`);
-
-            if (!isNowAdmin && user.id === this.authService.currentUser()?.id) {
-                this.authService.currentUser.update(u => u ? { ...u, isAdmin: false } : u); // will trigger effect to boot us out
-            }
-
-        } catch (err) {
-            this.toastService.error("Failed to update admin rights.");
-        }
-    }
+  }
 }
