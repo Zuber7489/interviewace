@@ -1,21 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LegalFooterComponent } from './legal-footer.component';
+import { PublicNavbarComponent } from '../landing/public-navbar.component';
 
 @Component({
   selector: 'app-refund-policy',
-  imports: [RouterLink, LegalFooterComponent],
+  imports: [RouterLink, LegalFooterComponent, PublicNavbarComponent],
   template: `
     <div class="min-h-screen flex flex-col font-sans bg-white">
-      <nav class="sticky top-0 z-50 px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center border-b border-black/10 backdrop-blur-md bg-white/80">
-        <a routerLink="/" class="flex items-center gap-2 group">
-          <i class="fas fa-brain text-black text-xl group-hover:scale-110 transition-transform duration-300"></i>
-          <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600">ScoreMyInterview</span>
-        </a>
-        <a routerLink="/" class="text-sm text-gray-500 hover:text-black transition-colors flex items-center gap-1">
-          <i class="fas fa-arrow-left text-xs"></i> Back to Home
-        </a>
-      </nav>
+      <app-public-navbar />
 
       <main class="flex-grow max-w-4xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         <div class="mb-10 sm:mb-14">
