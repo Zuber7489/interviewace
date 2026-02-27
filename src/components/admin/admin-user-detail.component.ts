@@ -35,15 +35,15 @@ const database = getDatabase(app);
       } @else {
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <!-- Header -->
-          <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white z-10">
-            <div>
-              <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                {{ user()?.name }}'s Profile
+          <div class="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white z-10">
+            <div class="w-full">
+              <h2 class="text-xl sm:text-2xl font-bold text-gray-900 flex flex-wrap items-center gap-2 sm:gap-3">
+                <span class="truncate max-w-full">{{ user()?.name }}'s Profile</span>
                 @if(user()?.isAdmin) {
-                  <span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Admin</span>
+                  <span class="bg-red-100 text-red-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shrink-0">Admin</span>
                 }
               </h2>
-              <p class="text-sm text-gray-500 mt-1">{{ user()?.email }} | ID: <span class="font-mono text-gray-400">{{ user()?.id }}</span></p>
+              <p class="text-xs sm:text-sm text-gray-500 mt-1 break-all">{{ user()?.email }} <span class="hidden sm:inline">|</span><span class="sm:hidden flex block my-1"></span> ID: <span class="font-mono text-gray-400">{{ user()?.id }}</span></p>
             </div>
           </div>
 
@@ -119,7 +119,7 @@ const database = getDatabase(app);
                         </div>
                       </div>
                        <!-- Admin view report functionality -->
-                       <button (click)="viewReport(session.id, user()?.id)" class="px-3 py-1.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap">
+                       <button (click)="viewReport(session.id, user()?.id)" class="w-full sm:w-auto justify-center px-4 sm:px-3 py-2 sm:py-1.5 bg-gray-900 hover:bg-black text-white text-sm sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap">
                          <i class="fas fa-external-link-alt"></i> View Report
                        </button>
                     </div>

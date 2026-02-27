@@ -154,16 +154,17 @@ const database = getDatabase(app);
                       <input type="number" min="0" [ngModel]="user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(user, $event)"
                         class="w-16 text-center border border-gray-200 rounded px-1 py-1 text-xs font-bold focus:outline-none focus:border-black bg-transparent" />
                     </td>
-                    <td class="p-3 text-right flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
-                       <!-- Extra optional actions -->
-                       @if(!user.isAdmin) {
-                          <button (click)="toggleAdmin(user)" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1 rounded transition-colors whitespace-nowrap">Make Admin</button>
-                       } @else {
-                          <button (click)="toggleAdmin(user)" class="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-2 py-1 rounded transition-colors whitespace-nowrap">Remove Admin</button>
-                       }
-                       <button (click)="deleteUser(user)" class="text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold px-2 py-1 flex items-center gap-1 rounded transition-colors whitespace-nowrap" title="Delete User">
-                         <i class="fas fa-trash-alt"></i> Delete
-                       </button>
+                    <td class="p-3" (click)="$event.stopPropagation()">
+                       <div class="flex items-center justify-end gap-2 w-full h-full min-h-[44px]">
+                         @if(!user.isAdmin) {
+                            <button (click)="toggleAdmin(user)" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap border border-red-100 flex items-center h-8">Make Admin</button>
+                         } @else {
+                            <button (click)="toggleAdmin(user)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap border border-gray-200 flex items-center h-8">Remove Admin</button>
+                         }
+                         <button (click)="deleteUser(user)" class="text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 flex items-center gap-1.5 rounded-lg transition-colors whitespace-nowrap shadow-sm border border-red-700 h-8" title="Delete User">
+                           <i class="fas fa-trash-alt"></i> Delete
+                         </button>
+                       </div>
                     </td>
                   </tr>
                 }
