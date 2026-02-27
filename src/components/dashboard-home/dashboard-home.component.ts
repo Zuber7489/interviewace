@@ -10,179 +10,701 @@ import { StateService } from '../../services/state.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="p-6 md:p-8 space-y-8 animate-fade-in relative z-10">
-      <!-- Welcome Header -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-black tracking-tight font-heading">
-            Welcome back, {{ auth.currentUser()?.name }}! 👋
-          </h1>
-          <p class="text-gray-600 mt-1">Here is your interview preparation summary.</p>
-        </div>
-        <button routerLink="/dashboard/interviews" 
-                class="bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 group shadow-lg hover:shadow-xl w-fit">
-          <i class="fa-solid fa-bolt text-yellow-400 group-hover:scale-110 transition-transform"></i>
-          Start New Interview
-        </button>
-      </div>
+    <div class="dashboard-wrapper">
 
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Interviews Count -->
-        <div class="glass p-6 rounded-2xl border border-black/5 hover:border-black/10 transition-all group shadow-sm bg-white/40">
-          <div class="flex items-center gap-4 mb-3">
-            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:rotate-6 transition-transform">
-              <i class="fa-solid fa-microphone-lines text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-500">Usage Status</span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-bold">{{ auth.currentUser()?.interviewsCount || 0 }}</span>
-            <span class="text-gray-400 text-sm">of {{ auth.currentUser()?.subscription === 'pro' ? '∞' : (auth.currentUser()?.maxInterviews || 2) }}</span>
-          </div>
-          <div class="mt-4 w-full bg-black/5 h-2 rounded-full overflow-hidden">
-            <div class="h-full bg-blue-600 transition-all duration-1000" 
-                 [style.width.%]="usagePercentage()"></div>
-          </div>
-        </div>
-
-        <!-- Average Score -->
-        <div class="glass p-6 rounded-2xl border border-black/5 hover:border-black/10 transition-all group shadow-sm bg-white/40">
-          <div class="flex items-center gap-4 mb-3">
-            <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600 group-hover:rotate-6 transition-transform">
-              <i class="fa-solid fa-chart-line text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-500">Avg. Score</span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-bold">{{ averageScore() | number:'1.0-0' }}%</span>
-            <span class="text-gray-400 text-sm text-[10px]" *ngIf="averageScore() > 0">last 5 sessions</span>
-          </div>
-          <p class="text-[10px] text-gray-400 mt-4 uppercase tracking-wider font-semibold">Trend: Steady 📈</p>
-        </div>
-
-        <!-- Subscription -->
-        <div class="glass p-6 rounded-2xl border border-black/5 hover:border-black/10 transition-all group shadow-sm bg-white/40">
-          <div class="flex items-center gap-4 mb-3">
-            <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 group-hover:rotate-6 transition-transform">
-              <i class="fa-solid fa-shield-halved text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-500">Plan</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold rounded-lg uppercase tracking-widest shadow-sm">
-              {{ auth.currentUser()?.subscription || 'Free' }}
+      <!-- ─── Hero Banner ─── -->
+      <div class="hero-banner">
+        <div class="hero-orb orb-1"></div>
+        <div class="hero-orb orb-2"></div>
+        <div class="hero-content">
+          <div class="hero-text">
+            <span class="greeting-badge">
+              <i class="fa-solid fa-sun text-yellow-400"></i>
+              {{ timeGreeting() }}
             </span>
+            <h1 class="hero-title">{{ auth.currentUser()?.name || 'Interviewer' }} <span class="wave">👋</span></h1>
+            <p class="hero-sub">Track your progress, review past sessions, and level up your interview game.</p>
           </div>
-          <p class="text-[10px] text-gray-400 mt-4 cursor-pointer hover:text-black transition-colors" routerLink="/dashboard/settings">
-            Change subscription →
-          </p>
-        </div>
-
-        <!-- Last Active -->
-        <div class="glass p-6 rounded-2xl border border-black/5 hover:border-black/10 transition-all group shadow-sm bg-white/40">
-          <div class="flex items-center gap-4 mb-3">
-            <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 group-hover:rotate-6 transition-transform">
-              <i class="fa-solid fa-clock-rotate-left text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-500">Last Session</span>
-          </div>
-          <div class="text-lg font-bold truncate">
-            {{ lastInterviewDate() }}
-          </div>
-          <p class="text-[10px] text-gray-400 mt-4 uppercase tracking-wider font-semibold">Activity log</p>
+          <button routerLink="/dashboard/interviews" class="cta-btn">
+            <span class="cta-icon"><i class="fa-solid fa-bolt"></i></span>
+            Start Interview
+            <i class="fa-solid fa-arrow-right text-xs opacity-60 ml-1"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Content Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
-        <!-- History Section -->
-        <div class="lg:col-span-2 space-y-4">
-          <div class="flex items-center justify-between px-2">
-            <h3 class="text-xl font-bold text-black font-heading">Recent Activities</h3>
-            <a routerLink="/dashboard/history" class="text-sm text-gray-500 hover:text-black font-medium transition-colors">See all history</a>
-          </div>
-          
-          <div class="space-y-3">
-            <div *ngFor="let item of recentInterviews()" 
-                 class="glass bg-white/60 p-4 rounded-xl border border-black/5 flex items-center justify-between hover:border-black/10 hover:bg-white/80 transition-all shadow-sm">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
-                   <i class="fa-solid fa-scroll text-sm"></i>
-                </div>
-                <div>
-                   <h4 class="font-bold text-black text-sm">{{ item.config.primaryTechnology }} Interview</h4>
-                   <p class="text-[10px] text-gray-400">ID: #{{ item.id.substring(0, 8) }} • {{ item.startTime | date:'short' }}</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                 <div class="text-right mr-2">
-                    <span class="text-xs font-bold block" [class.text-green-600]="(item.overallScore || 0) >= 70" [class.text-orange-500]="(item.overallScore || 0) < 70">
-                       {{ item.overallScore ? item.overallScore + '%' : 'N/A' }}
-                    </span>
-                 </div>
-                 <button (click)="viewReport(item.id)" 
-                         class="px-3 py-1.5 bg-black text-white rounded-lg text-[10px] font-bold hover:bg-gray-800 transition-colors">
-                   Report
-                 </button>
-              </div>
-            </div>
+      <!-- ─── Stats Row ─── -->
+      <div class="stats-grid">
 
-            <div *ngIf="recentInterviews().length === 0" class="text-center py-20 glass rounded-2xl border-dashed border-2 border-black/5 bg-white/20">
-               <i class="fa-solid fa-inbox text-4xl text-gray-200 mb-4 block"></i>
-               <p class="text-gray-400 font-medium">No interview history yet.</p>
-               <button routerLink="/dashboard/interviews" class="mt-4 px-6 py-2 bg-black text-white rounded-xl text-xs font-bold">Start Now</button>
+        <!-- Score Ring -->
+        <div class="stat-card score-card">
+          <div class="score-ring-wrap">
+            <svg class="score-ring" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="50" class="ring-track"/>
+              <circle cx="60" cy="60" r="50" class="ring-fill"
+                [style.stroke-dashoffset]="scoreOffset()"/>
+            </svg>
+            <div class="score-inner">
+              <span class="score-val">{{ averageScore() | number:'1.0-0' }}</span>
+              <span class="score-label">%</span>
+            </div>
+          </div>
+          <div class="stat-info">
+            <p class="stat-title">Avg. Score</p>
+            <p class="stat-sub">Last 5 sessions</p>
+            <div class="trend-badge" [class.trend-good]="averageScore() >= 70" [class.trend-warn]="averageScore() < 70 && averageScore() > 0">
+              <i class="fa-solid" [class.fa-arrow-trend-up]="averageScore() >= 70" [class.fa-arrow-trend-down]="averageScore() < 70 && averageScore() > 0" [class.fa-minus]="averageScore() === 0"></i>
+              {{ averageScore() >= 70 ? 'Great' : (averageScore() > 0 ? 'Needs Work' : 'No Data') }}
             </div>
           </div>
         </div>
 
-        <!-- Right Side: Tips & Upgrades -->
-        <div class="space-y-6">
-          <div class="glass p-6 rounded-2xl bg-black text-white relative overflow-hidden group shadow-xl">
-             <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-colors"></div>
-             <h4 class="text-xl font-heading font-bold mb-4 relative z-10 flex items-center gap-2">
-               <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
-               SaaS Tip
-             </h4>
-             <p class="text-xs text-gray-400 leading-relaxed italic mb-6 relative z-10">
-               "Sophia loves it when you explain your logic out loud. Even if you're stuck, talk through your thought process to earn 'Reasoning' points."
-             </p>
-             <button routerLink="/dashboard/settings" class="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold rounded-lg border border-white/10 transition-colors relative z-10">
-               Read Sophia Handbook
-             </button>
+        <!-- Usage -->
+        <div class="stat-card">
+          <div class="stat-icon-wrap blue-icon">
+            <i class="fa-solid fa-microphone-lines"></i>
+          </div>
+          <div class="stat-info">
+            <p class="stat-title">Interviews Used</p>
+            <div class="big-num">
+              {{ auth.currentUser()?.interviewsCount || 0 }}
+              <span class="big-num-sub">/ {{ auth.currentUser()?.subscription === 'pro' ? '∞' : (auth.currentUser()?.maxInterviews || 2) }}</span>
+            </div>
+            <div class="usage-bar-track">
+              <div class="usage-bar-fill" [style.width]="usagePercentage() + '%'"
+                   [class.bar-danger]="usagePercentage() >= 80"></div>
+            </div>
+            <p class="stat-sub">{{ usagePercentage() < 100 ? (100 - usagePercentage() | number:'1.0-0') + '% remaining' : 'Limit reached' }}</p>
+          </div>
+        </div>
+
+        <!-- Plan -->
+        <div class="stat-card plan-card" routerLink="/dashboard/settings">
+          <div class="stat-icon-wrap purple-icon">
+            <i class="fa-solid" [class.fa-crown]="auth.currentUser()?.subscription === 'pro'" [class.fa-shield-halved]="auth.currentUser()?.subscription !== 'pro'"></i>
+          </div>
+          <div class="stat-info">
+            <p class="stat-title">Current Plan</p>
+            <div class="plan-badge" [class.plan-pro]="auth.currentUser()?.subscription === 'pro'">
+              <i class="fa-solid fa-crown text-[10px]" *ngIf="auth.currentUser()?.subscription === 'pro'"></i>
+              {{ auth.currentUser()?.subscription === 'pro' ? 'Pro Member' : 'Free Plan' }}
+            </div>
+            <p class="stat-sub mt-2">{{ auth.currentUser()?.subscription === 'pro' ? 'Unlimited access' : 'Tap to upgrade →' }}</p>
+          </div>
+        </div>
+
+        <!-- Last Session -->
+        <div class="stat-card">
+          <div class="stat-icon-wrap orange-icon">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div class="stat-info">
+            <p class="stat-title">Last Session</p>
+            <div class="big-num text-xl">{{ lastInterviewDate() }}</div>
+            <div class="streak-dots">
+              <span *ngFor="let d of streakDots()" class="dot" [class.dot-active]="d"></span>
+            </div>
+            <p class="stat-sub">7-day activity</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── Main Content ─── -->
+      <div class="content-grid">
+
+        <!-- Recent Activity -->
+        <div class="activity-section">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Recent Activity</h2>
+              <p class="section-sub">Your last {{ recentInterviews().length || 0 }} interview sessions</p>
+            </div>
+            <a routerLink="/dashboard/history" class="see-all-link">
+              View all <i class="fa-solid fa-arrow-right text-xs"></i>
+            </a>
           </div>
 
-          <div class="glass p-6 rounded-2xl border border-yellow-500/20 bg-yellow-50/20 group hover:border-yellow-500/40 transition-all">
-             <div class="flex items-center gap-3 mb-3">
-                <i class="fa-solid fa-crown text-yellow-600 text-lg"></i>
-                <h4 class="font-bold text-gray-800">Go Pro?</h4>
-             </div>
-             <p class="text-[11px] text-gray-500 leading-relaxed mb-4">
-               Get unlimited interviews, specialized technology roles, and advanced behavioral analysis.
-             </p>
-             <button routerLink="/dashboard/settings" class="w-full py-2 bg-yellow-500 hover:bg-yellow-600 text-black text-[10px] font-bold rounded-lg transition-all shadow-md shadow-yellow-500/10">
-               Unlock Everything
-             </button>
+          <!-- Interview list -->
+          <div class="activity-list" *ngIf="recentInterviews().length > 0">
+            <div *ngFor="let item of recentInterviews(); let i = index"
+                 class="activity-row"
+                 [style.animation-delay]="(i * 80) + 'ms'">
+              <div class="activity-rank">{{ i + 1 }}</div>
+              <div class="activity-icon-wrap">
+                <i class="fa-solid fa-code"></i>
+              </div>
+              <div class="activity-meta">
+                <h4 class="activity-title">{{ item.config.primaryTechnology }} Interview</h4>
+                <p class="activity-date">{{ item.startTime | date:'MMM d, y · h:mm a' }}</p>
+              </div>
+              <div class="activity-score-wrap">
+                <div class="activity-score"
+                     [class.score-high]="(item.overallScore || 0) >= 70"
+                     [class.score-low]="(item.overallScore || 0) < 70 && item.overallScore">
+                  {{ item.overallScore ? item.overallScore + '%' : '—' }}
+                </div>
+                <div class="score-mini-bar">
+                  <div [style.width]="(item.overallScore || 0) + '%'"
+                       [class.bar-green]="(item.overallScore||0) >= 70"
+                       [class.bar-orange]="(item.overallScore||0) < 70"></div>
+                </div>
+              </div>
+              <button (click)="viewReport(item.id)" class="report-btn">
+                <i class="fa-solid fa-file-lines text-xs"></i>
+                Report
+              </button>
+            </div>
           </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="recentInterviews().length === 0">
+            <div class="empty-icon-wrap">
+              <i class="fa-solid fa-microphone-slash"></i>
+            </div>
+            <h3 class="empty-title">No sessions yet</h3>
+            <p class="empty-sub">Start your first mock interview and get AI-powered feedback instantly.</p>
+            <button routerLink="/dashboard/interviews" class="empty-cta">
+              <i class="fa-solid fa-bolt"></i> Start First Interview
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-col">
+
+          <!-- Quick Tips -->
+          <div class="tip-card">
+            <div class="tip-bg-glow"></div>
+            <div class="tip-header">
+              <div class="tip-icon-wrap">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </div>
+              <div>
+                <h4 class="tip-title">Sophia's Tip</h4>
+                <p class="tip-sub">AI Interview Coach</p>
+              </div>
+            </div>
+            <blockquote class="tip-quote">
+              "Talk through your thought process out loud — even when stuck. Sophia rewards reasoning over just correct answers."
+            </blockquote>
+            <div class="tip-tags">
+              <span class="tip-tag">#ThinkAloud</span>
+              <span class="tip-tag">#Reasoning</span>
+              <span class="tip-tag">#Strategy</span>
+            </div>
+          </div>
+
+          <!-- Upgrade Card (only for free) -->
+          <div class="upgrade-card" *ngIf="auth.currentUser()?.subscription !== 'pro'" routerLink="/dashboard/settings">
+            <div class="upgrade-shimmer"></div>
+            <div class="upgrade-crown">
+              <i class="fa-solid fa-crown"></i>
+            </div>
+            <h4 class="upgrade-title">Unlock Pro Access</h4>
+            <ul class="upgrade-list">
+              <li><i class="fa-solid fa-check text-yellow-500"></i> Unlimited interviews</li>
+              <li><i class="fa-solid fa-check text-yellow-500"></i> Advanced behavioral scoring</li>
+              <li><i class="fa-solid fa-check text-yellow-500"></i> All tech roles & stacks</li>
+            </ul>
+            <button class="upgrade-btn">
+              Upgrade Now <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+
+          <!-- Pro Badge (for pro users) -->
+          <div class="pro-card" *ngIf="auth.currentUser()?.subscription === 'pro'">
+            <div class="pro-glow"></div>
+            <div class="pro-badge-icon"><i class="fa-solid fa-crown"></i></div>
+            <h4 class="pro-title">You're a Pro!</h4>
+            <p class="pro-sub">Full access unlocked. Keep practicing to stay ahead.</p>
+            <div class="pro-perks">
+              <span><i class="fa-solid fa-infinity"></i> Unlimited</span>
+              <span><i class="fa-solid fa-star"></i> Priority</span>
+              <span><i class="fa-solid fa-zap"></i> Instant AI</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .glass {
-      background: rgba(255, 255, 255, 0.45);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    /* ── Wrapper ── */
+    .dashboard-wrapper {
+      padding: 2rem 2rem 4rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 4px;
+
+    /* ── Hero ── */
+    .hero-banner {
+      background: #000;
+      border-radius: 24px;
+      padding: 2.5rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: transparent;
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(0,0,0,0.05);
-      border-radius: 10px;
+    .orb-1 {
+      width: 260px; height: 260px;
+      background: rgba(139, 92, 246, 0.35);
+      top: -60px; right: -40px;
+    }
+    .orb-2 {
+      width: 180px; height: 180px;
+      background: rgba(234, 179, 8, 0.2);
+      bottom: -50px; left: 30%;
+    }
+    .hero-content {
+      position: relative; z-index: 1;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      width: 100%; gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .greeting-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      font-size: 0.72rem; font-weight: 600;
+      padding: 4px 12px; border-radius: 100px;
+      letter-spacing: 0.04em; margin-bottom: 0.75rem;
+      text-transform: uppercase;
+    }
+    .hero-title {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800; color: #fff; line-height: 1.15;
+      margin: 0 0 0.5rem;
+    }
+    .wave { display: inline-block; animation: wave 1.8s ease infinite; transform-origin: 70% 70%; }
+    @keyframes wave {
+      0%,100% { transform: rotate(0deg); }
+      20% { transform: rotate(18deg); }
+      40% { transform: rotate(-8deg); }
+      60% { transform: rotate(14deg); }
+      80% { transform: rotate(-4deg); }
+    }
+    .hero-sub {
+      color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;
+    }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #fff; color: #000;
+      font-weight: 800; font-size: 0.9rem;
+      padding: 14px 28px; border-radius: 14px;
+      border: none; cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap; flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+    .cta-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: #000; color: #facc15;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1.5px solid #f0f0f0;
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex; align-items: center; gap: 1.25rem;
+      transition: all 0.25s ease;
+      cursor: default;
+    }
+    .stat-card:hover {
+      border-color: #e0e0e0;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      transform: translateY(-2px);
+    }
+    .plan-card { cursor: pointer; }
+
+    /* Score ring card */
+    .score-card { gap: 1rem; }
+    .score-ring-wrap {
+      position: relative; width: 90px; height: 90px; flex-shrink: 0;
+    }
+    .score-ring {
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .ring-track {
+      fill: none; stroke: #f0f0f0; stroke-width: 10;
+    }
+    .ring-fill {
+      fill: none; stroke: #000; stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 314;
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .score-inner {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; font-weight: 800; color: #000;
+    }
+    .score-label { font-size: 0.7rem; font-weight: 600; color: #999; align-self: flex-end; margin-bottom: 6px; }
+
+    /* Icon wraps */
+    .stat-icon-wrap {
+      width: 52px; height: 52px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .blue-icon   { background: #eff6ff; color: #2563eb; }
+    .purple-icon { background: #f5f3ff; color: #7c3aed; }
+    .orange-icon { background: #fff7ed; color: #ea580c; }
+
+    .stat-info { flex: 1; min-width: 0; }
+    .stat-title { font-size: 0.7rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 0.3rem; }
+    .stat-sub   { font-size: 0.7rem; color: #bbb; margin: 0; }
+    .big-num    { font-size: 1.7rem; font-weight: 800; color: #000; line-height: 1.1; margin-bottom: 0.4rem; }
+    .big-num-sub { font-size: 0.85rem; font-weight: 500; color: #aaa; }
+
+    .trend-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 0.65rem; font-weight: 700;
+      background: #f0f0f0; color: #666;
+      margin-top: 0.5rem;
+    }
+    .trend-good { background: #dcfce7; color: #16a34a; }
+    .trend-warn { background: #fff7ed; color: #ea580c; }
+
+    .usage-bar-track {
+      width: 100%; background: #f0f0f0;
+      border-radius: 100px; height: 6px;
+      overflow: hidden; margin-bottom: 0.4rem;
+    }
+    .usage-bar-fill {
+      height: 100%; background: #000;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+    .bar-danger { background: linear-gradient(90deg, #f97316, #ef4444); }
+
+    .plan-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700;
+      background: #111; color: #fff;
+      margin-top: 0.3rem;
+    }
+    .plan-pro { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+
+    .streak-dots {
+      display: flex; gap: 5px; margin-top: 0.5rem;
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #f0f0f0;
+      transition: background 0.3s;
+    }
+    .dot-active { background: #000; }
+
+    /* ── Content Grid ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Activity Section ── */
+    .activity-section {
+      background: #fff;
+      border: 1.5px solid #f0f0f0;
+      border-radius: 20px;
+      padding: 1.75rem;
+    }
+    .section-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.5rem; gap: 1rem;
+    }
+    .section-title {
+      font-size: 1.15rem; font-weight: 800; color: #000; margin: 0 0 2px;
+    }
+    .section-sub { font-size: 0.72rem; color: #aaa; margin: 0; }
+    .see-all-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 600; color: #666;
+      text-decoration: none;
+      transition: color 0.2s;
+      white-space: nowrap;
+      padding: 6px 12px; border-radius: 10px;
+      border: 1.5px solid #f0f0f0;
+    }
+    .see-all-link:hover { color: #000; border-color: #ccc; }
+
+    .activity-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .activity-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: #fafafa;
+      border: 1.5px solid #f5f5f5;
+      border-radius: 14px;
+      transition: all 0.2s ease;
+      animation: rowIn 0.4s ease forwards;
+      opacity: 0;
+    }
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .activity-row:hover {
+      border-color: #e5e5e5;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    }
+
+    .activity-rank {
+      width: 22px; height: 22px;
+      border-radius: 6px; background: #f0f0f0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 800; color: #999;
+      flex-shrink: 0;
+    }
+    .activity-icon-wrap {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: #f0f0f0; color: #555;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .activity-meta { flex: 1; min-width: 0; }
+    .activity-title { font-size: 0.85rem; font-weight: 700; color: #000; margin: 0 0 2px; }
+    .activity-date  { font-size: 0.68rem; color: #aaa; margin: 0; }
+
+    .activity-score-wrap { text-align: right; min-width: 60px; }
+    .activity-score {
+      font-size: 0.9rem; font-weight: 800; color: #999;
+      margin-bottom: 4px;
+    }
+    .score-high { color: #16a34a; }
+    .score-low  { color: #ea580c; }
+    .score-mini-bar {
+      width: 56px; height: 4px; background: #f0f0f0;
+      border-radius: 100px; overflow: hidden; margin-left: auto;
+    }
+    .score-mini-bar div {
+      height: 100%; border-radius: 100px;
+      transition: width 0.8s ease;
+    }
+    .bar-green  { background: #16a34a; }
+    .bar-orange { background: #ea580c; }
+
+    .report-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 10px;
+      background: #000; color: #fff;
+      font-size: 0.7rem; font-weight: 700;
+      border: none; cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .report-btn:hover {
+      background: #222;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      padding: 3.5rem 1rem;
+    }
+    .empty-icon-wrap {
+      width: 72px; height: 72px; border-radius: 20px;
+      background: #f5f5f5; color: #ccc;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; margin-bottom: 1.25rem;
+    }
+    .empty-title { font-size: 1.05rem; font-weight: 700; color: #333; margin: 0 0 0.5rem; }
+    .empty-sub   { font-size: 0.8rem; color: #aaa; margin: 0 0 1.5rem; max-width: 280px; }
+    .empty-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; border-radius: 12px;
+      background: #000; color: #fff;
+      font-size: 0.8rem; font-weight: 700;
+      border: none; cursor: pointer;
+      transition: 0.2s;
+    }
+    .empty-cta:hover { background: #222; transform: translateY(-1px); }
+
+    /* ── Right Column ── */
+    .right-col { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    /* Tip Card */
+    .tip-card {
+      background: #0a0a0a;
+      border-radius: 20px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .tip-bg-glow {
+      position: absolute;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(139,92,246,0.3), transparent);
+      top: -60px; right: -40px;
+      pointer-events: none;
+    }
+    .tip-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1rem; position: relative; z-index: 1;
+    }
+    .tip-icon-wrap {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(139,92,246,0.2);
+      color: #a78bfa;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .tip-title { font-size: 0.9rem; font-weight: 700; color: #fff; margin: 0; }
+    .tip-sub   { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin: 0; }
+    .tip-quote {
+      font-size: 0.8rem; color: rgba(255,255,255,0.6);
+      line-height: 1.7; font-style: italic;
+      border-left: 3px solid rgba(139,92,246,0.5);
+      margin: 0 0 1rem; padding-left: 0.75rem;
+      position: relative; z-index: 1;
+    }
+    .tip-tags {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      position: relative; z-index: 1;
+    }
+    .tip-tag {
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 0.65rem; font-weight: 600;
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.4);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* Upgrade Card */
+    .upgrade-card {
+      background: linear-gradient(145deg, #fffbeb, #fef9c3);
+      border: 1.5px solid #fde68a;
+      border-radius: 20px;
+      padding: 1.5rem;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .upgrade-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(251,191,36,0.2);
+    }
+    .upgrade-shimmer {
+      position: absolute; inset: 0;
+      background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.4) 50%, transparent 60%);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .upgrade-crown {
+      width: 44px; height: 44px; border-radius: 14px;
+      background: #fbbf24; color: #78350f;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; margin-bottom: 0.75rem;
+      position: relative; z-index: 1;
+    }
+    .upgrade-title {
+      font-size: 1rem; font-weight: 800; color: #78350f;
+      margin: 0 0 0.75rem; position: relative; z-index: 1;
+    }
+    .upgrade-list {
+      list-style: none; padding: 0; margin: 0 0 1.25rem;
+      display: flex; flex-direction: column; gap: 6px;
+      position: relative; z-index: 1;
+    }
+    .upgrade-list li {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; color: #92400e; font-weight: 600;
+    }
+    .upgrade-btn {
+      width: 100%; padding: 10px;
+      background: #f59e0b; color: #000;
+      font-size: 0.8rem; font-weight: 800;
+      border: none; border-radius: 12px;
+      cursor: pointer; transition: 0.2s;
+      position: relative; z-index: 1;
+    }
+    .upgrade-btn:hover { background: #d97706; }
+
+    /* Pro Card */
+    .pro-card {
+      background: #000; border-radius: 20px;
+      padding: 1.5rem; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .pro-glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center top, rgba(251,191,36,0.15), transparent 70%);
+    }
+    .pro-badge-icon {
+      width: 52px; height: 52px; border-radius: 16px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #78350f; font-size: 1.3rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.75rem;
+      position: relative; z-index: 1;
+    }
+    .pro-title { font-size: 1rem; font-weight: 800; color: #fff; margin: 0 0 0.4rem; z-index: 1; position: relative; }
+    .pro-sub   { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin: 0 0 1rem; z-index: 1; position: relative; }
+    .pro-perks {
+      display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+      position: relative; z-index: 1;
+    }
+    .pro-perks span {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 100px;
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.65rem; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .dashboard-wrapper { padding: 1.25rem 1rem 3rem; gap: 1.25rem; }
+      .hero-banner { padding: 1.75rem 1.5rem; }
+      .hero-title { font-size: 1.5rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .activity-section { padding: 1.25rem; }
+      .content-grid { gap: 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
     }
   `]
 })
@@ -191,41 +713,51 @@ export class DashboardHomeComponent {
   state = inject(StateService);
   private router = inject(Router);
 
-  recentInterviews = computed(() => {
-    return this.state.history().slice(0, 4);
-  });
+  recentInterviews = computed(() => this.state.history().slice(0, 5));
 
   averageScore = computed(() => {
-    const historicalReports = this.state.history()
+    const list = this.state.history()
       .filter(s => s.overallScore !== undefined)
       .slice(0, 5);
-
-    if (historicalReports.length === 0) return 0;
-
-    const sum = historicalReports.reduce((acc, curr) => acc + (curr.overallScore || 0), 0);
-    return sum / historicalReports.length;
+    if (!list.length) return 0;
+    return list.reduce((a, c) => a + (c.overallScore || 0), 0) / list.length;
   });
+
+  // stroke-dasharray = 2πr = 2*π*50 ≈ 314
+  scoreOffset = computed(() => 314 - (314 * this.averageScore()) / 100);
 
   usagePercentage = computed(() => {
     const user = this.auth.currentUser();
     if (!user || user.subscription === 'pro') return 100;
-    return ((user.interviewsCount || 0) / (user.maxInterviews || 2)) * 100;
+    return Math.min(((user.interviewsCount || 0) / (user.maxInterviews || 2)) * 100, 100);
   });
 
   lastInterviewDate = computed(() => {
-    const history = this.state.history();
-    if (history.length === 0) return 'Beginner';
-
-    const lastDate = new Date(history[0].startTime);
-    const now = new Date();
-
-    const diffTime = Math.abs(now.getTime() - lastDate.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Active Today';
-    if (diffDays === 1) return 'Active Yesterday';
-    return `${diffDays} days ago`;
+    const h = this.state.history();
+    if (!h.length) return 'No sessions';
+    const diff = Math.floor((Date.now() - new Date(h[0].startTime).getTime()) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Yesterday';
+    return `${diff} days ago`;
   });
+
+  /** Simple 7-dot activity based on history timestamps */
+  streakDots = computed(() => {
+    const h = this.state.history();
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d.toDateString();
+    });
+    return days.map(d => h.some(s => new Date(s.startTime).toDateString() === d));
+  });
+
+  timeGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
 
   viewReport(sessionId: string) {
     this.state.loadSession(sessionId);
