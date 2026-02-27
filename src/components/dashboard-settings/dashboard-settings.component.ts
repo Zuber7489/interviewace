@@ -75,19 +75,19 @@ const database = getDatabase(app);
             @if(currentUser()?.subscription === 'free') {
               <div class="p-4 rounded-xl bg-black text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:scale-[1.01]">
                 <div class="space-y-1">
-                  <h3 class="font-bold text-sm sm:text-base">Upgrade to Pro</h3>
-                  <p class="text-[10px] sm:text-xs text-gray-400">Get unlimited interviews, resume tailoring, and advanced feedback.</p>
+                  <h3 class="font-bold text-sm sm:text-base">Buy Pro Pack — ₹200</h3>
+                  <p class="text-[10px] sm:text-xs text-gray-400">Get 10 interviews, advanced AI feedback, and resume-based questions. Buy again anytime.</p>
                 </div>
                 <button (click)="upgradeToPro()" [disabled]="upgrading()"
                   class="whitespace-nowrap px-4 py-2 bg-white text-black text-xs sm:text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors">
-                  {{ upgrading() ? 'Processing...' : 'Upgrade for ₹999' }}
+                  {{ upgrading() ? 'Processing...' : 'Buy Pro Pack — ₹200' }}
                 </button>
               </div>
             } @else {
                <div class="p-4 rounded-xl border border-green-200 bg-green-50/50">
                   <p class="text-xs sm:text-sm text-green-800 font-medium flex items-center gap-2">
                     <i class="fas fa-crown"></i>
-                    You are on the Pro plan! Enjoy unlimited technical interviews.
+                    You have a Pro Pack! 10 interviews unlocked. Buy another pack anytime once used up.
                   </p>
                </div>
             }
@@ -220,7 +220,7 @@ export class DashboardSettingsComponent {
       // Update local signal
       this.authService.currentUser.update(u => u ? ({ ...u, subscription: 'pro' }) : u);
 
-      this.toastService.success('Welcome to Pro! Your account has been upgraded.');
+      this.toastService.success('Pro Pack activated! You now have 10 interviews.');
     } catch (e) {
       console.error(e);
       this.toastService.error('Upgrade failed. Please try again.');
