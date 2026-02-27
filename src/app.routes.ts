@@ -76,6 +76,10 @@ export const routes: Routes = [
             {
                 path: 'admin/user/:id',
                 loadComponent: () => import('./components/admin/admin-user-detail.component').then(m => m.AdminUserDetailComponent)
+            },
+            {
+                path: 'help',
+                loadComponent: () => import('./components/dashboard-help/dashboard-help.component').then(m => m.DashboardHelpComponent)
             }
         ]
     },
