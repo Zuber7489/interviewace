@@ -55,7 +55,7 @@ import { StateService } from '../../services/state.service';
         </div>
         @if(currentUser()?.subscription === 'free') {
           <div class="mt-4 p-3 bg-black rounded-xl text-white text-[10px] sm:text-xs">
-            <p class="font-bold mb-1 italic">Free Plan: {{ (currentUser()?.interviewsCount || 0) }}/{{ (currentUser()?.maxInterviews || 2) }} used</p>
+            <p class="font-bold mb-1 italic">Free Plan: {{ (currentUser()?.interviewsCount || 0) }}/{{ currentUser()?.maxInterviews ?? 2 }} used</p>
             <a routerLink="/dashboard/settings" class="underline hover:text-gray-300">Buy Pro Pack — ₹200</a>
           </div>
         }

@@ -72,22 +72,22 @@ const database = getDatabase(app);
               </div>
             </div>
 
-            @if(currentUser()?.subscription === 'free') {
+            @if(currentUser()?.subscription === 'free' || (currentUser()?.interviewsCount || 0) >= (currentUser()?.maxInterviews ?? (currentUser()?.subscription === 'pro' ? 10 : 2))) {
               <div class="p-4 rounded-xl bg-black text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:scale-[1.01]">
                 <div class="space-y-1">
                   <h3 class="font-bold text-sm sm:text-base">Buy Pro Pack — ₹200</h3>
-                  <p class="text-[10px] sm:text-xs text-gray-400">Get 10 interviews, advanced AI feedback, and resume-based questions. Buy again anytime.</p>
+                  <p class="text-[10px] sm:text-xs text-gray-400">Get 10 extra interviews. Buy again anytime you run out.</p>
                 </div>
                 <button (click)="upgradeToPro()" [disabled]="upgrading()"
                   class="whitespace-nowrap px-4 py-2 bg-white text-black text-xs sm:text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors">
-                  {{ upgrading() ? 'Processing...' : 'Buy Pro Pack — ₹200' }}
+                  {{ upgrading() ? 'Processing...' : 'Buy Pack — ₹200' }}
                 </button>
               </div>
             } @else {
                <div class="p-4 rounded-xl border border-green-200 bg-green-50/50">
                   <p class="text-xs sm:text-sm text-green-800 font-medium flex items-center gap-2">
                     <i class="fas fa-crown"></i>
-                    You have a Pro Pack! 10 interviews unlocked. Buy another pack anytime once used up.
+                    You have an active Pro Pack! {{ (currentUser()?.maxInterviews ?? 10) - (currentUser()?.interviewsCount || 0) }} interviews remaining.
                   </p>
                </div>
             }
