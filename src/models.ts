@@ -37,6 +37,7 @@ export interface User {
   subscription?: SubscriptionTier;
   interviewsCount?: number;
   maxInterviews?: number;
+  isAdmin?: boolean;
 }
 
 export interface InterviewSession {

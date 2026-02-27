@@ -91,6 +91,14 @@ import { StateService } from '../../services/state.service';
           <span class="text-sm sm:text-base">Settings</span>
         </a>
 
+        @if(currentUser()?.isAdmin) {
+        <a routerLink="/dashboard/admin" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
+          class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-red-600 transition-all min-h-[44px]">
+          <i class="fas fa-shield-alt w-4 sm:w-5 flex-shrink-0 text-red-500"></i>
+          <span class="text-sm sm:text-base font-bold text-red-500">Admin Panel</span>
+        </a>
+        }
+
         <a routerLink="/contact" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
           class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
           <i class="fas fa-question-circle w-4 sm:w-5 flex-shrink-0"></i>

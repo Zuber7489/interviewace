@@ -68,6 +68,10 @@ export const routes: Routes = [
             {
                 path: 'settings',
                 loadComponent: () => import('./components/dashboard-settings/dashboard-settings.component').then(m => m.DashboardSettingsComponent)
+            },
+            {
+                path: 'admin',
+                loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent)
             }
         ]
     },
