@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-import { getDatabase, ref as dbRef, get, update } from 'firebase/database';
+import { getDatabase, ref as dbRef, get, update, remove } from 'firebase/database';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { firebaseConfig } from '../../firebase.config';
 import { User, SubscriptionTier } from '../../models';
@@ -91,13 +91,16 @@ const database = getDatabase(app);
                       <input type="number" min="0" [ngModel]="user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(user, $event)"
                         class="w-16 text-center border border-gray-200 rounded px-1 py-1 text-xs font-bold focus:outline-none focus:border-black bg-transparent" />
                     </td>
-                    <td class="p-3 text-right" (click)="$event.stopPropagation()">
+                    <td class="p-3 text-right flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
                        <!-- Extra optional actions -->
                        @if(!user.isAdmin) {
                           <button (click)="toggleAdmin(user)" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1 rounded transition-colors whitespace-nowrap">Make Admin</button>
                        } @else {
                           <button (click)="toggleAdmin(user)" class="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-2 py-1 rounded transition-colors whitespace-nowrap">Remove Admin</button>
                        }
+                       <button (click)="deleteUser(user)" class="text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold px-2 py-1 flex items-center gap-1 rounded transition-colors whitespace-nowrap" title="Delete User">
+                         <i class="fas fa-trash-alt"></i> Delete
+                       </button>
                     </td>
                   </tr>
                 }
@@ -251,6 +254,26 @@ export class AdminComponent {
 
     } catch (err) {
       this.toastService.error("Failed to update admin rights.");
+    }
+  }
+
+  async deleteUser(user: User) {
+    if (!confirm(`Are you sure you want to permanently delete user ${user.name} (${user.email})? This action cannot be undone.`)) {
+      return;
+    }
+
+    if (user.id === this.authService.currentUser()?.id) {
+      this.toastService.error("You cannot delete your own admin account.");
+      return;
+    }
+
+    try {
+      await remove(dbRef(database, `users/${user.id}`));
+      this.users.update(list => list.filter(u => u.id !== user.id));
+      this.toastService.success(`User ${user.name} has been deleted.`);
+    } catch (err) {
+      this.toastService.error("Failed to delete user.");
+      console.error(err);
     }
   }
 }
