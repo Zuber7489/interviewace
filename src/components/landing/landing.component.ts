@@ -26,12 +26,12 @@ import { PublicNavbarComponent } from './public-navbar.component';
             
             <div class="space-y-2 sm:space-y-4">
                 <h1 class="text-4xl sm:text-6xl md:text-7xl font-bold text-black tracking-tighter leading-[0.95] animate-fade-in-up">
-                    Interviewing,<br>
-                    <span class="text-gray-400">Reimagined.</span>
+                    The AI Interviewer<br>
+                    <span class="text-gray-400">That Lands Offers.</span>
                 </h1>
                 
                 <p class="text-sm sm:text-base md:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed font-medium">
-                    The ultra-realistic AI interviewer that helps you land your dream role. Tailored to your resume, powered by voice.
+                    Stop practicing in the mirror. Train with ultra-realistic voice AI tailored to your exact tech stack and resume.
                 </p>
             </div>
 
