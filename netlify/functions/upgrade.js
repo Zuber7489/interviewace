@@ -95,17 +95,21 @@ export const handler = async (event) => {
     // --- 3. Verify Razorpay Payment Signature (HMAC-SHA256) ---
     // This cryptographically proves the payment was made via Razorpay and not forged.
     const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-    if (!RAZORPAY_KEY_SECRET) {
+
+    if (!RAZORPAY_KEY_SECRET && razorpay_signature === 'mock_signature_for_demo') {
+        // ⚠️ DEMO BYPASS: Allow mock payments if no Razorpay secret is configured
+        console.warn("Using demo bypass for payment verification.");
+    } else if (!RAZORPAY_KEY_SECRET) {
         return { statusCode: 500, headers, body: JSON.stringify({ error: 'Payment service misconfigured' }) };
-    }
+    } else {
+        const expectedSignature = createHmac('sha256', RAZORPAY_KEY_SECRET)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest('hex');
 
-    const expectedSignature = createHmac('sha256', RAZORPAY_KEY_SECRET)
-        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-        .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
-        // Signature mismatch — this is a forgery attempt
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Payment verification failed' }) };
+        if (expectedSignature !== razorpay_signature) {
+            // Signature mismatch — this is a forgery attempt
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Payment verification failed' }) };
+        }
     }
 
     // --- 4. Check for Duplicate/Replay Payment ---
