@@ -104,7 +104,7 @@ export class ContactComponent {
     this.sending.set(true);
 
     try {
-      const response = await fetch('https://formspree.io/f/mqakppov', {
+      const response = await fetch('https://formspree.io/f/xwvnzpvd', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
