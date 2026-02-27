@@ -88,7 +88,7 @@ import { StateService } from '../../services/state.service';
               <i class="fa-solid fa-crown text-[10px]" *ngIf="auth.currentUser()?.subscription === 'pro'"></i>
               {{ auth.currentUser()?.subscription === 'pro' ? 'Pro Member' : 'Free Plan' }}
             </div>
-            <p class="stat-sub mt-2">{{ auth.currentUser()?.subscription === 'pro' ? 'Unlimited access' : 'Tap to upgrade →' }}</p>
+            <p class="stat-sub mt-2">{{ auth.currentUser()?.subscription === 'pro' ? '10 interviews/pack' : 'Tap to buy →' }}</p>
           </div>
         </div>
 
