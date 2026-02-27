@@ -10,7 +10,7 @@ import { StateService } from '../../services/state.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="p-6 md:p-8 space-y-8 animate-fade-in relative z-10 overflow-y-auto max-h-screen custom-scrollbar">
+    <div class="p-6 md:p-8 space-y-8 animate-fade-in relative z-10">
       <!-- Welcome Header -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

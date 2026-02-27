@@ -7,12 +7,21 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   selector: 'app-dashboard-layout',
   imports: [CommonModule, RouterOutlet, SidebarComponent],
   template: `
-    <div class="min-h-screen bg-white flex">
+    <div class="h-screen bg-white flex overflow-hidden">
       <app-sidebar></app-sidebar>
-      <main class="flex-1 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 lg:ml-64 transition-all duration-300">
+      <main class="flex-1 overflow-y-auto pt-20 lg:pt-0 lg:ml-64 transition-all duration-300 no-scrollbar">
         <router-outlet></router-outlet>
       </main>
     </div>
-  `
+  `,
+  styles: [`
+    .no-scrollbar {
+      scrollbar-width: none;        /* Firefox */
+      -ms-overflow-style: none;     /* IE/Edge */
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;                /* Chrome, Safari */
+    }
+  `]
 })
 export class DashboardLayoutComponent { }
