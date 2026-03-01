@@ -53,11 +53,8 @@ import { RouterLink } from '@angular/router';
         </div>
         
         <div class="border-t border-black/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p class="text-xs text-gray-400">&copy; 2026 ScoreMyInterview. All rights reserved. &nbsp;|&nbsp; Made with 🔥 by <span class="text-black font-bold">Zuber</span> &mdash; The OG Angular Developer.</p>
-          <div class="flex items-center gap-3">
-            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-            <span class="text-xs text-gray-400">All systems operational</span>
-          </div>
+          <p class="text-xs text-gray-400">Made with 🔥 by <span class="text-black font-bold">Zuber</span> &mdash; The OG Angular Developer.</p>
+        
         </div>
       </div>
     </footer>
