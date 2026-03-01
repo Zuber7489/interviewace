@@ -56,7 +56,7 @@ import { PublicNavbarComponent } from './public-navbar.component';
                                 loop 
                                 playsinline
                                 controls
-                                preload="metadata"
+                                preload="none"
                             >
                                 <source src="assets/grok-video-a3c63fec-d284-4d08-8d02-e1fbad244abf (1).mp4" type="video/mp4">
                             </video>
