@@ -95,21 +95,23 @@ export class StateService {
         // Firebase crashes if anything is 'undefined'. We must clean the session safely.
         const cleanSession = JSON.parse(JSON.stringify(session));
 
-        // Save to Firebase under users/[uid]/history/[session_id]
-        const sessionRef = ref(database, `users/${user.id}/history/${session.id}`);
-        await set(sessionRef, cleanSession);
+        if (this.enableReports()) {
+          // Save to Firebase under users/[uid]/history/[session_id]
+          const sessionRef = ref(database, `users/${user.id}/history/${session.id}`);
+          await set(sessionRef, cleanSession);
 
-        // Update local list
-        const currentList = this.historyList();
-        const existingIndex = currentList.findIndex(s => s.id === session.id);
-        const newList = [...currentList];
-        if (existingIndex >= 0) {
-          newList[existingIndex] = session;
-        } else {
-          newList.unshift(session);
+          // Update local list
+          const currentList = this.historyList();
+          const existingIndex = currentList.findIndex(s => s.id === session.id);
+          const newList = [...currentList];
+          if (existingIndex >= 0) {
+            newList[existingIndex] = session;
+          } else {
+            newList.unshift(session);
+          }
+          newList.sort((a, b) => b.startTime - a.startTime);
+          this.historyList.set(newList);
         }
-        newList.sort((a, b) => b.startTime - a.startTime);
-        this.historyList.set(newList);
 
         // Clear active session storage
         localStorage.removeItem(this.ACTIVE_SESSION_KEY);

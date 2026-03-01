@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-import { getDatabase, ref as dbRef, get, update, remove } from 'firebase/database';
+import { getDatabase, ref as dbRef, get, update, remove, set } from 'firebase/database';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { firebaseConfig } from '../../firebase.config';
 import { User, SubscriptionTier } from '../../models';
@@ -332,7 +332,9 @@ export class AdminComponent {
     }
 
     try {
-      await remove(dbRef(database, `users/${user.id}`));
+      // Instead of completely removing, leave a tombstone to prevent re-login
+      const dbRefNode = dbRef(database, `users/${user.id}`);
+      await set(dbRefNode, { deleted: true, email: user.email });
       this.users.update(list => list.filter(u => u.id !== user.id));
       this.toastService.success(`User ${user.name} has been deleted.`);
     } catch (err) {

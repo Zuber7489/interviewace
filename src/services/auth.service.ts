@@ -65,6 +65,12 @@ export class AuthService {
                         const snapshot = await get(child(dbRef, `users/${firebaseUser.uid}`));
                         if (snapshot.exists()) {
                             const userData = snapshot.val();
+                            if (userData.deleted) {
+                                await signOut(auth);
+                                this.currentUser.set(null);
+                                this.authInitialized.set(true);
+                                return;
+                            }
                             this.currentUser.set({
                                 id: firebaseUser.uid,
                                 email: firebaseUser.email || '',
@@ -158,7 +164,15 @@ export class AuthService {
         const sanitizedEmail = this.sanitizeEmail(email);
 
         try {
-            await signInWithEmailAndPassword(auth, sanitizedEmail, pass);
+            const credential = await signInWithEmailAndPassword(auth, sanitizedEmail, pass);
+
+            // Check if account is marked as deleted by admin
+            const snapshot = await get(ref(database, `users/${credential.user.uid}`));
+            if (snapshot.exists() && snapshot.val().deleted) {
+                await signOut(auth);
+                throw new Error('Your account has been deleted by an administrator.');
+            }
+
             return true;
         } catch (error) {
             this.authInitialized.set(true); // Restore on error
@@ -190,8 +204,14 @@ export class AuthService {
                     photoURL: user.photoURL || null
                 });
             } else {
-                // User already exists, Update their display photo if needed
+                // User already exists
                 const existingData = snapshot.val();
+                if (existingData.deleted) {
+                    await signOut(auth);
+                    throw new Error('Your account has been deleted by an administrator.');
+                }
+
+                // Update their display photo if needed
                 if (!existingData.photoURL && user.photoURL) {
                     await set(child(dbRefNode, 'photoURL'), user.photoURL);
                 }
