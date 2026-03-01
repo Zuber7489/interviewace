@@ -12,7 +12,10 @@ import { RouterLink } from '@angular/router';
           <!-- Brand -->
           <div class="col-span-2 sm:col-span-1">
             <a routerLink="/" class="flex items-center gap-2 mb-3 group">
-              <img src="assets/favicon.png" alt="ScoreMyInterview" class="w-5 h-5 object-contain group-hover:scale-110 transition-transform duration-300">
+              <picture>
+                <source srcset="assets/favicon.webp" type="image/webp">
+                <img src="assets/favicon.png" alt="ScoreMyInterview" class="w-5 h-5 object-contain group-hover:scale-110 transition-transform duration-300">
+              </picture>
               <span class="font-bold text-black text-base">ScoreMyInterview</span>
             </a>
             <p class="text-gray-500 text-xs leading-relaxed">AI-powered mock interviews for ambitious developers.</p>

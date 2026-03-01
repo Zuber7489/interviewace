@@ -32,7 +32,10 @@ import { StateService } from '../../services/state.service';
       <!-- Logo -->
       <div class="p-6 border-b border-black/10 bg-gray-50 flex items-center justify-center h-20 sm:h-24 lg:h-auto">
         <button routerLink="/dashboard" (click)="closeSidebarOnMobile()" class="flex items-center gap-2 group mb-[10px]">
-          <img src="assets/favicon.png" alt="ScoreMyInterview" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
+          <picture>
+            <source srcset="assets/favicon.webp" type="image/webp">
+            <img src="assets/favicon.png" alt="ScoreMyInterview" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
+          </picture>
           <span class="text-xl font-bold text-black tracking-tight">ScoreMyInterview</span>
         </button>
       </div>
