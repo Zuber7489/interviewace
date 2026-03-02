@@ -108,11 +108,11 @@
 
           @if(resumeFileName()) {
           <div
-            class="flex items-center justify-between text-[10px] sm:text-xs md:text-sm text-black bg-black/10 border border-black/20 p-1.5 sm:p-2 md:p-3 rounded-xl animate-fade-in">
+            class="flex items-center justify-between text-[10px] sm:text-xs md:text-sm text-black bg-black/10 border border-black/20 p-1.5 sm:p-2 md:p-3 rounded-xl animate-fade-in mb-3">
             <div class="flex items-center overflow-hidden">
               <i class="fas fa-file-alt mr-1.5 sm:mr-2 md:mr-3 text-base sm:text-lg md:text-xl"></i>
               <div class="flex flex-col">
-                <span class="truncate font-bold">{{ resumeFileName() }}</span>
+                <span class="truncate font-bold tracking-tight">{{ resumeFileName() }}</span>
                 @if (currentUser()?.resumeText === resumeText()) {
                 <span class="text-[8px] text-gray-400">LOADED FROM PROFILE</span>
                 } @else {
@@ -121,6 +121,27 @@
               </div>
             </div>
             <i class="fas fa-check-circle text-black ml-1 sm:ml-2"></i>
+          </div>
+          }
+
+          <!-- Auto-Extracted Details (Only if resume uploaded) -->
+          @if (resumeText()) {
+          <div class="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl animate-fade-in space-y-2">
+            <p class="text-[9px] font-bold text-red-600 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <i class="fas fa-magic"></i> Auto-Extracted Context
+            </p>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-[8px] font-bold text-gray-400 uppercase">Primary Tech</label>
+                <input type="text" [ngModel]="primaryTechnology()" (ngModelChange)="primaryTechnology.set($event)"
+                  class="w-full bg-transparent border-b border-black/10 py-1 text-xs font-medium focus:border-red-500 outline-none">
+              </div>
+              <div>
+                <label class="text-[8px] font-bold text-gray-400 uppercase">Focus Skills</label>
+                <input type="text" [ngModel]="secondarySkills()" (ngModelChange)="secondarySkills.set($event)"
+                  class="w-full bg-transparent border-b border-black/10 py-1 text-xs font-medium focus:border-red-500 outline-none">
+              </div>
+            </div>
           </div>
           }
         </div>

@@ -90,41 +90,36 @@ export class SetupComponent implements OnInit {
       this.resumeFileName.set(file.name);
 
       // Basic text extraction based on file type
-      if (file.type === 'text/plain') {
-        const text = await file.text();
-        this.resumeText.set(text);
-      } else if (file.type === 'application/pdf') {
-        try {
+      try {
+        if (file.type === 'text/plain') {
+          const text = await file.text();
+          this.resumeText.set(text);
+        } else if (file.type === 'application/pdf') {
           this.isLoading.set(true);
           const text = await this.extractTextFromPDF(file);
           this.resumeText.set(text);
-        } catch (e: any) {
-          this.error.set("Failed to parse PDF: " + e.message);
-          this.resumeFileName.set(null);
-        } finally {
-          this.isLoading.set(false);
-          if (this.resumeText()) this.saveResumeToProfile();
-        }
-      } else if (file.name.toLowerCase().endsWith('.docx')) {
-        // FIX #F2: DOCX support using mammoth
-        try {
+        } else if (file.name.toLowerCase().endsWith('.docx')) {
           this.isLoading.set(true);
           const arrayBuffer = await file.arrayBuffer();
           const mammoth = await import('mammoth');
           const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
           this.resumeText.set(result.value);
-        } catch (e: any) {
-          this.error.set("Failed to parse DOCX: " + e.message);
+        } else {
+          const ext = file.name.split('.').pop()?.toUpperCase() || 'this format';
+          this.error.set(`❌ ${ext} files are not supported. Please upload a PDF, DOCX or TXT file.`);
           this.resumeFileName.set(null);
-        } finally {
-          this.isLoading.set(false);
-          if (this.resumeText()) this.saveResumeToProfile();
+          return;
         }
-      } else {
-        // FIX (19): Clear, actionable error for unsupported formats
-        const ext = file.name.split('.').pop()?.toUpperCase() || 'this format';
-        this.error.set(`❌ ${ext} files are not supported. Please upload a PDF, DOCX or TXT file. (Tip: In Word/Google Docs, choose File → Save As → PDF)`);
+
+        // Trigger save & extract
+        if (this.resumeText()) {
+          await this.saveResumeToProfile();
+        }
+      } catch (e: any) {
+        this.error.set("Failed to process file: " + e.message);
         this.resumeFileName.set(null);
+      } finally {
+        this.isLoading.set(false);
       }
     }
   }
@@ -140,8 +135,43 @@ export class SetupComponent implements OnInit {
       });
       // Also update local signal
       this.authService.currentUser.update(u => u ? ({ ...u, resumeText: this.resumeText(), resumeFileName: this.resumeFileName() }) : null);
+
+      // AUTO-EXTRACT: if primary technology is empty, try to guess from resume
+      if (!this.primaryTechnology() || this.primaryTechnology() === 'Relevant Role (from Resume)') {
+        this.extractRoleAndApply();
+      }
     } catch (e) {
       console.error("Failed to save resume to profile:", e);
+    }
+  }
+
+  private extractRoleAndApply() {
+    const text = this.resumeText()?.toLowerCase() || '';
+    if (!text) return;
+
+    // Define broad keyword sets for auto-discovery
+    const roles = [
+      { name: 'Frontend Developer', keywords: ['react', 'angular', 'vue', 'nextjs', 'typescript', 'frontend', 'ui/ux', 'css'] },
+      { name: 'Backend Developer', keywords: ['java', 'spring', 'springboot', 'nodejs', 'python', 'django', 'backend', 'golang', 'api'] },
+      { name: 'Mobile Developer', keywords: ['flutter', 'react native', 'android', 'ios', 'swift', 'kotlin', 'mobile'] },
+      { name: 'Cloud & DevOps Engineer', keywords: ['docker', 'kubernetes', 'jenkins', 'aws', 'azure', 'devops', 'cicd', 'cloud', 'terraform'] },
+      { name: 'Data Scientist', keywords: ['pandas', 'numpy', 'machine learning', 'pytorch', 'tensorflow', 'datascience', 'ai'] },
+      { name: 'Full Stack Developer', keywords: ['mern', 'mean', 'fullstack', 'postgres', 'mysql', 'laravel', 'php'] },
+      { name: 'UI/UX Designer', keywords: ['figma', 'adobe xd', 'sketch', 'prototyping', 'uidesign', 'wireframing'] },
+      { name: 'Data Engineer', keywords: ['spark', 'hadoop', 'kafka', 'etl', 'sql', 'big data', 'warehousing'] }
+    ];
+
+    for (const role of roles) {
+      if (role.keywords.some(k => text.includes(k))) {
+        this.primaryTechnology.set(role.name);
+        this.secondarySkills.set(role.keywords.slice(0, 4).join(', '));
+        return;
+      }
+    }
+
+    // Default fallback if no match found
+    if (!this.primaryTechnology()) {
+      this.primaryTechnology.set('Relevant Role (from Resume)');
     }
   }
 

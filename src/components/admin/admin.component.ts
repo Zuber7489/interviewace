@@ -19,85 +19,95 @@ const database = getDatabase(app);
   template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-16">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl sm:text-3xl font-bold text-red-600 flex items-center gap-2">
-          <i class="fas fa-shield-alt"></i> Admin Dashboard
+        <h1 class="text-2xl sm:text-3xl font-bold text-black flex items-center gap-2">
+          <i class="fas fa-shield-alt text-red-600"></i> Admin Panel
         </h1>
-        <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-          Total Users: {{ allUsers.length || users().length }}
+        <button (click)="loadUsers()" [disabled]="isLoading()"
+          class="px-4 py-2 bg-black text-white rounded-xl text-sm font-bold transition-all hover:bg-gray-800 flex items-center gap-2 shadow-lg shadow-black/10">
+          <i class="fas" [class.fa-sync]="!isLoading()" [class.fa-spinner]="isLoading()" [class.fa-spin]="isLoading()"></i> Refresh
+        </button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white border-2 border-black/5 p-5 rounded-2xl shadow-sm">
+           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Community</p>
+           <p class="text-2xl font-black text-black">{{ allUsers.length }} <span class="text-sm font-medium text-gray-400">USERS</span></p>
+        </div>
+        <div class="bg-white border-2 border-black/5 p-5 rounded-2xl shadow-sm">
+           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Growth (PRO)</p>
+           <p class="text-2xl font-black text-black">{{ proCount() }} <span class="text-sm font-medium text-gray-400">ACTIVE</span></p>
+        </div>
+        <div class="bg-white border-2 border-black/5 p-5 rounded-2xl shadow-sm">
+           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Interviews</p>
+           <p class="text-2xl font-black text-black">{{ totalInterviews() }} <span class="text-sm font-medium text-gray-400">DONE</span></p>
+        </div>
+        <div class="bg-white border-2 border-black/5 p-5 rounded-2xl shadow-sm">
+           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Avg. Success</p>
+           <p class="text-2xl font-black text-black">74% <span class="text-sm font-medium text-gray-400">SCORE</span></p>
         </div>
       </div>
       
-      <div class="glass-card p-4 sm:p-6 rounded-2xl border border-red-500/20 bg-white">
+      <div class="bg-white border-2 border-black/5 rounded-3xl overflow-hidden shadow-sm">
         <!-- Search and Filters -->
-        <div class="flex flex-col sm:flex-row gap-4 mb-6">
-          <div class="relative flex-1">
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="text" [(ngModel)]="searchQuery" placeholder="Search users by name, email or ID..."
-              class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500">
+        <div class="p-6 border-b border-black/5 bg-gray-50/30">
+          <div class="relative w-full">
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, email or UID..."
+              class="w-full pl-11 pr-4 py-3 bg-white border border-black/10 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-black/5 focus:border-black transition-all">
           </div>
-          <button (click)="loadUsers()" [disabled]="isLoading()"
-            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-bold transition-colors flex items-center gap-2">
-            <i class="fas" [class.fa-sync]="!isLoading()" [class.fa-spinner]="isLoading()" [class.fa-spin]="isLoading()"></i> Refresh
-          </button>
         </div>
 
         <!-- Mobile View (Card-based) -->
-        <div class="block lg:hidden space-y-4">
+        <div class="block lg:hidden divide-y divide-black/5">
           @if (isLoading() && users().length === 0) {
-            <div class="p-8 text-center text-gray-500">
-              <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
-              <p>Loading users...</p>
+            <div class="p-12 text-center text-gray-500">
+              <i class="fas fa-circle-notch fa-spin text-3xl mb-3 text-red-500"></i>
+              <p class="font-bold">Syncing Records...</p>
             </div>
           } @else if (filteredUsers().length === 0) {
-            <div class="p-8 text-center text-gray-500 font-medium bg-gray-50 rounded-xl">No users found.</div>
+            <div class="p-12 text-center text-gray-500 font-bold bg-gray-50">No results found for that query.</div>
           } @else {
-            @for (user of filteredUsers(); track user.id) {
-              <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-4" (click)="viewDetails(user)">
-                <div class="flex justify-between items-start gap-2 border-b border-gray-200 pb-3">
-                  <div class="min-w-0">
-                    <div class="font-bold text-black flex flex-wrap items-center gap-1.5 text-base truncate">
-                      {{ user.name }}
-                      @if(user.isAdmin) {
-                        <span class="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold shrink-0"><i class="fas fa-crown text-[8px] mr-1"></i>Admin</span>
-                      }
-                    </div>
-                    <div class="text-sm text-gray-500 truncate">{{ user.email }}</div>
-                    <div class="text-[10px] text-gray-400 font-mono mt-0.5 break-all">ID: {{ user.id }}</div>
-                  </div>
+            @for (u of filteredUsers(); track u.id) {
+              <div class="p-5 flex flex-col gap-4" (click)="viewDetails(u)">
+                <div class="flex items-center gap-3">
+                   <div class="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center font-bold text-black border border-black/10">
+                      {{ u.name[0] }}
+                   </div>
+                   <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-black truncate">{{ u.name }}</span>
+                        @if(u.isAdmin) {
+                          <span class="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-widest">Admin</span>
+                        }
+                      </div>
+                      <p class="text-xs text-gray-500 truncate">{{ u.email }}</p>
+                   </div>
+                   <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3 text-sm" (click)="$event.stopPropagation()">
-                  <div>
-                    <div class="text-xs font-bold text-gray-400 uppercase mb-1">Plan</div>
-                    <select [ngModel]="user.subscription || 'free'" (ngModelChange)="updateTier(user, $event)"
-                      class="bg-white border border-gray-200 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-black cursor-pointer uppercase w-full">
-                      <option value="free">Free</option>
-                      <option value="pro">Pro</option>
-                    </select>
-                  </div>
-                  <div>
-                    <div class="text-xs font-bold text-gray-400 uppercase mb-1">Max Int.</div>
-                    <input type="number" min="0" [ngModel]="user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(user, $event)"
-                      class="w-full bg-white text-center border border-gray-200 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-black" />
-                  </div>
+                <div class="grid grid-cols-2 gap-3" (click)="$event.stopPropagation()">
+                   <div class="flex flex-col gap-1">
+                      <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Plan</span>
+                      <select [ngModel]="u.subscription || 'free'" (ngModelChange)="updateTier(u, $event)"
+                        class="bg-gray-100 border-none rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-black/20">
+                        <option value="free">FREE</option>
+                        <option value="pro">PRO</option>
+                      </select>
+                   </div>
+                   <div class="flex flex-col gap-1">
+                      <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Usage</span>
+                      <div class="bg-gray-100 rounded-lg px-3 py-2 text-xs font-bold text-black">
+                         {{ u.interviewsCount || 0 }} / {{ u.maxInterviews || 2 }}
+                      </div>
+                   </div>
                 </div>
 
-                <div class="flex items-center justify-between pt-2">
-                  <div class="text-xs font-bold text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-lg">
-                    Used: <span class="text-black ml-1 text-sm">{{ user.interviewsCount || 0 }}</span>
-                  </div>
-                  
-                  <div class="flex gap-2 items-center" (click)="$event.stopPropagation()">
-                    <button (click)="resetInterviewCount(user)" class="text-[10px] bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap" title="Reset interview count to 0">Reset Count</button>
-                    @if(!user.isAdmin) {
-                      <button (click)="toggleAdmin(user)" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">Make Admin</button>
-                    } @else {
-                      <button (click)="toggleAdmin(user)" class="text-[10px] bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">Remove Admin</button>
-                    }
-                    <button (click)="deleteUser(user)" class="text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="Delete User">
-                      <i class="fas fa-trash-alt text-[10px]"></i>
-                    </button>
-                  </div>
+                <div class="flex gap-2" (click)="$event.stopPropagation()">
+                   <button (click)="viewDetails(u)" class="flex-1 py-2 rounded-lg bg-black text-white text-[10px] font-bold uppercase tracking-wider">Profile</button>
+                   <button (click)="deleteUser(u)" class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-colors">
+                      <i class="fas fa-trash-alt"></i>
+                   </button>
                 </div>
               </div>
             }
@@ -106,67 +116,72 @@ const database = getDatabase(app);
 
         <!-- Desktop View (Table) -->
         <div class="hidden lg:block overflow-x-auto">
-          <table class="w-full text-left border-collapse min-w-[800px]">
+          <table class="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-              <tr class="border-b-2 border-gray-100 text-xs uppercase tracking-wider text-gray-500">
-                <th class="p-3 font-bold">User Info</th>
-                <th class="p-3 font-bold">Plan Details</th>
-                <th class="p-3 font-bold text-center">Interviews Used</th>
-                <th class="p-3 font-bold text-center">Max Interviews</th>
-                <th class="p-3 font-bold text-right">Actions</th>
+              <tr class="bg-gray-50/50 text-[10px] uppercase tracking-widest text-gray-400 border-b border-black/5">
+                <th class="p-6 font-bold">User Identity</th>
+                <th class="p-6 font-bold">Account Level</th>
+                <th class="p-6 font-bold text-center">Interviews Used</th>
+                <th class="p-6 font-bold text-center">Allocation</th>
+                <th class="p-6 font-bold text-right">Administrative Actions</th>
               </tr>
             </thead>
-            <tbody class="text-sm">
+            <tbody class="divide-y divide-black/5">
               @if (isLoading() && users().length === 0) {
                 <tr>
-                  <td colspan="5" class="p-8 text-center text-gray-500">
-                    <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
-                    <p>Loading users...</p>
+                  <td colspan="5" class="py-20 text-center text-gray-500">
+                    <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-red-500"></i>
+                    <p class="font-bold text-gray-900">Synchronizing Global Records...</p>
                   </td>
                 </tr>
               } @else if (filteredUsers().length === 0) {
                 <tr>
-                  <td colspan="5" class="p-8 text-center text-gray-500 font-medium">No users found.</td>
+                  <td colspan="5" class="py-20 text-center text-gray-500 font-bold bg-gray-50/50 italic">— No user records found matching the criteria —</td>
                 </tr>
               } @else {
-                @for (user of filteredUsers(); track user.id) {
-                  <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group cursor-pointer" (click)="viewDetails(user)">
-                    <td class="p-3">
-                      <div class="font-bold text-black flex items-center gap-1.5">
-                        {{ user.name }}
-                        @if(user.isAdmin) {
-                          <span class="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold"><i class="fas fa-crown text-[8px] mr-1"></i>Admin</span>
-                        }
+                @for (u of filteredUsers(); track u.id) {
+                  <tr class="group hover:bg-gray-50/50 transition-colors cursor-pointer" (click)="viewDetails(u)">
+                    <td class="p-6">
+                      <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-2xl bg-black/5 group-hover:bg-white border border-black/10 flex items-center justify-center font-bold text-black text-lg transition-all shadow-sm">
+                           {{ u.name[0] }}
+                        </div>
+                        <div class="min-w-0">
+                           <div class="font-bold text-black text-base flex items-center gap-2">
+                             {{ u.name }}
+                             @if(u.isAdmin) {
+                               <span class="bg-red-500 text-white text-[8px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-lg shadow-red-500/20">Admin</span>
+                             }
+                           </div>
+                           <div class="text-xs text-gray-500 truncate">{{ u.email }}</div>
+                           <div class="text-[9px] text-gray-300 font-mono mt-0.5" title="User ID">{{ u.id }}</div>
+                        </div>
                       </div>
-                      <div class="text-xs text-gray-500">{{ user.email }}</div>
-                      <div class="text-[10px] text-gray-400 font-mono mt-0.5" title="User ID">ID: {{ user.id }}</div>
                     </td>
-                    <td class="p-3" (click)="$event.stopPropagation()">
-                      <select [ngModel]="user.subscription || 'free'" (ngModelChange)="updateTier(user, $event)"
-                        class="bg-transparent border border-gray-200 rounded px-2 py-1 text-xs font-bold focus:outline-none focus:border-black cursor-pointer uppercase">
-                        <option value="free">Free</option>
-                        <option value="pro">Pro</option>
+                    <td class="p-6" (click)="$event.stopPropagation()">
+                      <select [ngModel]="u.subscription || 'free'" (ngModelChange)="updateTier(u, $event)"
+                        class="bg-white border border-black/10 rounded-xl px-4 py-2 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-black/5 uppercase shadow-sm cursor-pointer hover:border-black transition-all">
+                        <option value="free">Standard</option>
+                        <option value="pro">Professional</option>
                       </select>
                     </td>
-                    <td class="p-3 text-center font-bold">
-                      {{ user.interviewsCount || 0 }}
+                    <td class="p-6 text-center">
+                      <span class="text-base font-black text-black">{{ u.interviewsCount || 0 }}</span>
                     </td>
-                    <td class="p-3 text-center" (click)="$event.stopPropagation()">
-                      <input type="number" min="0" [ngModel]="user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(user, $event)"
-                        class="w-16 text-center border border-gray-200 rounded px-1 py-1 text-xs font-bold focus:outline-none focus:border-black bg-transparent" />
+                    <td class="p-6 text-center" (click)="$event.stopPropagation()">
+                      <input type="number" min="0" [ngModel]="u.maxInterviews ?? (u.subscription === 'pro' ? 10 : 2)" (change)="updateMaxInterviews(u, $event)"
+                        class="w-16 text-center bg-white border border-black/10 rounded-xl px-2 py-2 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-black/5 hover:border-black transition-all shadow-sm" />
                     </td>
-                    <td class="p-3" (click)="$event.stopPropagation()">
-                       <div class="flex items-center justify-end gap-2 w-full h-full min-h-[44px]">
-                         <button (click)="resetInterviewCount(user)" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap border border-blue-100 flex items-center h-8" title="Reset interview count">
-                           <i class="fas fa-undo mr-1 text-[10px]"></i>Reset
+                    <td class="p-6" (click)="$event.stopPropagation()">
+                       <div class="flex items-center justify-end gap-2">
+                         <button (click)="resetInterviewCount(u)" class="h-9 px-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-[10px] uppercase tracking-wider rounded-xl transition-all border border-blue-100" title="Revoke all usage">
+                           Reset
                          </button>
-                         @if(!user.isAdmin) {
-                            <button (click)="toggleAdmin(user)" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap border border-red-100 flex items-center h-8">Make Admin</button>
-                         } @else {
-                            <button (click)="toggleAdmin(user)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap border border-gray-200 flex items-center h-8">Remove Admin</button>
-                         }
-                         <button (click)="deleteUser(user)" class="text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 flex items-center gap-1.5 rounded-lg transition-colors whitespace-nowrap shadow-sm border border-red-700 h-8" title="Delete User">
-                           <i class="fas fa-trash-alt"></i> Delete
+                         <button (click)="viewDetails(u)" class="h-9 px-4 bg-black text-white font-bold text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-black/10 hover:scale-105">
+                           Profile
+                         </button>
+                         <button (click)="deleteUser(u)" class="h-9 w-9 bg-red-100 hover:bg-red-600 hover:text-white text-red-600 rounded-xl flex items-center justify-center transition-all border border-red-200" title="Purge Record">
+                           <i class="fas fa-trash-alt text-[10px]"></i>
                          </button>
                        </div>
                     </td>
@@ -176,18 +191,17 @@ const database = getDatabase(app);
             </tbody>
           </table>
         </div>
-        <!-- Detailed User View Overlay Removed. Using separate route now. -->
-
-        <!-- FIX (38): Load More Pagination Button -->
+        
         @if(hasMore() && !searchQuery()) {
-          <div class="mt-6 text-center">
-            <button (click)="loadMore()" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors">
-              Load More Users
+          <div class="p-8 text-center bg-gray-50/50">
+            <button (click)="loadMore()" class="px-8 py-3 bg-white border-2 border-black/5 hover:border-black text-black font-bold rounded-2xl text-sm transition-all shadow-sm hover:shadow-lg">
+              Show more records
             </button>
-            <p class="text-xs text-gray-400 mt-2">Showing {{ users().length }} of {{ allUsers.length }} total users</p>
+            <p class="text-xs text-gray-400 mt-3 font-medium">Viewing {{ users().length }} of {{ allUsers.length }} total entries</p>
           </div>
         }
       </div>
+    </div>
     </div>
   `
 })
@@ -218,6 +232,9 @@ export class AdminComponent {
       (u.id && u.id.toLowerCase().includes(query))
     );
   });
+
+  proCount = computed(() => this.allUsers.filter(u => u.subscription === 'pro').length);
+  totalInterviews = computed(() => this.allUsers.reduce((acc, u) => acc + (u.interviewsCount || 0), 0));
 
   constructor() {
     effect(() => {
