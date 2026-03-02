@@ -14,7 +14,6 @@
                     ".validate": "newData.isString()"
                 },
                 "subscription": {
-                    "// Comment": "SECURITY: Only server (admin SDK) or admins can write subscription. Client users are blocked.",
                     ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
                     ".validate": "newData.isString() && (newData.val() === 'free' || newData.val() === 'pro' || newData.val() === 'enterprise')"
                 },
@@ -23,16 +22,20 @@
                     ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000"
                 },
                 "interviewsCount": {
-                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-                    ".validate": "newData.isNumber() && newData.val() >= 0"
+                    ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && (root.child('users').child(auth.uid).child('isAdmin').val() === true || newData.val() >= data.val())"
                 },
                 "isAdmin": {
                     ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
                     ".validate": "newData.isBoolean()"
                 },
                 "deleted": {
-                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
                     ".validate": "newData.isBoolean()"
+                },
+                "deletedAt": {
+                    ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+                    ".validate": "newData.isNumber()"
                 },
                 "lastUpgradedAt": {
                     ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
