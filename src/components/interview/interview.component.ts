@@ -98,6 +98,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
 
   async finishInterview() {
     if (this.isFinishing()) return;
+    this.showEndConfirm.set(false); // Hide the modal immediately
     this.isFinishing.set(true);
 
     try {
