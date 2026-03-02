@@ -170,11 +170,22 @@ export class SetupComponent implements OnInit {
   async startInterview() {
     this.error.set(null);
 
-    // FIX (18): Validate that primaryTechnology is not empty
-    const tech = this.primaryTechnology().trim();
-    if (!tech) {
+    // If using manual form, tech is required.
+    // If using resume, we can infer tech from the content, so it is optional.
+    let tech = this.primaryTechnology().trim();
+    if (this.setupMethod() === 'form' && !tech) {
       this.error.set('Please enter the primary technology or role for your interview.');
       return;
+    }
+
+    if (this.setupMethod() === 'resume' && !this.resumeText()) {
+      this.error.set('Please upload a resume to continue.');
+      return;
+    }
+
+    // Default tech for resume-only flow
+    if (!tech && this.setupMethod() === 'resume') {
+      tech = 'Relevant Role (from Resume)';
     }
 
     // FIX (22): Pre-check microphone permission before entering the interview screen
@@ -209,7 +220,7 @@ export class SetupComponent implements OnInit {
     }
 
     const config: InterviewConfig = {
-      primaryTechnology: this.primaryTechnology(),
+      primaryTechnology: tech,
       secondarySkills: this.secondarySkills(),
       yearsOfExperience: this.yearsOfExperience(),
       interviewDuration: this.interviewDuration(),
