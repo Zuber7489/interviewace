@@ -45,6 +45,12 @@ const database = getDatabase(app);
               </h2>
               <p class="text-xs sm:text-sm text-gray-500 mt-1 break-all">{{ user()?.email }} <span class="hidden sm:inline">|</span><span class="sm:hidden flex block my-1"></span> ID: <span class="font-mono text-gray-400">{{ user()?.id }}</span></p>
             </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2 shrink-0">
+               <button (click)="resetInterviewCount()" class="flex-1 sm:flex-none px-4 py-2 bg-black text-white rounded-lg text-xs font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-2">
+                 <i class="fas fa-undo"></i> Reset Usage
+               </button>
+            </div>
           </div>
 
           <!-- Content -->
@@ -201,6 +207,26 @@ export class AdminUserDetailComponent {
       }
     } catch (e) {
       this.toastService.error("Could not load report.");
+    }
+  }
+
+  async resetInterviewCount() {
+    const userId = this.userId();
+    if (!userId) return;
+
+    if (!confirm('Are you sure you want to reset this user\'s interview count to 0? This will allow them to take more interviews.')) return;
+
+    try {
+      const { update, ref } = await import('firebase/database');
+      await update(ref(database, `users/${userId}`), {
+        interviewsCount: 0
+      });
+
+      // Update local state if successful
+      this.user.update(u => u ? { ...u, interviewsCount: 0 } : null);
+      this.toastService.success('Interview count has been reset.');
+    } catch (e) {
+      this.toastService.error('Failed to reset counter.');
     }
   }
 }

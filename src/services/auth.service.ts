@@ -93,7 +93,9 @@ export class AuthService {
                                 interviewsCount: userData.interviewsCount || 0,
                                 maxInterviews: userData.maxInterviews || 2,
                                 isAdmin: userData.isAdmin || false,
-                                photoURL: userData.photoURL || firebaseUser.photoURL || undefined
+                                photoURL: userData.photoURL || firebaseUser.photoURL || undefined,
+                                resumeText: userData.resumeText || undefined,
+                                resumeFileName: userData.resumeFileName || undefined
                             });
                         } else {
                             // Fallback if DB record doesn't exist
