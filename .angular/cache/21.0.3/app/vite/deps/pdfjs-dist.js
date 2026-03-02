@@ -1,7 +1,7 @@
 import {
   __spreadProps,
   __spreadValues
-} from "./chunk-GOMI4DH3.js";
+} from "./chunk-DASUJXUG.js";
 
 // node_modules/pdfjs-dist/build/pdf.mjs
 var __webpack_require__ = {};

@@ -49,6 +49,27 @@
               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black hover:accent-gray-600 transition-all">
           </div>
 
+          <div class="mb-4">
+            <label
+              class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Quick
+              Select</label>
+            <div class="flex flex-wrap gap-1.5 sm:gap-2">
+              @for (cat of categories; track cat.label) {
+              <button (click)="selectCategory(cat)"
+                class="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border text-[9px] sm:text-[10px] font-bold transition-all"
+                [class.bg-black]="primaryTechnology() === cat.role"
+                [class.text-white]="primaryTechnology() === cat.role"
+                [class.border-black]="primaryTechnology() === cat.role"
+                [class.bg-white]="primaryTechnology() !== cat.role"
+                [class.text-gray-500]="primaryTechnology() !== cat.role"
+                [class.border-gray-200]="primaryTechnology() !== cat.role"
+                [class.hover:border-black]="primaryTechnology() !== cat.role">
+                {{ cat.label }}
+              </button>
+              }
+            </div>
+          </div>
+
           <div>
             <label
               class="block text-[8px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Target
@@ -78,18 +99,26 @@
             <span
               class="text-[10px] sm:text-xs md:text-sm font-medium text-gray-600 group-hover:text-black transition-colors">Click
               to upload
-              PDF or TXT Resume</span>
-            <span class="text-[8px] sm:text-[10px] md:text-xs text-gray-400 mt-0.5 sm:mt-1">Supported: .pdf, .txt · Max
-              5MB · DOCX not supported</span>
-            <input type="file" class="hidden" accept=".pdf,.txt" (change)="onFileSelected($event)">
+              PDF, DOCX or TXT Resume</span>
+            <span class="text-[8px] sm:text-[10px] md:text-xs text-gray-400 mt-0.5 sm:mt-1">Supported: .pdf, .docx, .txt
+              · Max
+              5MB</span>
+            <input type="file" class="hidden" accept=".pdf,.docx,.txt" (change)="onFileSelected($event)">
           </label>
 
           @if(resumeFileName()) {
           <div
             class="flex items-center justify-between text-[10px] sm:text-xs md:text-sm text-black bg-black/10 border border-black/20 p-1.5 sm:p-2 md:p-3 rounded-xl animate-fade-in">
             <div class="flex items-center overflow-hidden">
-              <i class="fas fa-file-pdf mr-1.5 sm:mr-2 md:mr-3 text-base sm:text-lg md:text-xl"></i>
-              <span class="truncate">{{ resumeFileName() }}</span>
+              <i class="fas fa-file-alt mr-1.5 sm:mr-2 md:mr-3 text-base sm:text-lg md:text-xl"></i>
+              <div class="flex flex-col">
+                <span class="truncate font-bold">{{ resumeFileName() }}</span>
+                @if (currentUser()?.resumeText === resumeText()) {
+                <span class="text-[8px] text-gray-400">LOADED FROM PROFILE PROFILE</span>
+                } @else {
+                <span class="text-[8px] text-gray-400 uppercase">Uploaded Session</span>
+                }
+              </div>
             </div>
             <i class="fas fa-check-circle text-black ml-1 sm:ml-2"></i>
           </div>

@@ -19,7 +19,7 @@ const database = getDatabase(app);
       
       <div class="glass-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-2xl border border-black/5">
         <div class="mb-4 sm:mb-6 md:mb-8">
-          <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4">Upload PDF Resume</h2>
+          <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4">Upload Resume (PDF/DOCX)</h2>
             @if(uploading()) {
                 <div class="text-blue-600 mb-2 font-medium">Uploading {{ uploadProgress() }}%</div>
             }
@@ -35,15 +35,14 @@ const database = getDatabase(app);
               Drag & drop your resume here
             </span>
             <span class="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-1 sm:mt-2">or click to browse</span>
-            <span class="text-[8px] sm:text-[10px] md:text-xs text-gray-400 mt-2 sm:mt-3 md:mt-4">Maximum size: 5MB</span>
-            <input type="file" class="hidden" accept=".pdf" (change)="onFileSelected($event)">
+            <span class="text-[8px] sm:text-[10px] md:text-xs text-gray-400 mt-2 sm:mt-3 md:mt-4">Supported: .pdf, .docx, .txt | Maximum size: 5MB</span>
+            <input type="file" class="hidden" accept=".pdf,.docx,.txt" (change)="onFileSelected($event)">
           </label>
         </div>
 
-        @if(resumeFileName()) {
         <div class="flex items-center justify-between bg-black/10 border border-black/20 p-2 sm:p-3 md:p-4 rounded-xl mb-4 sm:mb-6 md:mb-8">
           <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
-            <i class="fas fa-file-pdf text-lg sm:text-xl md:text-2xl text-black flex-shrink-0"></i>
+            <i class="fas fa-file-alt text-lg sm:text-xl md:text-2xl text-black flex-shrink-0"></i>
             <div class="min-w-0">
               <p class="text-[10px] sm:text-xs md:text-sm font-medium text-black truncate">{{ resumeFileName() }}</p>
               <p class="text-[8px] sm:text-[10px] md:text-xs text-gray-600">{{ fileSize() }}</p>
@@ -53,7 +52,7 @@ const database = getDatabase(app);
             <i class="fas fa-trash"></i>
           </button>
         </div>
-        }
+
 
         <div class="border-t border-black/10 pt-4 sm:pt-6 md:pt-8">
           <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4 md:mb-6">Or Enter Details Manually</h2>
@@ -148,10 +147,35 @@ export class DashboardResumeComponent {
 
       if (file.type === 'application/pdf') {
         await this.extractTextFromPDF(file);
+      } else if (file.name.toLowerCase().endsWith('.docx')) {
+        await this.extractTextFromDOCX(file);
+      } else if (file.type === 'text/plain') {
+        const text = await file.text();
+        this.resumeText.set(text);
+        this.toastService.success('Resume loaded!');
       } else {
-        this.error.set('Only PDF files are supported.');
+        this.error.set('Only PDF, DOCX, and TXT files are supported.');
         this.removeFile();
       }
+    }
+  }
+
+  async extractTextFromDOCX(file: File) {
+    this.uploading.set(true);
+    this.uploadProgress.set(50);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const mammoth = await import('mammoth');
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      this.resumeText.set(result.value);
+      this.uploadProgress.set(100);
+      this.toastService.success('DOCX parsed successfully!');
+    } catch (e: any) {
+      this.error.set("Failed to parse DOCX.");
+      this.toastService.error('Failed to read DOCX file.');
+      this.removeFile();
+    } finally {
+      setTimeout(() => this.uploading.set(false), 800);
     }
   }
 
@@ -212,15 +236,26 @@ export class DashboardResumeComponent {
         email: this.email(),
         experience: this.experience(),
         role: this.role(),
-        skills: this.skills(),
-        resumeText: this.resumeText() // Changed from resumeUrl
+        skills: this.skills()
       };
+
+      // Unify resume storage with setup component
+      updates[`users/${user.id}/resumeText`] = this.resumeText();
+      updates[`users/${user.id}/resumeFileName`] = this.resumeFileName();
 
       if (this.name() !== user.name) {
         updates[`users/${user.id}/name`] = this.name();
       }
 
       await update(dbRef(database), updates);
+
+      // Update local signal to reflect changes immediately
+      this.authService.currentUser.update(u => u ? ({
+        ...u,
+        name: this.name(),
+        resumeText: this.resumeText(),
+        resumeFileName: this.resumeFileName()
+      }) : null);
       this.successMessage.set('Profile saved successfully!');
       this.toastService.success('Profile saved successfully!');
     } catch (err) {

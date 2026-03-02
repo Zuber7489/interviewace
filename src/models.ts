@@ -39,6 +39,8 @@ export interface User {
   maxInterviews?: number;
   isAdmin?: boolean;
   photoURL?: string;
+  resumeText?: string;
+  resumeFileName?: string;
 }
 
 export interface InterviewSession {

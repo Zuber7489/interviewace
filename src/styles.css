@@ -162,3 +162,50 @@ h6 {
 .animate-slide-in-right {
   animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ── FIX #26/F5: Print styles for PDF report export ── */
+/* .no-print elements are excluded from print via @media print */
+
+@media print {
+
+  /* Hide non-report UI */
+  app-sidebar,
+  app-public-navbar,
+  .no-print,
+  button,
+  nav,
+  aside {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    animation: none !important;
+    font-size: 12pt;
+    color: #000;
+  }
+
+  /* Make report page take full width */
+  app-dashboard-layout>* {
+    margin-left: 0 !important;
+  }
+
+  .glass,
+  .glass-card {
+    background: #fff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  /* Avoid page breaks inside cards */
+  .glass-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+}

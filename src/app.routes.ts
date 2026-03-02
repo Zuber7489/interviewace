@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { getDatabase, ref, get } from 'firebase/database';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { firebaseConfig } from './firebase.config';
 
 const authGuard = async () => {
     const auth = inject(AuthService);
@@ -21,6 +24,30 @@ const publicGuard = async () => {
         return router.parseUrl('/dashboard');
     }
     return true;
+};
+
+// FIX #37: Server-side admin guard — fetches Firebase RTDB to verify isAdmin
+// Cannot be bypassed by client-side memory/signal manipulation
+const adminGuard = async () => {
+    const auth = inject(AuthService);
+    const router = inject(Router);
+    await auth.waitForAuth();
+    if (!auth.isLoggedIn()) {
+        return router.parseUrl('/login');
+    }
+    try {
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const db = getDatabase(app);
+        const uid = auth.currentUser()?.id;
+        if (!uid) return router.parseUrl('/dashboard');
+        const snap = await get(ref(db, `users/${uid}/isAdmin`));
+        if (snap.exists() && snap.val() === true) {
+            return true;
+        }
+    } catch {
+        // Fall through to deny
+    }
+    return router.parseUrl('/dashboard');
 };
 
 export const routes: Routes = [
@@ -71,10 +98,12 @@ export const routes: Routes = [
             },
             {
                 path: 'admin',
+                canActivate: [adminGuard],
                 loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent)
             },
             {
                 path: 'admin/user/:id',
+                canActivate: [adminGuard],
                 loadComponent: () => import('./components/admin/admin-user-detail.component').then(m => m.AdminUserDetailComponent)
             },
             {

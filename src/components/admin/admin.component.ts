@@ -88,6 +88,7 @@ const database = getDatabase(app);
                   </div>
                   
                   <div class="flex gap-2 items-center" (click)="$event.stopPropagation()">
+                    <button (click)="resetInterviewCount(user)" class="text-[10px] bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap" title="Reset interview count to 0">Reset Count</button>
                     @if(!user.isAdmin) {
                       <button (click)="toggleAdmin(user)" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">Make Admin</button>
                     } @else {
@@ -156,6 +157,9 @@ const database = getDatabase(app);
                     </td>
                     <td class="p-3" (click)="$event.stopPropagation()">
                        <div class="flex items-center justify-end gap-2 w-full h-full min-h-[44px]">
+                         <button (click)="resetInterviewCount(user)" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap border border-blue-100 flex items-center h-8" title="Reset interview count">
+                           <i class="fas fa-undo mr-1 text-[10px]"></i>Reset
+                         </button>
                          @if(!user.isAdmin) {
                             <button (click)="toggleAdmin(user)" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap border border-red-100 flex items-center h-8">Make Admin</button>
                          } @else {
@@ -382,6 +386,16 @@ export class AdminComponent {
     } catch (err) {
       this.toastService.error("Failed to delete user.");
       console.error(err);
+    }
+  }
+  async resetInterviewCount(user: User) {
+    if (!confirm(`Reset interview count for ${user.name} to 0? This will allow them to start fresh.`)) return;
+    try {
+      await update(dbRef(database, `users/${user.id}`), { interviewsCount: 0 });
+      this.users.update(list => list.map(u => u.id === user.id ? { ...u, interviewsCount: 0 } : u));
+      this.toastService.success(`Interview count reset to 0 for ${user.name}.`);
+    } catch (err) {
+      this.toastService.error('Failed to reset interview count.');
     }
   }
 }

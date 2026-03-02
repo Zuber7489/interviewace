@@ -33,16 +33,29 @@ export class AuthService {
     // --- Client-Side Rate Limiting ---
     private readonly MAX_AUTH_ATTEMPTS = 5;
     private readonly RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-    private authAttempts: number[] = [];
 
     private checkRateLimit(): void {
         const now = Date.now();
+        // FIX #S9: Persist rate limit to localStorage so it survives refresh
+        let attempts: number[] = [];
+        try {
+            const stored = localStorage.getItem('interviewace_auth_attempts');
+            if (stored) {
+                attempts = JSON.parse(stored);
+            }
+        } catch (e) { /* ignore */ }
+
         // Remove attempts that are outside the time window
-        this.authAttempts = this.authAttempts.filter(t => now - t < this.RATE_LIMIT_WINDOW_MS);
-        if (this.authAttempts.length >= this.MAX_AUTH_ATTEMPTS) {
+        attempts = attempts.filter(t => now - t < this.RATE_LIMIT_WINDOW_MS);
+
+        if (attempts.length >= this.MAX_AUTH_ATTEMPTS) {
             throw new Error('Too many attempts. Please wait 15 minutes before trying again.');
         }
-        this.authAttempts.push(now);
+
+        attempts.push(now);
+        try {
+            localStorage.setItem('interviewace_auth_attempts', JSON.stringify(attempts));
+        } catch (e) { /* ignore */ }
     }
 
     // --- Input Sanitization ---

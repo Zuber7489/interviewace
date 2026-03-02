@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
 
+
 @Component({
   selector: 'app-report',
   // FIX: Removed `standalone: true` as it is default in Angular v20+.
@@ -33,5 +34,10 @@ export class ReportComponent {
 
   startNew() {
     this.router.navigate(['/dashboard/interviews']);
+  }
+
+  // FIX #26/F5: Print report as PDF
+  printReport() {
+    window.print();
   }
 }
