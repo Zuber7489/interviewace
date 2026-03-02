@@ -88,10 +88,7 @@ export const routes: Routes = [
                 path: 'history',
                 loadComponent: () => import('./components/dashboard-history/dashboard-history.component').then(m => m.DashboardHistoryComponent)
             },
-            {
-                path: 'resume',
-                loadComponent: () => import('./components/dashboard-resume/dashboard-resume.component').then(m => m.DashboardResumeComponent)
-            },
+
             {
                 path: 'settings',
                 loadComponent: () => import('./components/dashboard-settings/dashboard-settings.component').then(m => m.DashboardSettingsComponent)
