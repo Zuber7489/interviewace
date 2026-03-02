@@ -93,8 +93,8 @@ const database = getDatabase(app);
                         class="border-none rounded-xl px-3 py-2.5 text-[10px] font-black focus:outline-none focus:ring-4 focus:ring-black/5 uppercase cursor-pointer transition-all w-full"
                         [class.bg-black]="u.subscription === 'pro'" [class.text-white]="u.subscription === 'pro'"
                         [class.bg-gray-100]="u.subscription !== 'pro'" [class.text-black]="u.subscription !== 'pro'">
-                        <option value="free">STANDARD</option>
-                        <option value="pro">PROFESSIONAL</option>
+                        <option value="free">FREE</option>
+                        <option value="pro">PRO</option>
                       </select>
                    </div>
                    <div class="flex flex-col gap-1">
@@ -166,8 +166,8 @@ const database = getDatabase(app);
                           class="appearance-none w-full min-w-[140px] border border-black/5 rounded-xl px-4 py-2 text-[10px] font-black focus:outline-none focus:ring-4 focus:ring-black/5 uppercase shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
                           [class.bg-black]="u.subscription === 'pro'" [class.text-white]="u.subscription === 'pro'" [class.border-black]="u.subscription === 'pro'"
                           [class.bg-white]="u.subscription !== 'pro'" [class.text-black]="u.subscription !== 'pro'">
-                          <option value="free" class="bg-white text-black font-bold">Standard</option>
-                          <option value="pro" class="bg-black text-white font-bold">Professional</option>
+                          <option value="free" class="bg-white text-black font-bold">FREE</option>
+                          <option value="pro" class="bg-black text-white font-bold">PRO</option>
                         </select>
                         <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[8px] pointer-events-none opacity-50 transition-transform group-hover/sel:translate-y-[-40%]" 
                           [class.text-white]="u.subscription === 'pro'" [class.text-black]="u.subscription !== 'pro'"></i>
