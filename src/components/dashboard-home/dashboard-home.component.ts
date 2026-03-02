@@ -50,39 +50,6 @@ import { StateService } from '../../services/state.service';
         </div>
       </div>
 
-      <!-- ─── FIX #15/F4: Score Trend Chart ─── -->
-      @if (trendPoints().length >= 2) {
-      <div class="activity-minimal">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-base sm:text-lg font-bold text-gray-900">Score Trend</h2>
-          <span class="text-xs text-gray-400">Last {{ trendPoints().length }} sessions</span>
-        </div>
-        <div class="relative w-full" style="height: 120px;">
-          <svg class="w-full h-full" viewBox="0 0 400 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="0" y1="10" x2="400" y2="10" stroke="#f0f0f0" stroke-width="1"/>
-            <line x1="0" y1="35" x2="400" y2="35" stroke="#f0f0f0" stroke-width="1"/>
-            <line x1="0" y1="60" x2="400" y2="60" stroke="#f0f0f0" stroke-width="1"/>
-            <line x1="0" y1="85" x2="400" y2="85" stroke="#f0f0f0" stroke-width="1"/>
-            <defs>
-              <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#111" stop-opacity="0.12"/>
-                <stop offset="100%" stop-color="#111" stop-opacity="0.01"/>
-              </linearGradient>
-            </defs>
-            <polygon [attr.points]="trendFillPoints()" fill="url(#trendGradient)"/>
-            <polyline [attr.points]="trendLinePoints()" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            @for (p of trendPoints(); track $index) {
-            <circle [attr.cx]="p.x" [attr.cy]="p.y" r="4" fill="white" stroke="#111" stroke-width="2"/>
-            }
-          </svg>
-          <div class="flex justify-between mt-1 px-0.5">
-            @for (p of trendPoints(); track $index) {
-            <span class="text-[9px] font-bold" [class.text-green-600]="p.score >= 70" [class.text-orange-500]="p.score < 70 && p.score > 0" [class.text-gray-400]="p.score === 0">{{ p.score }}%</span>
-            }
-          </div>
-        </div>
-      </div>
-      }
 
       <!-- ─── Recent Activity ─── -->
       <div class="activity-minimal">
@@ -224,37 +191,6 @@ export class DashboardHomeComponent {
     return Math.min(((user.interviewsCount || 0) / max) * 100, 100);
   });
 
-  // FIX #15/F4: Score trend chart — last 10 scored sessions, oldest→newest
-  trendPoints = computed(() => {
-    const scored = this.state.history()
-      .filter(s => s.overallScore !== undefined && s.overallScore !== null)
-      .slice(0, 10)
-      .reverse();
-
-    if (scored.length < 2) return [];
-
-    const padX = 10, padY = 10, usableW = 380, usableH = 80;
-    const minScore = Math.max(0, Math.min(...scored.map(s => s.overallScore!)) - 10);
-    const maxScore = Math.min(100, Math.max(...scored.map(s => s.overallScore!)) + 10);
-    const scoreRange = maxScore - minScore || 1;
-
-    return scored.map((s, i) => ({
-      x: Math.round((padX + (i / (scored.length - 1)) * usableW) * 10) / 10,
-      y: Math.round((padY + (1 - (s.overallScore! - minScore) / scoreRange) * usableH) * 10) / 10,
-      score: s.overallScore!
-    }));
-  });
-
-  trendLinePoints = computed(() =>
-    this.trendPoints().map(p => `${p.x},${p.y}`).join(' ')
-  );
-
-  trendFillPoints = computed(() => {
-    const pts = this.trendPoints();
-    if (!pts.length) return '';
-    return pts.map(p => `${p.x},${p.y}`).join(' ') +
-      ` ${pts[pts.length - 1].x},100 ${pts[0].x},100`;
-  });
 
   timeGreeting() {
     const h = new Date().getHours();
