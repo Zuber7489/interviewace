@@ -19,19 +19,19 @@ export class ReportComponent {
 
   scoreColorClass = computed(() => {
     const score = this.overallScore();
-    if (score >= 80) return 'text-black';
-    if (score >= 50) return 'text-gray-600';
-    return 'text-gray-400';
+    if (score >= 80) return 'text-green-600';
+    if (score >= 50) return 'text-amber-500';
+    return 'text-red-500';
   });
 
   scoreRingClass = computed(() => {
     const score = this.overallScore();
-    if (score >= 80) return 'stroke-black';
-    if (score >= 50) return 'stroke-gray-600';
-    return 'stroke-gray-400';
+    if (score >= 80) return 'stroke-green-500';
+    if (score >= 50) return 'stroke-amber-400';
+    return 'stroke-red-400';
   });
 
   startNew() {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/dashboard/interviews']);
   }
 }

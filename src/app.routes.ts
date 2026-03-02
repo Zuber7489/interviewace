@@ -117,5 +117,5 @@ export const routes: Routes = [
         path: 'refund-policy',
         loadComponent: () => import('./components/legal/refund-policy.component').then(m => m.RefundPolicyComponent)
     },
-    { path: '**', redirectTo: '' }
+    { path: '**', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) }
 ];

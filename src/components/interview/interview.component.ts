@@ -25,6 +25,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
   // Signals for real-time state
   isLoading = signal(true);
   isFinishing = signal(false);
+  showEndConfirm = signal(false); // FIX (21): confirmation dialog before ending
 
   timeLeft = signal(0);
   timerId: any;
@@ -81,6 +82,18 @@ export class InterviewComponent implements OnInit, OnDestroy {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // FIX (21): Show confirmation dialog instead of immediately ending
+  requestEndInterview() {
+    if (this.isFinishing()) return;
+    this.showEndConfirm.set(true);
+    clearInterval(this.timerId); // Pause timer while confirming
+  }
+
+  cancelEndInterview() {
+    this.showEndConfirm.set(false);
+    this.startTimer(); // Resume timer
   }
 
   async finishInterview() {

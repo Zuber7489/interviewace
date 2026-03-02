@@ -10,22 +10,36 @@
                     ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
                 },
                 "email": {
-                    ".write": false
+                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".validate": "newData.isString()"
                 },
                 "subscription": {
-                    ".write": false,
+                    "// Comment": "SECURITY: Only server (admin SDK) or admins can write subscription. Client users are blocked.",
+                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
                     ".validate": "newData.isString() && (newData.val() === 'free' || newData.val() === 'pro' || newData.val() === 'enterprise')"
                 },
                 "maxInterviews": {
-                    ".write": false,
-                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000"
                 },
                 "interviewsCount": {
-                    ".write": false,
+                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
                     ".validate": "newData.isNumber() && newData.val() >= 0"
                 },
+                "isAdmin": {
+                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".validate": "newData.isBoolean()"
+                },
+                "deleted": {
+                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".validate": "newData.isBoolean()"
+                },
                 "lastUpgradedAt": {
-                    ".write": false
+                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+                },
+                "photoURL": {
+                    ".write": "auth != null && auth.uid === $uid",
+                    ".validate": "newData.isString() && newData.val().length <= 500"
                 },
                 "preferences": {
                     ".write": "auth != null && auth.uid === $uid",
@@ -36,30 +50,10 @@
                         ".validate": "newData.isString() && (newData.val() === 'English' || newData.val() === 'Hindi' || newData.val() === 'Hinglish')"
                     }
                 },
-                "profile": {
-                    ".write": "auth != null && auth.uid === $uid",
-                    "name": {
-                        ".validate": "newData.isString() && newData.val().length <= 100"
-                    },
-                    "email": {
-                        ".validate": "newData.isString() && newData.val().length <= 200"
-                    },
-                    "experience": {
-                        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 50"
-                    },
-                    "role": {
-                        ".validate": "newData.isString() && newData.val().length <= 100"
-                    },
-                    "skills": {
-                        ".validate": "newData.isString() && newData.val().length <= 1000"
-                    },
-                    "resumeText": {
-                        ".validate": "newData.isString() && newData.val().length <= 50000"
-                    }
-                },
                 "history": {
                     "$sessionId": {
                         ".write": "auth != null && auth.uid === $uid",
+                        ".read": "auth != null && auth.uid === $uid",
                         "id": {
                             ".validate": "newData.isString()"
                         },
@@ -73,7 +67,7 @@
                             ".validate": "newData.isString()"
                         },
                         "overallScore": {
-                            ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 10)"
+                            ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 100)"
                         }
                     }
                 }

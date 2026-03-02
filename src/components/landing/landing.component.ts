@@ -57,6 +57,7 @@ import { PublicNavbarComponent } from './public-navbar.component';
                                 playsinline
                                 controls
                                 preload="none"
+                                poster="assets/favicon.png"
                             >
                                 <source src="assets/grok-video-a3c63fec-d284-4d08-8d02-e1fbad244abf (1).mp4" type="video/mp4">
                             </video>

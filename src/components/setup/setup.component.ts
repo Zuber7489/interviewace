@@ -24,7 +24,7 @@ export class SetupComponent implements OnInit {
 
   // Form signals
   primaryTechnology = signal('');
-  secondarySkills = signal('e.g. JavaScript, Python, React, System Design');
+  secondarySkills = signal('');
   yearsOfExperience = signal(2);
   interviewDuration = signal(10);
   language = signal<'English' | 'Hindi' | 'Hinglish'>('English');
@@ -72,9 +72,9 @@ export class SetupComponent implements OnInit {
           this.isLoading.set(false);
         }
       } else {
-        // For now, simpler fallback for other types or DOCX (needs mammoth.js or similar)
-        // We will just try reading as text for now if not PDF, or show error
-        this.error.set("Only .txt and .pdf are currently supported for parsing. Please convert your resume to PDF.");
+        // FIX (19): Clear, actionable error for unsupported formats
+        const ext = file.name.split('.').pop()?.toUpperCase() || 'this format';
+        this.error.set(`❌ ${ext} files are not supported. Please upload a PDF or TXT file. (Tip: In Word/Google Docs, choose File → Save As → PDF)`);
         this.resumeFileName.set(null);
       }
     }
@@ -100,10 +100,32 @@ export class SetupComponent implements OnInit {
     return fullText;
   }
 
-  startInterview() {
-    this.liveAudioService.resetSignals(); // Final signal cleanup
-    this.isLoading.set(true);
+  async startInterview() {
     this.error.set(null);
+
+    // FIX (18): Validate that primaryTechnology is not empty
+    const tech = this.primaryTechnology().trim();
+    if (!tech) {
+      this.error.set('Please enter the primary technology or role for your interview.');
+      return;
+    }
+
+    // FIX (22): Pre-check microphone permission before entering the interview screen
+    this.isLoading.set(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Stop the test stream immediately — we just needed to verify access
+      stream.getTracks().forEach(t => t.stop());
+    } catch (micErr: any) {
+      this.isLoading.set(false);
+      const isDenied = micErr?.name === 'NotAllowedError' || micErr?.name === 'PermissionDeniedError';
+      this.error.set(
+        isDenied
+          ? '🎤 Microphone access is blocked. Please allow microphone access in your browser settings (click the 🔒 icon in the address bar) and try again.'
+          : '🎤 Could not access microphone. Please make sure a microphone is connected and try again.'
+      );
+      return;
+    }
 
     const user = this.authService.currentUser();
     if (!user) {

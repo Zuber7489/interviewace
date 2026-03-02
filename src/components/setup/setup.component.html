@@ -78,9 +78,10 @@
             <span
               class="text-[10px] sm:text-xs md:text-sm font-medium text-gray-600 group-hover:text-black transition-colors">Click
               to upload
-              PDF Resume</span>
-            <span class="text-[8px] sm:text-[10px] md:text-xs text-gray-500 mt-0.5 sm:mt-1">Maximum size 5MB</span>
-            <input type="file" class="hidden" accept=".pdf" (change)="onFileSelected($event)">
+              PDF or TXT Resume</span>
+            <span class="text-[8px] sm:text-[10px] md:text-xs text-gray-400 mt-0.5 sm:mt-1">Supported: .pdf, .txt · Max
+              5MB · DOCX not supported</span>
+            <input type="file" class="hidden" accept=".pdf,.txt" (change)="onFileSelected($event)">
           </label>
 
           @if(resumeFileName()) {

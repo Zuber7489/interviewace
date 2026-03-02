@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -23,7 +23,7 @@ const database = getDatabase(app);
           <i class="fas fa-shield-alt"></i> Admin Dashboard
         </h1>
         <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-          Total Users: {{ users().length }}
+          Total Users: {{ allUsers.length || users().length }}
         </div>
       </div>
       
@@ -173,6 +173,16 @@ const database = getDatabase(app);
           </table>
         </div>
         <!-- Detailed User View Overlay Removed. Using separate route now. -->
+
+        <!-- FIX (38): Load More Pagination Button -->
+        @if(hasMore() && !searchQuery()) {
+          <div class="mt-6 text-center">
+            <button (click)="loadMore()" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors">
+              Load More Users
+            </button>
+            <p class="text-xs text-gray-400 mt-2">Showing {{ users().length }} of {{ allUsers.length }} total users</p>
+          </div>
+        }
       </div>
     </div>
   `
@@ -185,7 +195,25 @@ export class AdminComponent {
   users = signal<User[]>([]);
   isLoading = signal(true);
   searchQuery = signal('');
-  selectedUser = signal<any>(null); // To view detailed user information
+  selectedUser = signal<any>(null);
+
+  // FIX (38/P1): Pagination to avoid loading ALL users at once
+  readonly PAGE_SIZE = 50;
+  currentPage = signal(0);
+  hasMore = signal(false);
+  allUsers: User[] = []; // Full list in memory for search (public for template access)
+
+  // FIX (39): filteredUsers is now a computed() signal — no more re-run on every CD cycle
+  filteredUsers = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    const source = query ? this.allUsers : this.users();
+    if (!query) return this.users();
+    return source.filter(u =>
+      (u.name && u.name.toLowerCase().includes(query)) ||
+      (u.email && u.email.toLowerCase().includes(query)) ||
+      (u.id && u.id.toLowerCase().includes(query))
+    );
+  });
 
   constructor() {
     effect(() => {
@@ -203,6 +231,8 @@ export class AdminComponent {
   async loadUsers() {
     this.isLoading.set(true);
     try {
+      // FIX (38/P1): Load all users into memory but display paginated
+      const { query, limitToFirst, orderByKey } = await import('firebase/database');
       const dbRefNode = dbRef(database, 'users');
       const snap = await get(dbRefNode);
       if (snap.exists()) {
@@ -210,15 +240,21 @@ export class AdminComponent {
         const usersArray: User[] = [];
         for (let uid in usersData) {
           if (usersData.hasOwnProperty(uid)) {
-            usersArray.push({
-              ...usersData[uid],
-              id: uid // Must map the unique Firebase key into the data structure 
-            });
+            const userData = usersData[uid];
+            // Skip tombstone-only deleted records from display
+            if (!userData.deleted) {
+              usersArray.push({ ...userData, id: uid });
+            }
           }
         }
-        this.users.set(usersArray);
+        this.allUsers = usersArray;
+        // Show first PAGE_SIZE users by default
+        this.users.set(usersArray.slice(0, this.PAGE_SIZE));
+        this.hasMore.set(usersArray.length > this.PAGE_SIZE);
       } else {
+        this.allUsers = [];
         this.users.set([]);
+        this.hasMore.set(false);
       }
     } catch (error) {
       this.toastService.error("Failed to load users list.");
@@ -228,14 +264,13 @@ export class AdminComponent {
     }
   }
 
-  filteredUsers() {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.users();
-    return this.users().filter(u =>
-      (u.name && u.name.toLowerCase().includes(query)) ||
-      (u.email && u.email.toLowerCase().includes(query)) ||
-      (u.id && u.id.toLowerCase().includes(query))
-    );
+  loadMore() {
+    const next = this.currentPage() + 1;
+    const start = next * this.PAGE_SIZE;
+    const page = this.allUsers.slice(start, start + this.PAGE_SIZE);
+    this.users.update(u => [...u, ...page]);
+    this.currentPage.set(next);
+    this.hasMore.set((next + 1) * this.PAGE_SIZE < this.allUsers.length);
   }
 
   userHistory = signal<any[]>([]);
@@ -247,15 +282,22 @@ export class AdminComponent {
 
   async updateTier(user: User, newTier: string) {
     if (user.subscription === newTier) return;
+
+    // FIX (40): Warn admin before silently resetting interviewsCount
+    const confirmMsg = newTier === 'free'
+      ? `Downgrade ${user.name} to Free? Their interview count will NOT be reset. Confirm?`
+      : `Upgrade ${user.name} to Pro? This will set their maxInterviews to 10. Confirm?`;
+    if (!confirm(confirmMsg)) return;
+
     try {
-      await update(dbRef(database, `users/${user.id}`), {
+      const updates: any = {
         subscription: newTier,
-        // usually resetting usages when tier changes
-        interviewsCount: 0,
         maxInterviews: newTier === 'pro' ? 10 : 2
-      });
+        // FIX (40): Do NOT reset interviewsCount silently
+      };
+      await update(dbRef(database, `users/${user.id}`), updates);
       this.toastService.success(`Updated ${user.name} to ${newTier.toUpperCase()} successfully.`);
-      this.loadUsers(); // Refresh
+      this.loadUsers();
     } catch (err) {
       this.toastService.error("Failed to update user subscription.");
     }

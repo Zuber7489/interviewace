@@ -113,8 +113,9 @@ export class StateService {
           this.historyList.set(newList);
         }
 
-        // Clear active session storage
+        // Clear active session storage + sensitive transcript data (FIX S5/S6)
         localStorage.removeItem(this.ACTIVE_SESSION_KEY);
+        localStorage.removeItem('gemini_chat_history'); // Remove sensitive transcript
 
         // --- SaaS: Increment Interview Count ---
         try {

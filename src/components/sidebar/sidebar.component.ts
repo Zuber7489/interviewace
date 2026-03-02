@@ -17,7 +17,7 @@ import { StateService } from '../../services/state.service';
     </button>
 
     <!-- Overlay for mobile -->
-    @if (isSidebarOpen) {
+    @if (isSidebarOpen()) {
       <div 
         (click)="toggleSidebar()"
         class="lg:hidden fixed inset-0 bg-black/50 z-[999] backdrop-blur-sm transition-opacity"></div>
@@ -25,8 +25,8 @@ import { StateService } from '../../services/state.service';
 
     <!-- Sidebar -->
     <aside 
-      [class.translate-x-0]="isSidebarOpen"
-      [class.-translate-x-full]="!isSidebarOpen"
+      [class.translate-x-0]="isSidebarOpen()"
+      [class.-translate-x-full]="!isSidebarOpen()"
       class="w-64 h-screen bg-white border-r-2 border-black/10 flex flex-col fixed left-0 top-0 shadow-lg z-50 transition-transform duration-300 ease-in-out">
       
       <!-- Logo -->
@@ -90,6 +90,13 @@ import { StateService } from '../../services/state.service';
           @if(history().length > 0) {
           <span class="ml-auto bg-white text-black text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full flex-shrink-0">{{ history().length }}</span>
           }
+        </a>
+
+        <!-- FIX (31): Added missing Resume nav link -->
+        <a routerLink="/dashboard/resume" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
+          class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-600 hover:bg-black/5 hover:text-black transition-all min-h-[44px]">
+          <i class="fas fa-file-alt w-4 sm:w-5 flex-shrink-0"></i>
+          <span class="text-sm sm:text-base">My Resume</span>
         </a>
 
         <a routerLink="/dashboard/settings" routerLinkActive="bg-black text-white font-bold" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebarOnMobile()"
@@ -175,17 +182,18 @@ export class SidebarComponent {
 
   currentUser = this.authService.currentUser;
   history = this.stateService.history;
-  isSidebarOpen = false;
+  // FIX (30): Changed to signal for reliable OnPush change detection
+  isSidebarOpen = signal(false);
 
 
 
   toggleSidebar() {
-    this.isSidebarOpen = !this.isSidebarOpen;
+    this.isSidebarOpen.update(v => !v);
   }
 
   closeSidebarOnMobile() {
     if (window.innerWidth < 1024) {
-      this.isSidebarOpen = false;
+      this.isSidebarOpen.set(false);
     }
   }
 

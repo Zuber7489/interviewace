@@ -20,7 +20,7 @@ import { StateService } from '../../services/state.service';
           <i class="fa-solid fa-bolt text-yellow-400"></i>
           Start Interview
         </button>
-        <p class="text-gray-500 text-xs sm:text-sm mt-3">Start your first interview to track progress.</p>
+        <p class="text-gray-500 text-xs sm:text-sm mt-3" *ngIf="(auth.currentUser()?.interviewsCount || 0) === 0">Start your first interview to track progress.</p>
       </div>
 
       <!-- ─── Minimal Stats ─── -->
@@ -71,6 +71,17 @@ import { StateService } from '../../services/state.service';
         <div class="text-center py-10 sm:py-12 text-gray-400 text-sm italic" *ngIf="recentInterviews().length === 0">
           — You haven't started any interview yet —
         </div>
+      </div>
+
+      <!-- FIX (16): Upgrade CTA when out of interviews -->
+      <div *ngIf="isAtLimit()" class="bg-black text-white rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <p class="font-bold text-sm">🚀 You've used all your interviews!</p>
+          <p class="text-gray-400 text-xs mt-0.5">Get 10 more for just ₹200 — buy again anytime.</p>
+        </div>
+        <a routerLink="/dashboard/settings" class="flex-shrink-0 px-5 py-2.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-gray-100 transition-all">
+          Buy Pro Pack — ₹200
+        </a>
       </div>
     </div>
   `,
@@ -160,11 +171,18 @@ export class DashboardHomeComponent {
   recentInterviews = computed(() => this.state.history().slice(0, 5));
 
   averageScore = computed(() => {
-    const list = this.state.history()
-      .filter(s => s.overallScore !== undefined)
-      .slice(0, 5);
+    // FIX (14): Use ALL sessions, not just last 5
+    const list = this.state.history().filter(s => s.overallScore !== undefined);
     if (!list.length) return 0;
     return list.reduce((a, c) => a + (c.overallScore || 0), 0) / list.length;
+  });
+
+  // FIX (16): Show upgrade CTA when at limit
+  isAtLimit = computed(() => {
+    const user = this.auth.currentUser();
+    if (!user || user.subscription === 'enterprise') return false;
+    const max = user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2);
+    return (user.interviewsCount || 0) >= max;
   });
 
   usagePercentage = computed(() => {
