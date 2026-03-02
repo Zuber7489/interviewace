@@ -72,11 +72,11 @@ const database = getDatabase(app);
               <div class="p-5 flex flex-col gap-4" (click)="viewDetails(u)">
                 <div class="flex items-center gap-3">
                    <div class="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center font-bold text-black border border-black/10">
-                      {{ u.name[0] }}
+                      {{ u.name?.charAt(0) || '?' }}
                    </div>
                    <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2">
-                        <span class="font-bold text-black truncate">{{ u.name }}</span>
+                        <span class="font-bold text-black truncate">{{ u.name || 'Anonymous User' }}</span>
                         @if(u.isAdmin) {
                           <span class="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-widest">Admin</span>
                         }
@@ -90,9 +90,11 @@ const database = getDatabase(app);
                    <div class="flex flex-col gap-1">
                       <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Plan</span>
                       <select [ngModel]="u.subscription || 'free'" (ngModelChange)="updateTier(u, $event)"
-                        class="bg-gray-100 border-none rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-black/20">
-                        <option value="free">FREE</option>
-                        <option value="pro">PRO</option>
+                        class="border-none rounded-xl px-3 py-2.5 text-[10px] font-black focus:outline-none focus:ring-4 focus:ring-black/5 uppercase cursor-pointer transition-all w-full"
+                        [class.bg-black]="u.subscription === 'pro'" [class.text-white]="u.subscription === 'pro'"
+                        [class.bg-gray-100]="u.subscription !== 'pro'" [class.text-black]="u.subscription !== 'pro'">
+                        <option value="free">STANDARD</option>
+                        <option value="pro">PROFESSIONAL</option>
                       </select>
                    </div>
                    <div class="flex flex-col gap-1">
@@ -144,11 +146,11 @@ const database = getDatabase(app);
                     <td class="p-6">
                       <div class="flex items-center gap-4">
                         <div class="w-11 h-11 rounded-2xl bg-black/5 group-hover:bg-white border border-black/10 flex items-center justify-center font-bold text-black text-lg transition-all shadow-sm">
-                           {{ u.name[0] }}
+                           {{ u.name?.charAt(0) || '?' }}
                         </div>
                         <div class="min-w-0">
                            <div class="font-bold text-black text-base flex items-center gap-2">
-                             {{ u.name }}
+                             {{ u.name || 'Anonymous User' }}
                              @if(u.isAdmin) {
                                <span class="bg-red-500 text-white text-[8px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-lg shadow-red-500/20">Admin</span>
                              }
@@ -159,11 +161,17 @@ const database = getDatabase(app);
                       </div>
                     </td>
                     <td class="p-6" (click)="$event.stopPropagation()">
-                      <select [ngModel]="u.subscription || 'free'" (ngModelChange)="updateTier(u, $event)"
-                        class="bg-white border border-black/10 rounded-xl px-4 py-2 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-black/5 uppercase shadow-sm cursor-pointer hover:border-black transition-all">
-                        <option value="free">Standard</option>
-                        <option value="pro">Professional</option>
-                      </select>
+                      <div class="relative group/sel">
+                        <select [ngModel]="u.subscription || 'free'" (ngModelChange)="updateTier(u, $event)"
+                          class="appearance-none w-full min-w-[140px] border border-black/5 rounded-xl px-4 py-2 text-[10px] font-black focus:outline-none focus:ring-4 focus:ring-black/5 uppercase shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
+                          [class.bg-black]="u.subscription === 'pro'" [class.text-white]="u.subscription === 'pro'" [class.border-black]="u.subscription === 'pro'"
+                          [class.bg-white]="u.subscription !== 'pro'" [class.text-black]="u.subscription !== 'pro'">
+                          <option value="free" class="bg-white text-black font-bold">Standard</option>
+                          <option value="pro" class="bg-black text-white font-bold">Professional</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[8px] pointer-events-none opacity-50 transition-transform group-hover/sel:translate-y-[-40%]" 
+                          [class.text-white]="u.subscription === 'pro'" [class.text-black]="u.subscription !== 'pro'"></i>
+                      </div>
                     </td>
                     <td class="p-6 text-center">
                       <span class="text-base font-black text-black">{{ u.interviewsCount || 0 }}</span>
@@ -201,7 +209,6 @@ const database = getDatabase(app);
           </div>
         }
       </div>
-    </div>
     </div>
   `
 })
