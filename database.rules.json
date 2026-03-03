@@ -10,20 +10,20 @@
                     ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
                 },
                 "email": {
-                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.parent().exists() && auth.uid === $uid))",
                     ".validate": "newData.isString()"
                 },
                 "subscription": {
-                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.parent().exists() && auth.uid === $uid))",
                     ".validate": "newData.isString() && (newData.val() === 'free' || newData.val() === 'pro' || newData.val() === 'enterprise')"
                 },
                 "maxInterviews": {
-                    ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+                    ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.parent().exists() && auth.uid === $uid))",
                     ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000"
                 },
                 "interviewsCount": {
                     ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-                    ".validate": "newData.isNumber() && newData.val() >= 0 && (root.child('users').child(auth.uid).child('isAdmin').val() === true || newData.val() >= data.val())"
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && (root.child('users').child(auth.uid).child('isAdmin').val() === true || !data.exists() || newData.val() >= data.val())"
                 },
                 "isAdmin": {
                     ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
