@@ -88,8 +88,8 @@ import { StateService } from '../../services/state.service';
   `,
   styles: [`
     .dashboard-wrapper {
-      padding: 2rem 1.5rem;
-      max-width: 900px;
+      padding: 2rem 2rem;
+      max-width: 1100px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;

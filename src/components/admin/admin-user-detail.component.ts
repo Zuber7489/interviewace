@@ -15,7 +15,7 @@ const database = getDatabase(app);
   selector: 'app-admin-user-detail',
   imports: [CommonModule],
   template: `
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-16">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
       
       <!-- Header / Back Button -->
       <button (click)="goBack()" class="mb-6 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-bold transition-colors flex items-center gap-2">

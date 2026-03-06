@@ -138,7 +138,7 @@ import { StateService } from '../../services/state.service';
   styles: [`
     .history-wrapper {
       padding: 2rem 2rem 4rem;
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto;
     }
 
