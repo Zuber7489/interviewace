@@ -163,6 +163,28 @@ h6 {
   animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ── Route transition progress bar ── */
+@keyframes progress-bar {
+  0% {
+    width: 0%;
+    opacity: 1;
+  }
+
+  80% {
+    width: 85%;
+    opacity: 1;
+  }
+
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-progress-bar {
+  animation: progress-bar 8s cubic-bezier(0.1, 0.4, 0.8, 1) forwards;
+}
+
 /* ── FIX #26/F5: Print styles for PDF report export ── */
 /* .no-print elements are excluded from print via @media print */
 
