@@ -101,7 +101,7 @@ const database = getDatabase(app);
           
           <div class="space-y-2 sm:space-y-3">
 
-            <!-- FIX (F7/35): Change Password via email link -->
+            <!-- Change Password via email link -->
             <div class="flex items-center justify-between p-3 sm:p-4 border border-black/10 rounded-xl">
               <div>
                 <p class="font-semibold text-black text-sm">Change Password</p>
@@ -126,9 +126,9 @@ const database = getDatabase(app);
               Logout
             </button>
 
-            <!-- FIX (F8/36): Delete Account — GDPR compliance -->
+            <!-- Delete Account -->
             <div class="pt-2 border-t border-black/5">
-              <button (click)="confirmDeleteAccount()" [disabled]="deletingAccount()"
+              <button (click)="openDeleteModal()" [disabled]="deletingAccount()"
                 class="w-full px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 border border-red-200 text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base min-h-[40px] sm:min-h-[44px] disabled:opacity-50">
                 <i class="fas fa-trash-alt"></i>
                 {{ deletingAccount() ? 'Deleting...' : 'Delete My Account' }}
@@ -139,7 +139,103 @@ const database = getDatabase(app);
         </div>
       </div>
     </div>
-  `
+
+    <!-- ══════════════════════════════════════════
+         DELETE ACCOUNT MODAL — Step 1: Warning
+    ══════════════════════════════════════════ -->
+    @if(showDeleteModal()) {
+      <div class="fixed inset-0 z-[9000] flex items-center justify-center p-4"
+           style="background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);"
+           (click)="closeDeleteModal()">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl text-center"
+             style="animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);"
+             (click)="$event.stopPropagation()">
+
+          <!-- Icon -->
+          <div class="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-5">
+            <i class="fas fa-user-slash text-red-500 text-2xl"></i>
+          </div>
+
+          <h3 class="text-xl font-extrabold text-black mb-2">Delete Account?</h3>
+          <p class="text-sm text-gray-500 leading-relaxed mb-2">
+            This will <strong class="text-black">permanently delete</strong> your account, all interview history, and scores.
+          </p>
+          <div class="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-left">
+            <p class="text-xs text-red-600 font-medium flex items-start gap-2">
+              <i class="fas fa-exclamation-triangle mt-0.5 flex-shrink-0"></i>
+              This action <strong>CANNOT be undone</strong>. Your data will be gone forever.
+            </p>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="closeDeleteModal()"
+              class="flex-1 py-3 rounded-xl border border-black/10 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all">
+              Cancel
+            </button>
+            <button (click)="proceedToConfirm()"
+              class="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">
+              Yes, Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════
+         DELETE ACCOUNT MODAL — Step 2: Final Confirm
+    ══════════════════════════════════════════ -->
+    @if(showFinalConfirm()) {
+      <div class="fixed inset-0 z-[9000] flex items-center justify-center p-4"
+           style="background:rgba(0,0,0,0.6); backdrop-filter:blur(6px);"
+           (click)="closeFinalConfirm()">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl text-center"
+             style="animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);"
+             (click)="$event.stopPropagation()">
+
+          <!-- Icon -->
+          <div class="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-5">
+            <i class="fas fa-trash-alt text-red-600 text-2xl"></i>
+          </div>
+
+          <h3 class="text-xl font-extrabold text-black mb-2">Final Confirmation</h3>
+          <p class="text-sm text-gray-500 mb-1">Deleting account for:</p>
+          <p class="text-sm font-bold text-black bg-gray-100 rounded-lg px-3 py-2 mb-5 break-all">
+            {{ currentUser()?.email }}
+          </p>
+          <p class="text-xs text-gray-400 mb-6">Type <strong class="text-black">DELETE</strong> below to confirm:</p>
+
+          <input type="text" [(ngModel)]="deleteConfirmText"
+            placeholder="Type DELETE here"
+            class="w-full border-2 rounded-xl px-4 py-3 text-center text-sm font-bold tracking-widest uppercase mb-5 outline-none transition-all"
+            [class.border-red-500]="deleteConfirmText && deleteConfirmText.toUpperCase() !== 'DELETE'"
+            [class.border-green-500]="deleteConfirmText.toUpperCase() === 'DELETE'"
+            [class.border-gray-200]="!deleteConfirmText">
+
+          <div class="flex gap-3">
+            <button (click)="closeFinalConfirm()"
+              class="flex-1 py-3 rounded-xl border border-black/10 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all">
+              Cancel
+            </button>
+            <button (click)="executeDeleteAccount()"
+              [disabled]="deleteConfirmText.toUpperCase() !== 'DELETE' || deletingAccount()"
+              class="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              @if(deletingAccount()) {
+                <i class="fas fa-circle-notch fa-spin text-xs"></i> Deleting...
+              } @else {
+                <i class="fas fa-trash text-xs"></i> Delete Forever
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  `,
+  styles: [`
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+  `]
 })
 export class DashboardSettingsComponent {
   authService = inject(AuthService);
@@ -151,23 +247,21 @@ export class DashboardSettingsComponent {
 
   name = signal('');
   email = signal('');
-  defaultDuration = signal(10);
-  preferredLanguage = signal('English');
 
   savingProfile = signal(false);
   profileSuccess = signal('');
 
-  savingPref = signal(false);
-  prefSuccess = signal('');
-
   upgrading = signal(false);
 
-  // FIX (F7): Change password signals
   sendingReset = signal(false);
   resetSent = signal(false);
 
-  // FIX (F8): Delete account signals
   deletingAccount = signal(false);
+
+  // Delete modal state
+  showDeleteModal = signal(false);
+  showFinalConfirm = signal(false);
+  deleteConfirmText = '';
 
   constructor() {
     effect(() => {
@@ -175,24 +269,58 @@ export class DashboardSettingsComponent {
       if (user) {
         this.name.set(user.name);
         this.email.set(user.email);
-        this.loadPreferences(user.id);
       }
     });
   }
 
-  async loadPreferences(uid: string) {
+  // ── Delete modal flow ──────────────────────────────────
+  openDeleteModal() { this.showDeleteModal.set(true); }
+  closeDeleteModal() { this.showDeleteModal.set(false); }
+
+  proceedToConfirm() {
+    this.showDeleteModal.set(false);
+    this.deleteConfirmText = '';
+    this.showFinalConfirm.set(true);
+  }
+
+  closeFinalConfirm() {
+    this.showFinalConfirm.set(false);
+    this.deleteConfirmText = '';
+  }
+
+  async executeDeleteAccount() {
+    if (this.deleteConfirmText.toUpperCase() !== 'DELETE') return;
+    const user = this.currentUser();
+    if (!user) return;
+
+    this.deletingAccount.set(true);
     try {
-      const snap = await get(dbRef(database, `users/${uid}/preferences`));
-      if (snap.exists()) {
-        const prefs = snap.val();
-        if (prefs.duration) this.defaultDuration.set(prefs.duration);
-        if (prefs.language) this.preferredLanguage.set(prefs.language);
-      }
-    } catch (e) {
-      // silently ignore preference load errors
+      const { getDatabase, ref, update, remove } = await import('firebase/database');
+      const db = getDatabase();
+
+      await update(ref(db, `users/${user.id}`), {
+        deleted: true,
+        deletedAt: Date.now(),
+        name: '[Deleted User]',
+        email: '[deleted]',
+      });
+
+      await remove(ref(db, `users/${user.id}/history`));
+
+      await this.authService.logout();
+      this.showFinalConfirm.set(false);
+      this.ngZone.run(() => {
+        this.router.navigate(['/']);
+        setTimeout(() => this.toastService.success('Your account has been deleted.'), 500);
+      });
+    } catch (err: any) {
+      this.toastService.error('Failed to delete account. Please contact support.');
+    } finally {
+      this.deletingAccount.set(false);
     }
   }
 
+  // ── Profile ────────────────────────────────────────────
   async updateProfile(e: Event) {
     e.preventDefault();
     const user = this.currentUser();
@@ -200,92 +328,44 @@ export class DashboardSettingsComponent {
 
     this.savingProfile.set(true);
     this.profileSuccess.set('');
-
     try {
-      await update(dbRef(database, `users/${user.id}`), {
-        name: this.name()
-      });
+      await update(dbRef(database, `users/${user.id}`), { name: this.name() });
       this.toastService.success('Profile updated successfully!');
       this.profileSuccess.set('Profile updated successfully!');
       setTimeout(() => this.profileSuccess.set(''), 3000);
-    } catch (err) {
+    } catch {
       this.toastService.error('Failed to update profile.');
     } finally {
       this.savingProfile.set(false);
     }
   }
 
-  async savePreferences(e: Event) {
-    e.preventDefault();
-    const user = this.currentUser();
-    if (!user) return;
-
-    this.savingPref.set(true);
-    this.prefSuccess.set('');
-
-    try {
-      await update(dbRef(database, `users/${user.id}/preferences`), {
-        duration: Number(this.defaultDuration()),
-        language: this.preferredLanguage()
-      });
-      this.toastService.success('Preferences saved safely!');
-      this.prefSuccess.set('Preferences saved successfully!');
-      setTimeout(() => this.prefSuccess.set(''), 3000);
-    } catch (e) {
-      this.toastService.error('Failed to save preferences.');
-    } finally {
-      this.savingPref.set(false);
-    }
-  }
-
+  // ── Upgrade ────────────────────────────────────────────
   async upgradeToPro() {
     const user = this.currentUser();
     if (!user) return;
-
     this.upgrading.set(true);
-
     try {
-      // 1. Get Firebase auth token to authenticate with our backend
       const auth = (await import('firebase/auth')).getAuth();
       if (!auth.currentUser) throw new Error('Not authenticated');
       const idToken = await auth.currentUser.getIdToken();
-
-      // 2. Here you would normally integrate Razorpay Checkout
-      // const options = { key: 'YOUR_KEY_ID', amount: 20000, ... }
-      // const rzp1 = new Razorpay(options);
-      // rzp1.open();
-
-      // Simulate successful Razorpay checkout for demo purposes:
       await new Promise(resolve => setTimeout(resolve, 1500));
       const mockPaymentDetails = {
         razorpay_order_id: 'order_' + Math.random().toString(36).substr(2, 9),
         razorpay_payment_id: 'pay_' + Math.random().toString(36).substr(2, 9),
         razorpay_signature: 'mock_signature_for_demo'
       };
-
-      // 3. Send payment details to backend for verification
       const response = await fetch('/api/upgrade', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify(mockPaymentDetails)
       });
-
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.error || 'Payment verification failed');
       }
-
-      // 4. Update local signal from server response (stacks on existing interviews)
       const data = await response.json();
-      this.authService.currentUser.update(u => u ? ({
-        ...u,
-        subscription: data.subscription || 'pro',
-        maxInterviews: data.maxInterviews ?? 10
-      }) : u);
-
+      this.authService.currentUser.update(u => u ? ({ ...u, subscription: data.subscription || 'pro', maxInterviews: data.maxInterviews ?? 10 }) : u);
       this.toastService.success(`Pro Pack activated! You now have ${data.maxInterviews} total interviews.`);
     } catch (e: any) {
       this.toastService.error(e.message || 'Upgrade failed. Please try again.');
@@ -294,86 +374,29 @@ export class DashboardSettingsComponent {
     }
   }
 
+  // ── Logout ─────────────────────────────────────────────
   async logout() {
     try {
       await this.authService.logout();
-      this.ngZone.run(() => {
-        this.router.navigate(['/']);
-      });
-    } catch (error) {
-      // logout errors are handled silently
-    }
+      this.ngZone.run(() => this.router.navigate(['/']));
+    } catch { }
   }
 
-  // FIX (F7/35): Send password reset email to the authenticated user's email
+  // ── Password Reset ─────────────────────────────────────
   async sendPasswordReset() {
     const user = this.currentUser();
     if (!user?.email) return;
-
     this.sendingReset.set(true);
     this.resetSent.set(false);
     try {
       const { getAuth, sendPasswordResetEmail } = await import('firebase/auth');
-      const auth = getAuth();
-      await sendPasswordResetEmail(auth, user.email);
+      await sendPasswordResetEmail(getAuth(), user.email);
       this.resetSent.set(true);
-      // Auto-clear success message after 8s
       setTimeout(() => this.resetSent.set(false), 8000);
     } catch (err: any) {
       this.toastService.error(err.message || 'Failed to send reset email.');
     } finally {
       this.sendingReset.set(false);
-    }
-  }
-
-  // FIX (F8/36): Delete account — GDPR-compliant soft delete with double confirmation
-  async confirmDeleteAccount() {
-    const user = this.currentUser();
-    if (!user) return;
-
-    // First confirmation
-    const first = confirm(
-      'Are you sure you want to delete your account?\n\nThis will permanently delete all your interview history and data. This action CANNOT be undone.'
-    );
-    if (!first) return;
-
-    // Second confirmation (type safety)
-    const second = confirm(
-      `Final confirmation: Delete account for "${user.email}"?\n\nPress OK to permanently delete. Press Cancel to keep your account.`
-    );
-    if (!second) return;
-
-    this.deletingAccount.set(true);
-    try {
-      const { getDatabase, ref, update, remove } = await import('firebase/database');
-      const { getAuth } = await import('firebase/auth');
-
-      const db = getDatabase();
-      const auth = getAuth();
-
-      // Soft-delete: mark user as deleted in DB (preserves audit trail for admin)
-      await update(ref(db, `users/${user.id}`), {
-        deleted: true,
-        deletedAt: Date.now(),
-        name: '[Deleted User]',
-        email: '[deleted]',
-      });
-
-      // Hard delete interview history
-      await remove(ref(db, `users/${user.id}/history`));
-
-      // Sign out and redirect
-      await this.authService.logout();
-      this.ngZone.run(() => {
-        this.router.navigate(['/']);
-        // Delay toast so it shows after navigation
-        setTimeout(() => this.toastService.success('Your account has been deleted.'), 500);
-      });
-    } catch (err: any) {
-      this.toastService.error('Failed to delete account. Please contact support.');
-      console.error(err);
-    } finally {
-      this.deletingAccount.set(false);
     }
   }
 }
