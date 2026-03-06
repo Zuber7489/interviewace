@@ -45,7 +45,49 @@
 </head>
 
 <body class="bg-white text-black">
-  <app-root></app-root>
+  <app-root>
+    <!-- App shell: shows instantly while Angular bootstraps, auto-replaced once ready -->
+    <div id="app-shell" style="
+      position:fixed; inset:0; z-index:99999;
+      background:#fff;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:16px;
+    ">
+      <!-- Logo -->
+      <img src="assets/favicon.png" alt="ScoreMyInterview" style="width:40px; height:40px; object-fit:contain;"
+        onerror="this.style.display='none'">
+      <!-- Brand name -->
+      <span
+        style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.1rem; color:#111; letter-spacing:-0.03em;">
+        ScoreMyInterview
+      </span>
+      <!-- Animated dots -->
+      <div style="display:flex; gap:6px; margin-top:4px;">
+        <span
+          style="width:7px;height:7px;border-radius:50%;background:#111;animation:smi-dot 1.2s ease-in-out infinite 0s;"></span>
+        <span
+          style="width:7px;height:7px;border-radius:50%;background:#111;animation:smi-dot 1.2s ease-in-out infinite 0.2s;"></span>
+        <span
+          style="width:7px;height:7px;border-radius:50%;background:#111;animation:smi-dot 1.2s ease-in-out infinite 0.4s;"></span>
+      </div>
+      <style>
+        @keyframes smi-dot {
+
+          0%,
+          80%,
+          100% {
+            transform: scale(0.6);
+            opacity: 0.3
+          }
+
+          40% {
+            transform: scale(1);
+            opacity: 1
+          }
+        }
+      </style>
+    </div>
+  </app-root>
 </body>
 
 </html>
