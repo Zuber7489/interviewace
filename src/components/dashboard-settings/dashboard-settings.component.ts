@@ -160,10 +160,9 @@ const database = getDatabase(app);
           <p class="text-sm text-gray-500 leading-relaxed mb-2">
             This will <strong class="text-black">permanently delete</strong> your account, all interview history, and scores.
           </p>
-          <div class="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-left">
-            <p class="text-xs text-red-600 font-medium flex items-start gap-2">
-              <i class="fas fa-exclamation-triangle mt-0.5 flex-shrink-0"></i>
-              This action <strong>CANNOT be undone</strong>. Your data will be gone forever.
+          <div class="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6">
+            <p class="text-xs text-red-600 font-semibold text-center leading-relaxed">
+              ⚠️&nbsp; This action <span class="font-extrabold text-red-700">CANNOT be undone</span>. Your data will be gone forever.
             </p>
           </div>
 
