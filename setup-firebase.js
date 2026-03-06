@@ -10,14 +10,14 @@ const targetPath = path.resolve(__dirname, 'src', 'firebase.config.ts');
 
 // Use environment variables from Netlify/local process.env
 const config = {
-    apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCiVu_bRDTIlfQoRl5VxusSuMSLvcM4PMw",
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "scoremyinter.firebaseapp.com",
-    projectId: process.env.FIREBASE_PROJECT_ID || "scoremyinter",
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "scoremyinter.firebasestorage.app",
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "762155553897",
-    appId: process.env.FIREBASE_APP_ID || "1:762155553897:web:8dad3621cc9708cd3c3ef8",
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID || "G-1XCKJBXYXP",
-    databaseURL: process.env.FIREBASE_DATABASE_URL || "https://scoremyinter-default-rtdb.firebaseio.com"
+    apiKey: process.env.FIREBASE_API_KEY || "",
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "",
+    projectId: process.env.FIREBASE_PROJECT_ID || "",
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "",
+    appId: process.env.FIREBASE_APP_ID || "",
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID || "",
+    databaseURL: process.env.FIREBASE_DATABASE_URL || ""
 };
 
 const content = `// This file is auto-generated during the build process
