@@ -4,7 +4,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 
-import { provideRouter } from '@angular/router';
+import { provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
 import { routes } from './src/app.routes';
 import { AppComponent } from './src/app.component';
 
@@ -12,7 +12,7 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
     provideHttpClient(),
-    provideRouter(routes)
+    provideRouter(routes, withPreloading(PreloadAllModules))
   ],
 }).catch(err => console.error(err));
 
