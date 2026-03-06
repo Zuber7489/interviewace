@@ -75,12 +75,12 @@ const database = getDatabase(app);
             @if(currentUser()?.subscription === 'free' || (currentUser()?.interviewsCount || 0) >= (currentUser()?.maxInterviews ?? (currentUser()?.subscription === 'pro' ? 10 : 2))) {
               <div class="p-4 rounded-xl bg-black text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:scale-[1.01]">
                 <div class="space-y-1">
-                  <h3 class="font-bold text-sm sm:text-base">Buy Pro Pack — ₹200</h3>
+                  <h3 class="font-bold text-sm sm:text-base">Buy Pro Pack — ₹199</h3>
                   <p class="text-[10px] sm:text-xs text-gray-400">Get 10 extra interviews. Buy again anytime you run out.</p>
                 </div>
                 <button (click)="upgradeToPro()" [disabled]="upgrading()"
                   class="whitespace-nowrap px-4 py-2 bg-white text-black text-xs sm:text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors">
-                  {{ upgrading() ? 'Processing...' : 'Buy Pack — ₹200' }}
+                  {{ upgrading() ? 'Processing...' : 'Buy Pack — ₹199' }}
                 </button>
               </div>
             } @else {
@@ -94,41 +94,6 @@ const database = getDatabase(app);
           </div>
         </div>
 
-        <!-- Interview Preferences (FIX 33: Restored from dead code) -->
-        <div class="glass-card p-3 sm:p-4 md:p-6 rounded-2xl border border-black/5">
-          <h2 class="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4 md:mb-6">Interview Preferences</h2>
-          <form (submit)="savePreferences($event)" class="space-y-3 sm:space-y-4">
-            <div>
-              <label class="block text-[10px] sm:text-xs md:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Default Interview Duration</label>
-              <select [(ngModel)]="defaultDuration" name="duration"
-                class="w-full glass-card border border-black/10 rounded-lg px-3 py-2.5 text-black focus:outline-none focus:ring-2 focus:ring-black/20 transition-all text-sm bg-white">
-                <option [ngValue]="5">5 minutes</option>
-                <option [ngValue]="10">10 minutes</option>
-                <option [ngValue]="15">15 minutes</option>
-                <option [ngValue]="20">20 minutes</option>
-                <option [ngValue]="30">30 minutes</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] sm:text-xs md:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Preferred Interview Language</label>
-              <select [(ngModel)]="preferredLanguage" name="language"
-                class="w-full glass-card border border-black/10 rounded-lg px-3 py-2.5 text-black focus:outline-none focus:ring-2 focus:ring-black/20 transition-all text-sm bg-white">
-                <option value="English">English</option>
-                <option value="Hindi">Hindi</option>
-                <option value="Hinglish">Hinglish</option>
-              </select>
-            </div>
-
-            @if(prefSuccess()) {
-              <div class="text-green-600 text-sm py-1 font-medium">{{ prefSuccess() }}</div>
-            }
-
-            <button type="submit" [disabled]="savingPref()"
-              class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm disabled:opacity-50">
-              {{ savingPref() ? 'Saving...' : 'Save Preferences' }}
-            </button>
-          </form>
-        </div>
 
         <!-- Account Actions -->
         <div class="glass-card p-3 sm:p-4 md:p-6 rounded-2xl border border-black/5">

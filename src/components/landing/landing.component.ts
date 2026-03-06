@@ -53,45 +53,7 @@ import { PublicNavbarComponent } from './public-navbar.component';
                 </a>
             </div>
 
-            <!-- Social proof numbers -->
-            <div class="flex items-center justify-center gap-6 sm:gap-10 animate-fade-in" style="animation-delay: 0.3s;">
-                <div class="text-center">
-                    <div class="text-xl sm:text-2xl font-bold text-black">500+</div>
-                    <div class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-medium">Users</div>
-                </div>
-                <div class="w-px h-8 bg-black/10"></div>
-                <div class="text-center">
-                    <div class="text-xl sm:text-2xl font-bold text-black">2,000+</div>
-                    <div class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-medium">Interviews Done</div>
-                </div>
-                <div class="w-px h-8 bg-black/10"></div>
-                <div class="text-center">
-                    <div class="text-xl sm:text-2xl font-bold text-black">4.9★</div>
-                    <div class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-medium">Avg. Rating</div>
-                </div>
-            </div>
 
-            <!-- Video Section - The Centerpiece -->
-            <div class="pt-8 sm:pt-12 w-full animate-fade-in" style="animation-delay: 0.4s;">
-                <div class="relative max-w-4xl mx-auto group">
-                    <div class="absolute -inset-1 bg-gradient-to-b from-black/[0.05] to-transparent rounded-[2rem] blur-lg opacity-50 transition duration-1000 group-hover:opacity-100"></div>
-                    
-                    <div class="relative bg-white p-1 rounded-[1.8rem] border border-black/[0.08] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)]">
-                        <div class="relative rounded-[1.6rem] overflow-hidden aspect-video bg-gray-50">
-                            <video 
-                                class="w-full h-full object-cover"
-                                loop 
-                                playsinline
-                                controls
-                                preload="none"
-                                poster="assets/favicon.png"
-                            >
-                                <source src="assets/grok-video-a3c63fec-d284-4d08-8d02-e1fbad244abf (1).mp4" type="video/mp4">
-                            </video>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
             <!-- Features - Minimalist List -->
             <div class="grid md:grid-cols-3 gap-8 sm:gap-12 pt-12 sm:pt-16 text-left max-w-4xl mx-auto">
@@ -228,7 +190,7 @@ import { PublicNavbarComponent } from './public-navbar.component';
                             <h3 class="text-lg font-bold text-black mb-1">Professional</h3>
                             <p class="text-gray-400 text-xs mb-8 uppercase tracking-widest font-bold">For job seekers</p>
                             <div class="flex items-baseline mb-8">
-                                <span class="text-4xl font-bold text-black">₹200</span>
+                                <span class="text-4xl font-bold text-black">₹199</span>
                                 <span class="text-gray-400 text-sm ml-1">/ 10 pack</span>
                             </div>
                             <ul class="space-y-3 mb-12">
@@ -338,21 +300,6 @@ export class LandingComponent {
             name: 'Karan T.',
             role: 'Full Stack Developer',
             quote: "The AI caught things I didn't even notice — weak answers, filler words. My confidence went up massively after a few sessions."
-        },
-        {
-            name: 'Sneha R.',
-            role: 'Data Engineer',
-            quote: "I love how it reads my resume and asks questions specific to my experience. Way better than generic prep sites."
-        },
-        {
-            name: 'Abhinav K.',
-            role: 'Backend Engineer at Meesho',
-            quote: "Got an offer after 5 prep sessions. The score report showed me exactly where I was weak, and I fixed it in time."
-        },
-        {
-            name: 'Divya P.',
-            role: 'SDE-1 at Amazon',
-            quote: "Feels like interviewing with a real person. Sophia (the AI) is tough but fair. Would recommend this to every job seeker."
         }
     ];
 

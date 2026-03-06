@@ -139,9 +139,5 @@ export const routes: Routes = [
         path: 'cookie-policy',
         loadComponent: () => import('./components/legal/cookie-policy.component').then(m => m.CookiePolicyComponent)
     },
-    {
-        path: 'refund-policy',
-        loadComponent: () => import('./components/legal/refund-policy.component').then(m => m.RefundPolicyComponent)
-    },
     { path: '**', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) }
 ];

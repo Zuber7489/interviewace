@@ -78,10 +78,10 @@ import { StateService } from '../../services/state.service';
       <div *ngIf="isAtLimit()" class="bg-black text-white rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p class="font-bold text-sm">🚀 You've used all your interviews!</p>
-          <p class="text-gray-400 text-xs mt-0.5">Get 10 more for just ₹200 — buy again anytime.</p>
+          <p class="text-gray-400 text-xs mt-0.5">Get 10 more for just ₹199 — buy again anytime.</p>
         </div>
         <a routerLink="/dashboard/settings" class="flex-shrink-0 px-5 py-2.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-gray-100 transition-all">
-          Buy Pro Pack — ₹200
+          Buy Pro Pack — ₹199
         </a>
       </div>
     </div>

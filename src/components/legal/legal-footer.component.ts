@@ -38,7 +38,6 @@ import { RouterLink } from '@angular/router';
               <li><a routerLink="/privacy-policy" class="text-sm text-gray-600 hover:text-black transition-colors">Privacy Policy</a></li>
               <li><a routerLink="/terms-of-service" class="text-sm text-gray-600 hover:text-black transition-colors">Terms of Service</a></li>
               <li><a routerLink="/cookie-policy" class="text-sm text-gray-600 hover:text-black transition-colors">Cookie Policy</a></li>
-              <li><a routerLink="/refund-policy" class="text-sm text-gray-600 hover:text-black transition-colors">Refund Policy</a></li>
             </ul>
           </div>
           

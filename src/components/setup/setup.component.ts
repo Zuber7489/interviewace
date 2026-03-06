@@ -244,7 +244,7 @@ export class SetupComponent implements OnInit {
     // SaaS Gating logic: Check limits dynamically for ALL users
     const maxLimits = user.maxInterviews ?? (user.subscription === 'pro' ? 10 : 2);
     if ((user.interviewsCount || 0) >= maxLimits && user.subscription !== 'enterprise') {
-      this.error.set(`You've reached your limit of ${maxLimits} interviews. Buy a Pro Pack (₹200 for 10 interviews) to continue!`);
+      this.error.set(`You've reached your limit of ${maxLimits} interviews. Buy a Pro Pack (₹199 for 10 interviews) to continue!`);
       this.isLoading.set(false);
       return;
     }

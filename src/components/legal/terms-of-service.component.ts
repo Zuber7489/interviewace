@@ -54,7 +54,7 @@ import { PublicNavbarComponent } from '../landing/public-navbar.component';
               </div>
               <div class="p-4 rounded-xl bg-gray-50 border border-black/5">
                 <h3 class="font-bold text-black mb-2">Pro Pack</h3>
-                <p class="text-sm text-gray-600">₹200 for 10 mock interviews. No monthly subscription. You may purchase additional packs at any time. Each pack is valid until all interviews are used.</p>
+                <p class="text-sm text-gray-600">₹199 for 10 mock interviews. No monthly subscription. You may purchase additional packs at any time. Each pack is valid until all interviews are used.</p>
               </div>
             </div>
           </section>
