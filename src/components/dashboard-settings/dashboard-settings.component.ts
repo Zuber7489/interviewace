@@ -15,7 +15,7 @@ const database = getDatabase(app);
   selector: 'app-dashboard-settings',
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-16">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
       <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-6 sm:mb-8">Settings</h1>
       
       <div class="space-y-3 sm:space-y-4 md:space-y-6">
