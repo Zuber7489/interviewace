@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart, NavigationCancel, NavigationError, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { StateService } from './services/state.service';
 import { ToastService } from './services/toast.service';
@@ -16,15 +16,30 @@ export class AppComponent implements OnInit {
   toastService = inject(ToastService);
   private router = inject(Router);
 
+  /** true while a route navigation is in progress */
+  navigating = signal(false);
+
   ngOnInit() {
     // Load any active session from localStorage on app startup
     this.stateService.loadActiveSession();
 
-    // Scroll to top on every route navigation
+    // Show/hide progress bar + scroll to top on route events
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+      .pipe(filter(e =>
+        e instanceof NavigationStart ||
+        e instanceof NavigationEnd ||
+        e instanceof NavigationCancel ||
+        e instanceof NavigationError
+      ))
+      .subscribe(e => {
+        if (e instanceof NavigationStart) {
+          this.navigating.set(true);
+        } else {
+          this.navigating.set(false);
+          if (e instanceof NavigationEnd) {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }
+        }
       });
   }
 }
